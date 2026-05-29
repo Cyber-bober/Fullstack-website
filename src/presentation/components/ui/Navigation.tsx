@@ -20,9 +20,9 @@ export default function Navigation() {
         Football Hub
       </Link>
 
-      <Link href="/news" style={{ textDecoration: 'none', color: '#333' }}>Новости</Link>
       <Link href="/teams" style={{ textDecoration: 'none', color: '#333' }}>Команды</Link>
       <Link href="/support" style={{ textDecoration: 'none', color: '#333' }}>Поддержка</Link>
+      <Link href="/terms" style={{ textDecoration: 'none', color: '#333' }}>Соглашение</Link>
 
       {session?.user ? (
         <>
@@ -46,12 +46,14 @@ export default function Navigation() {
           </button>
         </>
       ) : (
-        <Link
-          href="/auth/signin"
-          style={{ marginLeft: 'auto', textDecoration: 'none', color: '#0070f3' }}
-        >
-          Войти
-        </Link>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+          <Link href="/auth/register" style={{ textDecoration: 'none', color: '#28a745' }}>
+            Регистрация
+          </Link>
+          <Link href="/auth/signin" style={{ textDecoration: 'none', color: '#0070f3' }}>
+            Войти
+          </Link>
+        </div>
       )}
     </nav>
   );
