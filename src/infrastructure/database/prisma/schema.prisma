@@ -43,6 +43,12 @@ enum NewsCategory {
   INTERVIEW
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id           String         @id @default(uuid())
   username     String         @unique
@@ -61,6 +67,7 @@ model User {
   sentMessages     ChatMessage[] @relation("Sender")
   receivedMessages ChatMessage[] @relation("Receiver")
   newsPosts        NewsPost[]
+  roleRequests     RoleRequest[]
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -125,4 +132,16 @@ model ChatMessage {
   receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
 
   createdAt   DateTime @default(now())
+}
+
+model RoleRequest {
+  id            String        @id @default(uuid())
+  userId        String
+  requestedRole String
+  status        RequestStatus @default(PENDING)
+
+  user          User          @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
