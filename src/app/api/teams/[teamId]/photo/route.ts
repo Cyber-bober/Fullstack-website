@@ -5,38 +5,21 @@ import { prisma } from '@/infrastructure/database/client';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: { teamId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
     const formData = await req.formData();
-    const file = formData.get('photo') as File;
-
+    const file = formData.get('logo') as File;
     if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 });
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Save to public/uploads/
-    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const fileName = `team-${params.teamId}-${Date.now()}.png`;
     const filePath = path.join(process.cwd(), 'public', 'uploads', fileName);
     await writeFile(filePath, buffer);
-
-    const photoUrl = `/uploads/${fileName}`;
-
-    // Add to user photos
-    const user = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { photos: true } });
-    const photos = user?.photos || [];
-    if (photos.length >= 10) return NextResponse.json({ error: 'Max 10 photos' }, { status: 400 });
-    photos.push(photoUrl);
-
-    await prisma.user.update({
-      where: { id: (session.user as any).id },
-      data: { photos },
-    });
-
-    return NextResponse.json({ success: true, photos });
+    const logoUrl = `/uploads/${fileName}`;
+    await prisma.team.update({ where: { id: params.teamId }, data: { logoUrl } });
+    return NextResponse.json({ logoUrl });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

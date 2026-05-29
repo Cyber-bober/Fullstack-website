@@ -50,42 +50,38 @@ enum RequestStatus {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  username     String         @unique
-  passwordHash String
-  fullName     String
-  birthDate    DateTime
-  city         String
-  role         Role           @default(USER)
-  position     PlayerPosition?
-  photos       String[]
-  contacts     Json?
-  stats        Json?
-  teamId       String?
-  team         Team?          @relation(fields: [teamId], references: [id])
-
-  sentMessages     ChatMessage[] @relation("Sender")
-  receivedMessages ChatMessage[] @relation("Receiver")
+  id               String         @id @default(uuid())
+  username         String         @unique
+  passwordHash     String
+  fullName         String
+  birthDate        DateTime
+  city             String
+  role             Role           @default(USER)
+  position         PlayerPosition?
+  photos           String[]
+  contacts         Json?
+  stats            Json?
+  teamId           String?
+  team             Team?          @relation(fields: [teamId], references: [id])
+  sentMessages     ChatMessage[]  @relation("Sender")
+  receivedMessages ChatMessage[]  @relation("Receiver")
   newsPosts        NewsPost[]
   roleRequests     RoleRequest[]
-
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model Team {
-  id         String   @id @default(uuid())
-  name       String
-  logoUrl    String?
-  captainId  String?
-  stats      Json?
-
-  players    User[]
-  homeMatches Match[] @relation("HomeTeam")
-  awayMatches Match[] @relation("AwayTeam")
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  logoUrl     String?
+  captainId   String?
+  stats       Json?
+  players     User[]
+  homeMatches Match[]  @relation("HomeTeam")
+  awayMatches Match[]  @relation("AwayTeam")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Match {
@@ -97,10 +93,8 @@ model Match {
   score       Json?
   stats       Json?
   venue       String?
-
   homeTeam    Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeam    Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
-
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -114,9 +108,7 @@ model NewsPost {
   imageUrl    String?
   matchId     String?
   isPublished Boolean      @default(false)
-
   author      User         @relation(fields: [authorId], references: [id])
-
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -126,11 +118,10 @@ model ChatMessage {
   senderId    String
   receiverId  String
   text        String
+  fileUrl     String?
   isRead      Boolean  @default(false)
-
   sender      User     @relation("Sender", fields: [senderId], references: [id])
   receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
-
   createdAt   DateTime @default(now())
 }
 
@@ -139,9 +130,7 @@ model RoleRequest {
   userId        String
   requestedRole String
   status        RequestStatus @default(PENDING)
-
   user          User          @relation(fields: [userId], references: [id])
-
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
