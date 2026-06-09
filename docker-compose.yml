@@ -1,11 +1,8 @@
-version: "3.9"
-
 services:
-  # ─── PostgreSQL база данных ───────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: football-postgres
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_USER: football
       POSTGRES_PASSWORD: football_pass
@@ -14,8 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Автоматическое создание таблиц при первом запуске (опционально)
-      - ./src/infrastructure/database/prisma/schema.prisma:/docker-entrypoint-initdb.d/schema.prisma:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U football -d football_db"]
       interval: 10s
@@ -24,24 +19,23 @@ services:
     networks:
       - football-network
 
-  # ─── Next.js приложение (закомментировано до готовности) ───
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: football-app
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     DATABASE_URL: "postgresql://football:football_pass@postgres:5432/football_db?schema=public"
-  #     NEXTAUTH_SECRET: "super-secret-key-change-in-production"
-  #     NEXTAUTH_URL: "http://localhost:3000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   networks:
-  #     - football-network
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: football-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://football:football_pass@postgres:5432/football_db?schema=public"
+      NEXTAUTH_SECRET: "super-secret-change-in-production"
+      NEXTAUTH_URL: "http://localhost:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - football-network
 
 volumes:
   postgres_data:
