@@ -8,7 +8,7 @@ export default async function NewsPage() {
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: 20 }}>
       <h1>Все новости</h1>
-      <Link href="/" style={{ color: '#0070f3' }}>← На главную</Link>
+      <Link href="/" style={{ color: '#ffffff', textDecoration: 'none' }}>← На главную</Link>
 
       {posts.length === 0 ? (
         <p style={{ marginTop: 20 }}>Новостей пока нет</p>
