@@ -14,7 +14,8 @@
     "test": "jest",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "seed": "npx ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -33,6 +34,7 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "prisma": "^5.22.0",
+    "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   }
 }
