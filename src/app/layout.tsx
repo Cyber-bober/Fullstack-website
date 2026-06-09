@@ -4,7 +4,6 @@ import Footer from '@/presentation/components/ui/Footer';
 import CookieBanner from '@/presentation/components/cookie/CookieBanner';
 import SessionProvider from '@/presentation/providers/SessionProvider';
 import ThemeProvider from '@/presentation/providers/ThemeProvider';
-import GlassWrapper from '@/presentation/providers/GlassWrapper';
 
 export const metadata: Metadata = {
   title: 'Football Hub',
@@ -21,13 +20,16 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);})()`
+        }} />
+      </head>
       <body style={{ margin: 0 }}>
         <SessionProvider>
           <ThemeProvider>
             <Navigation />
-            <GlassWrapper>
-              <main style={{ minHeight: 'calc(100vh - 160px)' }}>{children}</main>
-            </GlassWrapper>
+            <main style={{ minHeight: 'calc(100vh - 160px)' }}>{children}</main>
             <Footer />
             <CookieBanner />
           </ThemeProvider>
