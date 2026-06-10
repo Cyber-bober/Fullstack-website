@@ -2,39 +2,33 @@
   "name": "football",
   "version": "0.1.0",
   "private": true,
-  "license": "MIT",
-  "prisma": {
-    "schema": "src/infrastructure/database/prisma/schema.prisma"
-  },
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "seed": "npx ts-node prisma/seed.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "bcryptjs": "^2.4.3",
-    "emoji-picker-react": "^4.19.1",
-    "ioredis": "^5.11.0",
-    "liquid-glass-react": "^1.1.1",
-    "next": "^16.2.6",
-    "next-auth": "^4.24.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "bcryptjs": "^3.0.3",
+    "next": "^14.2.35",
+    "next-auth": "^4.24.14",
+    "prisma": "^5.22.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20.0.0",
+    "@types/node": "^25.9.2",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "prisma": "^5.22.0",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3"
+  },
+  "allowScripts": {
+    "@prisma/client@5.22.0": true,
+    "@prisma/engines@5.22.0": true,
+    "prisma@5.22.0": true
   }
 }

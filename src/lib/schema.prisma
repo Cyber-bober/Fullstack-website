@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  fullName     String
+  city         String
+  role         String   @default("USER")
+  photos       String[]
+  teamId       String?
+  team         Team?    @relation(fields: [teamId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  logoUrl   String?
+  players   User[]
+  createdAt DateTime @default(now())
+}
+
+model Match {
+  id         String   @id @default(uuid())
+  homeTeamId String
+  awayTeamId String
+  date       DateTime
+  status     String   @default("SCHEDULED")
+  score      String?
+  createdAt  DateTime @default(now())
+}
+
+model NewsPost {
+  id          String   @id @default(uuid())
+  authorId    String
+  title       String
+  content     String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  text       String
+  createdAt  DateTime @default(now())
+}
