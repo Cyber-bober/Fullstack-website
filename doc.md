@@ -76,7 +76,7 @@ src/
 
 | Задача | Файл для изменения |
 | :--- | :--- |
-| Добавить поле в профиль | `schema.prisma` → `model User` |
+| Добавить поле в профиль | `schema.prisma` - `model User` |
 | Изменить дизайн карточек | `components/Card.tsx` |
 | Добавить ссылку в меню | `components/Nav.tsx` |
 | Изменить главную страницу | `app/page.tsx` |
@@ -84,7 +84,7 @@ src/
 | Изменить регистрацию | `app/auth/register/page.tsx` + `api/auth/register/route.ts` |
 | Изменить права доступа | В нужном `api/*/route.ts` — поменять проверку `role` |
 | Сбросить базу данных | `docker compose down -v` |
-| Сменить секретный ключ | `.env` → `NEXTAUTH_SECRET` |
+| Сменить секретный ключ | `.env` - `NEXTAUTH_SECRET` |
 
 ---
 
