@@ -16,31 +16,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - football-network
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: football-app
     restart: always
     ports:
       - "3000:3000"
     environment:
       DATABASE_URL: "postgresql://football:football_pass@postgres:5432/football_db?schema=public"
-      NEXTAUTH_SECRET: "super-secret-change-in-production"
+      NEXTAUTH_SECRET: "my-super-secret-key-1234567890"
       NEXTAUTH_URL: "http://localhost:3000"
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - football-network
 
 volumes:
   postgres_data:
-    driver: local
-
-networks:
-  football-network:
-    driver: bridge

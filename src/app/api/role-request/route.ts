@@ -15,13 +15,14 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true });
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Только админ" }, { status: 403 });
   }
   const requests = await prisma.roleRequest.findMany({
     include: { user: { select: { username: true, fullName: true } } },
+    orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(requests);
 }
@@ -33,6 +34,7 @@ export async function PATCH(req: NextRequest) {
   }
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
   const { status } = await req.json();
   const request = await prisma.roleRequest.update({ where: { id }, data: { status } });
   if (status === "APPROVED") {
