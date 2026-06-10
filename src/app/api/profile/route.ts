@@ -11,9 +11,36 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const data = await req.json();
-  const user = await prisma.user.update({ where: { id: session.user.id }, data });
-  return NextResponse.json(user);
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
+    const body = await req.json();
+
+    // Разрешаем обновлять ТОЛЬКО безопасные поля
+    const safeData: any = {};
+    if (body.fullName) safeData.fullName = body.fullName;
+    if (body.city) safeData.city = body.city;
+    if (body.position) safeData.position = body.position;
+    if (body.contacts) safeData.contacts = body.contacts;
+    if (body.stats) safeData.stats = body.stats;
+    if (body.birthDate) safeData.birthDate = new Date(body.birthDate);
+    if (body.photos) safeData.photos = Array.isArray(body.photos) ? body.photos : [body.photos];
+
+    if (Object.keys(safeData).length === 0) {
+      return NextResponse.json({ error: "Нет данных для обновления" }, { status: 400 });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: safeData,
+    });
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("Ошибка обновления профиля:", error);
+    return NextResponse.json({ error: "Ошибка сервера при обновлении профиля" }, { status: 500 });
+  }
 }

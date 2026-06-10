@@ -18,8 +18,13 @@ export default async function ProfilePage() {
     <div className="max-w-2xl mx-auto mt-8 space-y-4">
       <Card className="text-center">
         <div className="flex gap-2 justify-center mb-4">
-          {user.photos.map((url, i) => (
-            <img key={i} src={url || "/default-avatar.png"} className="w-20 h-20 rounded-full object-cover" />
+          {(user.photos || []).map((url: string, i: number) => (
+            <img 
+              key={i} 
+              src={url || "/default-avatar.png"} 
+              className="w-20 h-20 rounded-full object-cover" 
+              alt={`Photo ${i + 1}`}
+            />
           ))}
           {user.photos.length === 0 && <div className="w-20 h-20 rounded-full bg-gray-300" />}
         </div>
