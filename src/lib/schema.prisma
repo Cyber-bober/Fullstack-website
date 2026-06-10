@@ -8,23 +8,35 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
+  id           String         @id @default(uuid())
+  username     String         @unique
   passwordHash String
   fullName     String
+  birthDate    DateTime?
   city         String
-  role         String   @default("USER")
+  role         String         @default("USER")
+  position     String?
   photos       String[]
+  contacts     String?
+  stats        String?
   teamId       String?
-  team         Team?    @relation(fields: [teamId], references: [id])
-  createdAt    DateTime @default(now())
+  team         Team?          @relation(fields: [teamId], references: [id])
+  newsPosts    NewsPost[]
+  sentMessages ChatMessage[]  @relation("Sender")
+  recvMessages ChatMessage[]  @relation("Receiver")
+  roleRequests RoleRequest[]
+  createdAt    DateTime       @default(now())
 }
 
 model Team {
   id        String   @id @default(uuid())
   name      String
   logoUrl   String?
+  captainId String?
+  stats     String?
   players   User[]
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
   createdAt DateTime @default(now())
 }
 
@@ -35,6 +47,10 @@ model Match {
   date       DateTime
   status     String   @default("SCHEDULED")
   score      String?
+  stats      String?
+  venue      String?
+  homeTeam   Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
   createdAt  DateTime @default(now())
 }
 
@@ -43,7 +59,11 @@ model NewsPost {
   authorId    String
   title       String
   content     String
+  category    String   @default("GENERAL")
+  imageUrl    String?
+  matchId     String?
   isPublished Boolean  @default(false)
+  author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())
 }
 
@@ -52,5 +72,26 @@ model ChatMessage {
   senderId   String
   receiverId String
   text       String
+  fileUrl    String?
+  isRead     Boolean  @default(false)
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
   createdAt  DateTime @default(now())
+}
+
+model RoleRequest {
+  id            String   @id @default(uuid())
+  userId        String
+  requestedRole String
+  status        String   @default("PENDING")
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+}
+
+model SupportMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
 }
