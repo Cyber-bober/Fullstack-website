@@ -1,7 +1,9 @@
 // src/app/page.tsx
 "use client";
 import { useState, useEffect } from "react";
-import Card from "@/components/ui/Card";
+import { NewsSection } from "@/components/ui/NewsSection";
+import { LiveSection } from "@/components/ui/LiveSection";
+import { CalendarSection } from "@/components/ui/CalendarSection";
 
 type NewsPost = {
   id: string;
@@ -59,7 +61,6 @@ export default function HomePage() {
     <div className="container">
       <h1 className="home-title">Football Hub</h1>
 
-      {/* ВКЛАДКИ */}
       <div className="tabs">
         <button
           className={`tab ${activeTab === "news" ? "active" : ""}`}
@@ -81,51 +82,9 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* КОНТЕНТ */}
-      {activeTab === "news" && (
-        <div>
-          <h2 className="section-title">Новости</h2>
-          {(!Array.isArray(news) || news.length === 0) ? (
-            <p className="empty-text">Новостей пока нет</p>
-          ) : (
-            news.map((p) => (
-              <Card key={p.id} className="news-card">
-                {p.imageUrl && <img src={p.imageUrl} alt={p.title} className="news-image" />}
-                <h3 className="news-title">{p.title}</h3>
-                <p className="news-content">{p.content}</p>
-                <span className="news-meta">
-                  Автор: {p.author.fullName} — {new Date(p.createdAt).toLocaleDateString()}
-                </span>
-              </Card>
-            ))
-          )}
-        </div>
-      )}
-
-      {activeTab === "live" && (
-        <div>
-          <h2 className="section-title">Текстовая трансляция</h2>
-          <p className="empty-text">Выберите матч в форме ниже (демо)</p>
-        </div>
-      )}
-
-      {activeTab === "calendar" && (
-        <div>
-          <h2 className="section-title">Календарь событий</h2>
-          {matches.length === 0 ? (
-            <p className="empty-text">Матчей пока нет</p>
-          ) : (
-            matches.map((m) => (
-              <Card key={m.id}>
-                <strong>{m.homeTeam.name}</strong> vs <strong>{m.awayTeam.name}</strong>
-                <div className="text-gray">
-                  {new Date(m.date).toLocaleDateString()} • {m.venue || "Не указано"}
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-      )}
+      {activeTab === "news" && <NewsSection news={news} setNews={setNews} userRole={userRole} />}
+      {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} />}
+      {activeTab === "calendar" && <CalendarSection matches={matches} />}
     </div>
   );
 }

@@ -1,0 +1,72 @@
+.
+├── Dockerfile
+├── README.md
+├── android
+│   ├── app
+│   │   ├── build
+│   │   ├── build.gradle
+│   │   ├── capacitor.build.gradle
+│   │   ├── proguard-rules.pro
+│   │   └── src
+│   ├── build
+│   │   └── reports
+│   ├── build.gradle
+│   ├── capacitor-cordova-android-plugins
+│   │   ├── build
+│   │   ├── build.gradle
+│   │   ├── cordova.variables.gradle
+│   │   └── src
+│   ├── capacitor.settings.gradle
+│   ├── gradle
+│   │   └── wrapper
+│   ├── gradle.properties
+│   ├── gradlew
+│   ├── gradlew.bat
+│   ├── local.properties
+│   ├── settings.gradle
+│   └── variables.gradle
+├── capacitor.config.ts
+├── doc.md
+├── docker-compose.yml
+├── next-env.d.ts
+├── next.config.js
+├── out
+│   └── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public
+│   └── uploads
+│       ├── team-53a0c98b-1ad0-46e0-ac56-156d3ea8aee8-1781106089197.jpg
+│       ├── user-7e33448a-1d73-41cd-b00b-032aa9b3f6d6-1781106702860.jpg
+│       └── user-b30df640-f90a-4fac-9758-4a2ea328b4aa-1781105925867.jpg
+├── src
+│   ├── app
+│   │   ├── SessionProvider.tsx
+│   │   ├── admin
+│   │   ├── api
+│   │   ├── auth
+│   │   ├── chat
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── matches
+│   │   ├── page.tsx
+│   │   ├── profile
+│   │   ├── settings
+│   │   └── teams
+│   ├── components
+│   │   └── ui
+│   ├── lib
+│   │   ├── auth.ts
+│   │   ├── migrations
+│   │   ├── prisma.ts
+│   │   └── schema.prisma
+│   └── types
+│       ├── css.d.ts
+│       ├── next-auth.d.ts
+│       └── positions.ts
+├── structure.txt
+├── tailwind.config.ts
+└── tsconfig.json
+
+30 directories, 40 files
