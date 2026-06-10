@@ -1,18 +1,22 @@
+// src/components/ui/Footer.tsx
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer style={{
-      textAlign: 'center',
-      padding: '20px',
-      borderTop: '1px solid #e5e5e7',
-      background: 'white',
-      fontSize: 13,
-      color: '#999',
-      marginTop: 40,
-    }}>
-      <p style={{ margin: 0 }}>© 2025 Football Hub</p>
-      <a href="https://github.com/Cyber-bober" target="_blank" rel="noopener" style={{ color: '#0070f3' }}>
-        github.com/Cyber-bober
-      </a>
+    <footer className="footer">
+      <p>
+        © {currentYear} Football Hub. Все права защищены.
+      </p>
+      <p style={{ marginTop: "0.5rem" }}>
+        <a 
+          href="https://github.com/Cyber-bober/Fullstack-website" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ color: "#0070f3" }}
+        >
+          Исходный код на GitHub
+        </a>
+      </p>
     </footer>
   );
 }

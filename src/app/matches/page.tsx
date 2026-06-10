@@ -12,13 +12,15 @@ export default async function MatchesPage() {
   });
 
   return (
-    <div>
-      <h1 style={{ fontSize: 24, marginBottom: 16 }}>Все матчи</h1>
+    <div className="container">
+      <h1 className="home-title">Все матчи</h1>
       {matches.map((m) => (
-        <Link key={m.id} href={`/matches/${m.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <Card className="hover-highlight">
+        <Link key={m.id} href={`/matches/${m.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <Card>
             <strong>{m.homeTeam.name}</strong> vs <strong>{m.awayTeam.name}</strong>
-            <span style={{ color: '#888', marginLeft: 8 }}>— {new Date(m.date).toLocaleDateString()}</span>
+            <span className="text-gray" style={{ marginLeft: "0.5rem" }}>
+              — {new Date(m.date).toLocaleDateString()}
+            </span>
           </Card>
         </Link>
       ))}
