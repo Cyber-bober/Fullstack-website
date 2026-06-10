@@ -1,3 +1,870 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ============================================
+   БАЗОВЫЕ СТИЛИ
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: #f5f5f7;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+a {
+  color: #0070f3;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #0059c8;
+}
+
+/* ============================================
+   НАВИГАЦИЯ (ШАПКА)
+   ============================================ */
+
+.nav {
+  background: white;
+  border-bottom: 1px solid #e5e5e7;
+  height: 64px;
+}
+
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.nav-logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.nav-logo:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: #6b7280;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: #374151;
+  text-decoration: none;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-right .nav-link {
+  margin-right: 0;
+}
+
+/* ============================================
+   КНОПКИ
+   ============================================ */
+
+button, .btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #0070f3;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0059c8;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #218838;
+}
+
+/* ============================================
+   ФОРМЫ (input, select, textarea)
+   ============================================ */
+
+input, select, textarea {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+}
+
+input[type="file"] {
+  padding: 8px;
+  background: white;
+}
+
+input[type="date"] {
+  cursor: pointer;
+}
+
+/* ============================================
+   КАРТОЧКИ
+   ============================================ */
+
+.card {
+  background: white;
+  border: 1px solid #e5e5e7;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   КОНТЕЙНЕРЫ
+   ============================================ */
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ============================================
+   ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
+   ============================================ */
+
+.profile-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.profile-card {
+  text-align: center;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.photos-section {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.photo-link {
+  display: inline-block;
+}
+
+.profile-photo {
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  display: block;
+  transition: all 0.2s ease;
+}
+
+.profile-photo:hover {
+  border-color: #0070f3;
+  transform: scale(1.05);
+}
+
+.profile-photo-empty {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #d1d5db;
+  border: 2px dashed #9ca3af;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+  color: #111827;
+}
+
+.profile-username {
+  color: #6b7280;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.edit-link {
+  color: #0070f3;
+  text-decoration: underline;
+  font-size: 0.875rem;
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.edit-link:hover {
+  color: #0059c8;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-grid .card {
+  margin-bottom: 0;
+}
+
+.info-grid .card strong {
+  color: #374151;
+  margin-right: 0.5rem;
+}
+
+/* ============================================
+   РЕДАКТИРОВАНИЕ ПРОФИЛЯ
+   ============================================ */
+
+.edit-profile-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.photos-upload-section {
+  margin-top: 0.5rem;
+}
+
+.photos-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.photo-preview-item {
+  position: relative;
+  display: inline-block;
+}
+
+.photo-preview-item img {
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid #e5e7eb;
+  display: block;
+}
+
+.photo-remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.photo-preview-item:hover .photo-remove-btn {
+  opacity: 1;
+}
+
+.photo-remove-btn:hover {
+  background: #c82333;
+}
+
+.upload-btn {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: #f5f5f7;
+  border-color: #0070f3;
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   УТИЛИТЫ
+   ============================================ */
+
+.text-center {
+  text-align: center;
+}
+
+.text-gray {
+  color: #6b7280;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+/* ============================================
+   ГЛАВНАЯ СТРАНИЦА
+   ============================================ */
+
+.home-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.home-title {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e5e5e7;
+  padding-bottom: 12px;
+}
+
+.tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background: #f5f5f7;
+  color: #0070f3;
+}
+
+.tab.active {
+  color: #0070f3;
+  border-bottom: 2px solid #0070f3;
+  margin-bottom: -14px;
+}
+
+.section-title {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.empty-text {
+  color: #999;
+  text-align: center;
+  padding: 40px 0;
+}
+
+.news-card {
+  margin-bottom: 16px;
+}
+
+.news-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.news-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #1a1a1a;
+}
+
+.news-content {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.news-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+.form-card {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.events-list {
+  margin-top: 20px;
+}
+
+.event-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.event-minute {
+  font-weight: 700;
+  color: #0070f3;
+  min-width: 40px;
+}
+
+.event-text {
+  flex: 1;
+  color: #1a1a1a;
+}
+
+.event-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  background: #e5e5e7;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.calendar-day-header {
+  background: #f5f5f7;
+  padding: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: #666;
+}
+
+.calendar-day {
+  background: white;
+  min-height: 80px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.calendar-day.empty {
+  background: #f9f9f9;
+}
+
+.day-number {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.match-event {
+  background: #0070f3;
+  color: white;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s;
+}
+
+.match-event:hover {
+  background: #0059c8;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.modal-content p {
+  margin: 8px 0;
+  color: #374151;
+}
+
+.modal-content .btn {
+  margin-top: 16px;
+  width: 100%;
+}
+
+/* ============================================
+   КОМАНДА
+   ============================================ */
+
+.team-players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.team-player-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e5e5e7;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.team-player-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #0070f3;
+}
+
+.player-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.player-avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.player-avatar-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #d1d5db;
+  border: 2px solid #e5e7eb;
+}
+
+.captain-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 20px;
+  background: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.captain-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #f59e0b;
+  background: #fef3c7;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.player-position {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.player-username {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ============================================
+   АДАПТИВНОСТЬ
+   ============================================ */
+
+@media (max-width: 640px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-photo {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .profile-photo-empty {
+    width: 64px;
+    height: 64px;
+  }
+
+  .photo-preview-item img {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .profile-name {
+    font-size: 1.25rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem;
+  }
+
+  .team-players {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-day {
+    min-height: 60px;
+  }
+
+  .match-event {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+}

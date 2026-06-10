@@ -1,71 +1,131 @@
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import Card from "@/components/Card";
+// src/app/page.tsx
+"use client";
+import { useState, useEffect } from "react";
+import Card from "@/components/ui/Card";
 
-// Типы для данных
-type NewsPostWithAuthor = {
+type NewsPost = {
   id: string;
   title: string;
   content: string;
+  imageUrl?: string;
   author: { fullName: string };
-  createdAt: Date;
+  createdAt: string;
 };
 
-type MatchWithTeams = {
+type Match = {
   id: string;
-  date: Date;
+  date: string;
   homeTeam: { name: string };
   awayTeam: { name: string };
+  venue?: string;
+  status: string;
 };
 
-export default async function HomePage() {
-  const posts = await prisma.newsPost.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-    include: { author: { select: { fullName: true } } },
-  }) as NewsPostWithAuthor[];
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<"news" | "live" | "calendar">("news");
+  const [news, setNews] = useState<NewsPost[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
-  const matches = await prisma.match.findMany({
-    where: { status: "SCHEDULED" }, // Исправлена опечатка
-    take: 5,
-    orderBy: { date: "asc" },
-    include: {
-      homeTeam: { select: { name: true } },
-      awayTeam: { select: { name: true } },
-    },
-  }) as MatchWithTeams[];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [newsRes, matchesRes, sessionRes] = await Promise.all([
+          fetch("/api/news"),
+          fetch("/api/matches"),
+          fetch("/api/auth/session"),
+        ]);
+
+        if (newsRes.ok) {
+          const data = await newsRes.json();
+          setNews(Array.isArray(data) ? data : []);
+        }
+        if (matchesRes.ok) {
+          const data = await matchesRes.json();
+          setMatches(Array.isArray(data) ? data : []);
+        }
+        if (sessionRes.ok) {
+          const session = await sessionRes.json();
+          setUserRole(session?.user?.role || null);
+        }
+      } catch (err) {
+        console.error("Ошибка:", err);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Football Hub</h1>
+    <div className="container">
+      <h1 className="home-title">Football Hub</h1>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Новости</h2>
-        {posts.map((p: NewsPostWithAuthor) => (
-          <Card key={p.id} className="mb-2">
-            <h3 className="font-bold">{p.title}</h3>
-            <p className="text-sm text-gray-500">{p.content.slice(0, 150)}</p>
-            <span className="text-xs text-gray-400">Автор: {p.author.fullName}</span>
-          </Card>
-        ))}
-      </section>
+      {/* ВКЛАДКИ */}
+      <div className="tabs">
+        <button
+          className={`tab ${activeTab === "news" ? "active" : ""}`}
+          onClick={() => setActiveTab("news")}
+        >
+          Новости
+        </button>
+        <button
+          className={`tab ${activeTab === "live" ? "active" : ""}`}
+          onClick={() => setActiveTab("live")}
+        >
+          Текстовая трансляция
+        </button>
+        <button
+          className={`tab ${activeTab === "calendar" ? "active" : ""}`}
+          onClick={() => setActiveTab("calendar")}
+        >
+          Календарь событий
+        </button>
+      </div>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Ближайшие матчи</h2>
-        {matches.map((m: MatchWithTeams) => (
-          <Link key={m.id} href={`/matches/${m.id}`}>
-            <Card className="mb-2 hover:shadow-md transition">
-              <span className="font-bold">{m.homeTeam.name}</span>
-              {" vs "}
-              <span className="font-bold">{m.awayTeam.name}</span>
-              <span className="text-sm text-gray-500 ml-2">
-                — {new Date(m.date).toLocaleDateString()}
-              </span>
-            </Card>
-          </Link>
-        ))}
-      </section>
+      {/* КОНТЕНТ */}
+      {activeTab === "news" && (
+        <div>
+          <h2 className="section-title">Новости</h2>
+          {(!Array.isArray(news) || news.length === 0) ? (
+            <p className="empty-text">Новостей пока нет</p>
+          ) : (
+            news.map((p) => (
+              <Card key={p.id} className="news-card">
+                {p.imageUrl && <img src={p.imageUrl} alt={p.title} className="news-image" />}
+                <h3 className="news-title">{p.title}</h3>
+                <p className="news-content">{p.content}</p>
+                <span className="news-meta">
+                  Автор: {p.author.fullName} — {new Date(p.createdAt).toLocaleDateString()}
+                </span>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === "live" && (
+        <div>
+          <h2 className="section-title">Текстовая трансляция</h2>
+          <p className="empty-text">Выберите матч в форме ниже (демо)</p>
+        </div>
+      )}
+
+      {activeTab === "calendar" && (
+        <div>
+          <h2 className="section-title">Календарь событий</h2>
+          {matches.length === 0 ? (
+            <p className="empty-text">Матчей пока нет</p>
+          ) : (
+            matches.map((m) => (
+              <Card key={m.id}>
+                <strong>{m.homeTeam.name}</strong> vs <strong>{m.awayTeam.name}</strong>
+                <div className="text-gray">
+                  {new Date(m.date).toLocaleDateString()} • {m.venue || "Не указано"}
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -51,6 +51,7 @@ model Match {
   venue      String?
   homeTeam   Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeam   Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  events     MatchEvent[]
   createdAt  DateTime @default(now())
 }
 
@@ -94,4 +95,13 @@ model SupportMessage {
   subject   String
   message   String
   createdAt DateTime @default(now())
+}
+
+model MatchEvent {
+  id        String   @id @default(uuid())
+  matchId   String
+  minute    Int?     // Минута матча (например, 45)
+  text      String   // Текст события ("Гол!", "Замена")
+  createdAt DateTime @default(now())
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }

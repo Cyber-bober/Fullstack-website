@@ -4,7 +4,20 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const teams = await prisma.team.findMany({ include: { _count: { select: { players: true } } } });
+  const teams = await prisma.team.findMany({
+    include: {
+      _count: { select: { players: true } },
+      players: {
+        select: {
+          id: true,
+          username: true,
+          fullName: true,
+          position: true,
+          photos: true,
+        },
+      },
+    },
+  });
   return NextResponse.json(teams);
 }
 

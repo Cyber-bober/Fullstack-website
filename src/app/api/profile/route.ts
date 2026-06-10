@@ -27,7 +27,17 @@ export async function PATCH(req: NextRequest) {
     if (body.contacts) safeData.contacts = body.contacts;
     if (body.stats) safeData.stats = body.stats;
     if (body.birthDate) safeData.birthDate = new Date(body.birthDate);
-    if (body.photos) safeData.photos = Array.isArray(body.photos) ? body.photos : [body.photos];
+
+    // Обработка фото: принимаем массив URL
+    if (Array.isArray(body.photos)) {
+      // Проверим, что каждый элемент — строка (URL или base64)
+      const validPhotos = body.photos.filter((p: any) => typeof p === 'string');
+      if (validPhotos.length <= 3) { // Максимум 3 фото
+        safeData.photos = validPhotos;
+      } else {
+        return NextResponse.json({ error: "Максимум 3 фото" }, { status: 400 });
+      }
+    }
 
     if (Object.keys(safeData).length === 0) {
       return NextResponse.json({ error: "Нет данных для обновления" }, { status: 400 });

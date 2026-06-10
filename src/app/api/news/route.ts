@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")) {
     return NextResponse.json({ error: "Только редактор или админ" }, { status: 403 });
   }
-  const { title, content, category } = await req.json();
+  const { title, content, category, imageUrl } = await req.json();
   const post = await prisma.newsPost.create({
     data: { title, content, category: category || "GENERAL", authorId: session.user.id, isPublished: true },
   });
