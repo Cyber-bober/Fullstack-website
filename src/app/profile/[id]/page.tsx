@@ -1,39 +1,21 @@
-// src/app/profile/[id]/page.tsx
-"use client";
-import { useEffect, useState } from "react";
-import Card from "@/components/ui/Card";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import ProfileClient from "../ProfileClient";
 
-export default function ProfilePage({ params }: { params: { id: string } }) {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default async function UserProfilePage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) redirect("/api/auth/signin");
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const res = await fetch(`/api/profile/${params.id}`);
-        if (res.ok) {
-          setUser(await res.json());
-        } else {
-          console.error("Профиль не найден");
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProfile();
-  }, [params.id]);
+  const user = await prisma.user.findUnique({
+    where: { id: params.id },
+    include: { team: true },
+  });
 
-  if (loading) return <p className="p-4">Загрузка...</p>;
-  if (!user) return <p className="p-4">Пользователь не найден</p>;
+  if (!user) redirect("/");
 
-  return (
-    <div className="max-w-2xl mx-auto mt-8">
-      <Card className="text-center">
-        <h1>{user.fullName}</h1>
-        <p>@{user.username}</p>
-      </Card>
-    </div>
-  );
+  const isOwnProfile = params.id === session.user.id;
+  
+  return <ProfileClient user={user} isOwnProfile={isOwnProfile} />;
 }

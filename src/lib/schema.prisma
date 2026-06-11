@@ -32,6 +32,7 @@ model Team {
   id        String   @id @default(uuid())
   name      String
   logoUrl   String?
+  photos    String[]
   captainId String?
   stats     String?
   players   User[]
