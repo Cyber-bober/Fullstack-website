@@ -43,3 +43,7 @@ const prisma = new PrismaClient();
 
 # 6. Запустить
 npm run dev
+
+docker-compose down
+docker-compose build --no-cache
+docker-compose up

@@ -3,6 +3,8 @@ node_modules/
 
 android/
 
+postgres_data/
+
 # Next.js build
 .next/
 

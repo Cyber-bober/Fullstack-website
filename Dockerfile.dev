@@ -1,0 +1,24 @@
+FROM node:20-alpine
+
+# Устанавливаем OpenSSL (нужен для Prisma)
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+# Копируем package.json
+COPY package*.json ./
+
+# Устанавливаем зависимости
+RUN npm ci
+
+# Копируем весь код
+COPY . .
+
+# Генерируем Prisma Client
+RUN npx prisma generate
+
+# Открываем порты
+EXPOSE 3000 5555
+
+# Запуск
+CMD ["npm", "run", "dev"]
