@@ -4,16 +4,26 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const messages = await prisma.chatMessage.findMany({ take: 50, orderBy: { createdAt: "desc" } });
-  return NextResponse.json(messages);
-}
-
-export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { text } = await req.json();
-  const msg = await prisma.chatMessage.create({
-    data: { senderId: session.user.id, receiverId: "admin", text },
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Получаем последние 50 сообщений текущего пользователя
+  const messages = await prisma.chatMessage.findMany({
+    where: {
+      OR: [
+        { senderId: session.user.id },
+        { receiverId: session.user.id },
+      ],
+    },
+    take: 50,
+    orderBy: { createdAt: "desc" },
+    include: {
+      sender: { select: { id: true, fullName: true, username: true } },
+      receiver: { select: { id: true, fullName: true, username: true } },
+    },
   });
-  return NextResponse.json(msg);
+
+  return NextResponse.json(messages);
 }
