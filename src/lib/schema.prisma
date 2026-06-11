@@ -21,6 +21,8 @@ model User {
   stats        String?
   teamId       String?
   team         Team?          @relation(fields: [teamId], references: [id])
+  captainOf    Team?          @relation("TeamCaptain")
+
   newsPosts    NewsPost[]
   sentMessages ChatMessage[]  @relation("Sender")
   recvMessages ChatMessage[]  @relation("Receiver")
@@ -33,7 +35,8 @@ model Team {
   name      String
   logoUrl   String?
   photos    String[]
-  captainId String?
+  captainId String?  @unique
+  captain   User?    @relation("TeamCaptain", fields: [captainId], references: [id])
   stats     String?
   players   User[]
   homeMatches Match[] @relation("HomeTeam")
