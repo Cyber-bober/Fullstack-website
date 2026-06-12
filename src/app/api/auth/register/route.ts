@@ -1,4 +1,4 @@
-//src/app/api/auth/register/route.ts
+// src/app/api/auth/register/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -36,14 +36,15 @@ export async function POST(req: NextRequest) {
   // Хэшируем пароль
   const passwordHash = await bcrypt.hash(password, 10);
 
-  // Создаём пользователя
+  // Создаём пользователя с фиксацией согласия на ПДн
   const user = await prisma.user.create({
     data: {
       username,
       fullName,
       passwordHash,
-      city: city || "", // city теперь необязательное
+      city: city || "",
       role: "USER",
+      privacyAcceptedAt: new Date(), // ФИКСАЦИЯ СОГЛАСИЯ
     },
   });
 

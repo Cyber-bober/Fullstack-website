@@ -5,6 +5,7 @@ import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
 import Providers from "@/components/ui/Providers";
 import { Inter } from "next/font/google";
+import CookieBanner from "@/components/ui/CookieBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </Providers>
+        <CookieBanner/>
       </body>
     </html>
   );

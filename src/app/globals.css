@@ -1816,3 +1816,58 @@ input[type="date"] {
   font-size: 12px;
   color: #065f46;
 }
+
+/* ============================================
+   СОГЛАСИЕ НА ПДн (ГАЛОЧКА)
+   ============================================ */
+
+.pd-consent-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pd-consent-checkbox {
+  margin-top: 4px;
+  accent-color: #0070f3;
+  cursor: pointer;
+}
+
+.pd-consent-label {
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.pd-consent-link {
+  color: #0070f3;
+  text-decoration: underline;
+}
+
+.pd-consent-link:hover {
+  color: #005bb5;
+}
+
+/* ============================================
+   ОШИБКИ ВАЛИДАЦИИ ФОРМЫ
+   ============================================ */
+
+.form-error-text {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 4px;
+  display: block;
+}
+
+.pd-consent-error {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 8px;
+  display: none; /* Скрыто по умолчанию */
+}
+
+.pd-consent-error.visible {
+  display: block;
+}

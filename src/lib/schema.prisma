@@ -20,6 +20,7 @@ model User {
   contacts     String?
   stats        String?
   teamId       String?
+  privacyAcceptedAt DateTime? // Дата и время принятия политики
   team         Team?          @relation(fields: [teamId], references: [id])
   captainOf    Team?          @relation("TeamCaptain")
 

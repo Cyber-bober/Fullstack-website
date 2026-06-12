@@ -1,33 +1,26 @@
-//src/app/auth/register/page.tsx
+// src/app/auth/register/page.tsx
 
 "use client";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
+import Toast from "@/components/ui/Toast";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    username: "",
-    fullName: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({ username: "", fullName: "", password: "" });
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "error" | "success" } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setConsentError(false);
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Пароли не совпадают");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError("Пароль должен быть минимум 6 символов");
+    // Ручная проверка галочки
+    if (!consentChecked) {
+      setConsentError(true);
       return;
     }
 
@@ -36,26 +29,18 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          fullName: formData.fullName,
-          password: formData.password,
-        }),
+        body: JSON.stringify(formData),
       });
-
+      
       if (res.ok) {
-        await signIn("credentials", {
-          username: formData.username,
-          password: formData.password,
-          redirect: false,
-        });
-        router.push("/profile");
+        setToast({ message: "Регистрация успешна! Теперь войдите.", type: "success" });
+        setTimeout(() => router.push("/auth/signin"), 1500);
       } else {
-        const data = await res.json();
-        setError(data.error || "Ошибка регистрации");
+        const err = await res.json();
+        setToast({ message: err.error || "Ошибка регистрации", type: "error" });
       }
-    } catch (err) {
-      setError("Ошибка сети");
+    } catch {
+      setToast({ message: "Ошибка сети", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -63,76 +48,77 @@ export default function RegisterPage() {
 
   return (
     <div className="container" style={{ maxWidth: "400px" }}>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <Card>
         <h1 className="home-title text-center">Регистрация</h1>
-
-        {error && (
-          <div style={{
-            color: "#dc3545",
-            marginBottom: "16px",
-            padding: "12px",
-            background: "#fff5f5",
-            borderRadius: "8px",
-          }}>
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
-            <label>Имя пользователя (username)</label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              required
-              placeholder="ivan_petrov"
+            <label>@username</label>
+            <input 
+              type="text" 
+              value={formData.username} 
+              onChange={(e) => setFormData({...formData, username: e.target.value})} 
+              required 
+              minLength={3} 
+              maxLength={30} 
+              pattern="[a-zA-Z0-9_]+" 
             />
           </div>
-
           <div className="form-group">
             <label>Полное имя</label>
-            <input
-              type="text"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              required
-              placeholder="Иван Петров"
+            <input 
+              type="text" 
+              value={formData.fullName} 
+              onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
+              required 
             />
           </div>
-
           <div className="form-group">
             <label>Пароль</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-              placeholder="Минимум 6 символов"
+            <input 
+              type="password" 
+              value={formData.password} 
+              onChange={(e) => setFormData({...formData, password: e.target.value})} 
+              required 
+              minLength={6} 
             />
           </div>
 
-          <div className="form-group">
-            <label>Подтверждение пароля</label>
-            <input
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              required
+          {/* ГАЛОЧКА СОГЛАСИЯ НА ПДн (БЕЗ required, с ручной проверкой) */}
+          <div className="pd-consent-wrapper">
+            <input 
+              type="checkbox" 
+              id="pd-consent-reg" 
+              checked={consentChecked}
+              onChange={(e) => {
+                setConsentChecked(e.target.checked);
+                if (e.target.checked) setConsentError(false);
+              }}
+              className="pd-consent-checkbox" 
             />
+            <label htmlFor="pd-consent-reg" className="pd-consent-label">
+              Я согласен на обработку{" "}
+              <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="pd-consent-link">
+                персональных данных
+              </a>{" "}
+              в соответствии с Политикой конфиденциальности
+            </label>
           </div>
+          
+          {/* Красный текст ошибки вместо браузерного тултипа */}
+          {consentError && (
+            <span className="pd-consent-error visible">
+              ⚠️ Необходимо согласие на обработку персональных данных
+            </span>
+          )}
 
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
             {loading ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>
-
-        <div style={{ marginTop: "16px", textAlign: "center" }}>
-          <p className="text-gray" style={{ fontSize: "14px" }}>
-            Уже есть аккаунт?{" "}
-            <a href="/auth/signin">Войти</a>
-          </p>
-        </div>
+        <p className="text-center mt-4" style={{ fontSize: "14px" }}>
+          Уже есть аккаунт? <a href="/auth/signin" style={{ color: "#0070f3" }}>Войти</a>
+        </p>
       </Card>
     </div>
   );
