@@ -1,3 +1,5 @@
+//src/app/matches/[id]/page.tsx
+
 import { prisma } from "@/lib/prisma";
 import Card from "@/components/ui/Card";
 
@@ -34,9 +36,9 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
             <p style={{ color: '#888' }}>Матч ещё не начался</p>
           )}
 
-          <p>📅 {new Date(match.date).toLocaleDateString()}</p>
-          <p>🏟️ {match.venue || "Стадион не указан"}</p>
-          <p>📊 Статус: {match.status}</p>
+          <p> {new Date(match.date).toLocaleDateString()}</p>
+          <p> {match.venue || "Стадион не указан"}</p>
+          <p> Статус: {match.status}</p>
         </div>
       </Card>
     </div>

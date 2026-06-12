@@ -1,17 +1,10 @@
+//src/app/teams/page.tsx
+
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
-
-type Team = {
-  id: string;
-  name: string;
-  logoUrl?: string;
-  playersCount: number;
-  captain?: {
-    fullName: string;
-  } | null;
-};
+import { Team } from "@/types/team";
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);

@@ -1,3 +1,5 @@
+//src/types/chat.ts
+
 export type ChatUser = {
   id: string;
   fullName: string;

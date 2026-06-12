@@ -1,4 +1,5 @@
 // src/components/Nav.tsx
+
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -37,7 +38,7 @@ export default async function Nav() {
               </form>
             </>
           ) : (
-            <Link href="/login" className="btn btn-primary" style={{ fontSize: "14px", padding: "6px 14px" }}>Войти</Link>
+            <Link href="/auth/signin" className="btn btn-primary" style={{ fontSize: "14px", padding: "6px 14px" }}>Войти</Link>
           )}
         </div>
       </div>

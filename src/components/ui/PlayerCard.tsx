@@ -1,20 +1,8 @@
+//src/components/ui/PlayerCard.tsx
+
 "use client";
 import Link from "next/link";
-
-type PlayerCardProps = {
-  player: {
-    id: string;
-    fullName: string;
-    position?: string;
-    username: string;
-    photos: string[];
-    isCaptain?: boolean;
-  };
-  canManage: boolean;
-  isAdmin: boolean;
-  onSetCaptain: (userId: string) => void;
-  onRemovePlayer: (userId: string) => void;
-};
+import { PlayerCardProps } from "@/types/PlayerCard";
 
 export default function PlayerCard({
   player,

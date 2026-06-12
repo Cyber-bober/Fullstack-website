@@ -1,10 +1,7 @@
-import React from "react";
+//src/components/ui/Card.tsx
 
-type CardProps = {
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-};
+import React from "react";
+import { CardProps } from "@/types/Card";
 
 export default function Card({ children, className, style }: CardProps) {
   return (

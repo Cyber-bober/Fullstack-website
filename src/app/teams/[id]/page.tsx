@@ -1,27 +1,12 @@
+//src/app/teams/[id]/page.tsx
+
 "use client";
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import TeamHeader from "@/components/ui/TeamHeader";
 import PlayerCard from "@/components/ui/PlayerCard";
 import AddPlayerForm from "@/components/ui/AddPlayerForm";
-
-type Player = {
-  id: string;
-  fullName: string;
-  position?: string;
-  username: string;
-  photos: string[];
-  isCaptain?: boolean;
-};
-
-type Team = {
-  id: string;
-  name: string;
-  logoUrl?: string;
-  photos: string[];
-  captainId?: string;
-  players: Player[];
-};
+import { Player, Team } from "@/types/teamid"
 
 export default function TeamPage({ params }: { params: { id: string } }) {
   const [team, setTeam] = useState<Team | null>(null);

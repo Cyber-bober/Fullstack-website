@@ -1,27 +1,11 @@
 // src/app/page.tsx
+
 "use client";
 import { useState, useEffect } from "react";
 import { NewsSection } from "@/components/ui/NewsSection";
 import { LiveSection } from "@/components/ui/LiveSection";
 import { CalendarSection } from "@/components/ui/CalendarSection";
-
-type NewsPost = {
-  id: string;
-  title: string;
-  content: string;
-  imageUrl?: string;
-  author: { fullName: string };
-  createdAt: string;
-};
-
-type Match = {
-  id: string;
-  date: string;
-  homeTeam: { name: string };
-  awayTeam: { name: string };
-  venue?: string;
-  status: string;
-};
+import { NewsPost, Match } from "@/types/page";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"news" | "live" | "calendar">("news");

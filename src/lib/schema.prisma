@@ -13,7 +13,7 @@ model User {
   passwordHash String
   fullName     String
   birthDate    DateTime?
-  city         String
+  city         String?
   role         String         @default("USER")
   position     String?
   photos       String[]

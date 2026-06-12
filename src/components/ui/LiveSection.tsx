@@ -1,27 +1,8 @@
 // src/components/ui/LiveSection.tsx
+
 import { useState } from "react";
 import Card from "@/components/ui/Card";
-
-type Match = {
-  id: string;
-  date: string;
-  homeTeam: { name: string };
-  awayTeam: { name: string };
-  venue?: string;
-  status: string;
-};
-
-type MatchEvent = {
-  id: string;
-  minute?: number;
-  text: string;
-  createdAt: string;
-};
-
-type Props = {
-  matches: Match[];
-  userRole: string | null;
-};
+import { Match, MatchEvent, Props } from "@/types/LiveSection";
 
 export function LiveSection({ matches, userRole }: Props) {
   const [selectedMatchId, setSelectedMatchId] = useState<string>("");

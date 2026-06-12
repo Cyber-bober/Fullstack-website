@@ -1,24 +1,8 @@
 // src/components/ui/TeamSection.tsx
+
 import Link from "next/link";
+import { Player, Team, Props } from "@/types/TeamSection";
 
-type Player = {
-  id: string;
-  username: string;
-  fullName: string;
-  position?: string;
-  photos: string[];
-};
-
-type Team = {
-  id: string;
-  name: string;
-  captainId?: string;
-  players: Player[];
-};
-
-type Props = {
-  teams: Team[];
-};
 
 export function TeamSection({ teams }: Props) {
   if (teams.length === 0) {

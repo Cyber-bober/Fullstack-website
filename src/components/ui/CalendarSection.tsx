@@ -1,18 +1,7 @@
 // src/components/ui/CalendarSection.tsx
+
 import { useState } from "react";
-
-type Match = {
-  id: string;
-  date: string;
-  homeTeam: { name: string };
-  awayTeam: { name: string };
-  venue?: string;
-  status: string;
-};
-
-type Props = {
-  matches: Match[];
-};
+import { Match, Props } from "@/types/CalendarSection";
 
 export function CalendarSection({ matches }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date());

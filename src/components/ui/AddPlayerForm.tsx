@@ -1,18 +1,8 @@
+//src/app/components/ui/AddPlayerForm.tsx
+
 "use client";
 import { useState } from "react";
-
-type SearchUser = {
-  id: string;
-  fullName: string;
-  username: string;
-  photos: string[];
-  teamId?: string | null;
-};
-
-type AddPlayerFormProps = {
-  onAddPlayer: (userId: string) => void;
-  addingPlayer: boolean;
-};
+import { SearchUser, AddPlayerFormProps } from "@/types/addPlayer";
 
 export default function AddPlayerForm({ onAddPlayer, addingPlayer }: AddPlayerFormProps) {
   const [searchQuery, setSearchQuery] = useState("");

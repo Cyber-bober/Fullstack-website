@@ -1,15 +1,9 @@
+//src/components/ui/ImageModal.tsx
+
 "use client";
 import { useEffect, useCallback } from "react";
+import { ImageModalProps } from "@/types/ImageModal";
 
-type ImageModalProps = {
-  src: string;
-  alt?: string;
-  onClose: () => void;
-  onPrev?: () => void;
-  onNext?: () => void;
-  hasPrev?: boolean;
-  hasNext?: boolean;
-};
 
 export default function ImageModal({
   src,

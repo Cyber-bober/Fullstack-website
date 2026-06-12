@@ -1,21 +1,9 @@
 // src/components/ui/NewsSection.tsx
+
 import { useState } from "react";
 import Card from "@/components/ui/Card";
+import { NewsPost, Props } from "@/types/LiveSection";
 
-type NewsPost = {
-  id: string;
-  title: string;
-  content: string;
-  imageUrl?: string;
-  author: { fullName: string };
-  createdAt: string;
-};
-
-type Props = {
-  news: NewsPost[];
-  setNews: React.Dispatch<React.SetStateAction<NewsPost[]>>;
-  userRole: string | null;
-};
 
 export function NewsSection({ news, setNews, userRole }: Props) {
   const [showForm, setShowForm] = useState(false);

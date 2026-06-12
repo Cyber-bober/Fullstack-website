@@ -1,3 +1,5 @@
+// src/app/profile/ProfileClient.tsx
+
 "use client";
 import { useState } from "react";
 import Card from "@/components/ui/Card";
@@ -13,6 +15,31 @@ export default function ProfileClient({
 }) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const photos = user.photos || [];
+
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const pass = formData.get("password") as string;
+    
+    try {
+      const res = await fetch("/api/profile/set-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pass }),
+      });
+      
+      if (res.ok) {
+        alert("Пароль установлен! Теперь вы можете входить по логину и паролю.");
+        window.location.reload();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Ошибка установки пароля");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Ошибка сети");
+    }
+  };
 
   return (
     <div className="profile-container">
@@ -63,6 +90,31 @@ export default function ProfileClient({
 
       {user.contacts && <Card><strong>Контакты:</strong> {user.contacts}</Card>}
       {user.stats && <Card><strong>Статистика:</strong> {user.stats}</Card>}
+
+      {/* Блок установки пароля для OAuth-пользователей */}
+      {isOwnProfile && !user.passwordHash && (
+        <Card>
+          <h3 className="section-title">Защита аккаунта</h3>
+          <p className="text-gray" style={{ marginBottom: "1rem" }}>
+            Установите пароль, чтобы входить не только через Google
+          </p>
+          <form onSubmit={handleSetPassword}>
+            <div className="form-group">
+              <label>Придумайте пароль</label>
+              <input 
+                name="password" 
+                type="password" 
+                required 
+                minLength={6} 
+                placeholder="Минимум 6 символов"
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Установить пароль
+            </button>
+          </form>
+        </Card>
+      )}
 
       {selectedImage && (
         <ImageModal

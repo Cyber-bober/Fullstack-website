@@ -1,3 +1,5 @@
+//src/app/chat/page.tsx
+
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Card from "@/components/ui/Card";
