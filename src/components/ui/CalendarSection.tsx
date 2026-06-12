@@ -1,5 +1,6 @@
 // src/components/ui/CalendarSection.tsx
 
+"use client";
 import { useState } from "react";
 import { Match, Props } from "@/types/CalendarSection";
 
@@ -10,7 +11,11 @@ export function CalendarSection({ matches }: Props) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const firstDay = new Date(year, month, 1).getDay();
+  // Получаем день недели первого числа (0 - Вс, 1 - Пн...)
+  // Корректируем, чтобы неделя начиналась с Понедельника
+  let firstDay = new Date(year, month, 1).getDay();
+  firstDay = firstDay === 0 ? 6 : firstDay - 1; 
+
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const monthNames = [
@@ -31,9 +36,13 @@ export function CalendarSection({ matches }: Props) {
   };
 
   const days = [];
+  
+  // Пустые ячейки до начала месяца
   for (let i = 0; i < firstDay; i++) {
     days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
   }
+
+  // Дни месяца
   for (let day = 1; day <= daysInMonth; day++) {
     const dayMatches = getMatchesForDay(day);
     days.push(
@@ -43,23 +52,32 @@ export function CalendarSection({ matches }: Props) {
           <div
             key={m.id}
             className="match-event"
+            title={`${m.homeTeam.name} vs ${m.awayTeam.name}`} // Всплывающая подсказка
             onClick={() => setSelectedMatch(m)}
           >
-            {m.homeTeam.name} vs {m.awayTeam.name}
+            {/* Сокращенное отображение для верстки */}
+            {m.homeTeam.name.split(' ').pop()} vs {m.awayTeam.name.split(' ').pop()}
           </div>
         ))}
       </div>
     );
   }
 
+  // ДОЗАПОЛНЕНИЕ: Добавляем пустые ячейки в конец, чтобы сетка была прямоугольной
+  const totalCells = firstDay + daysInMonth;
+  const remainder = totalCells % 7;
+  if (remainder !== 0) {
+    for (let i = 0; i < 7 - remainder; i++) {
+      days.push(<div key={`end-empty-${i}`} className="calendar-day empty"></div>);
+    }
+  }
+
   return (
     <div>
-      <h2 className="section-title">Календарь событий</h2>
-
       <div className="calendar-header">
-        <button className="btn" onClick={prevMonth}>←</button>
-        <h3>{monthNames[month]} {year}</h3>
-        <button className="btn" onClick={nextMonth}>→</button>
+        <button className="btn" onClick={prevMonth}>← Назад</button>
+        <h3 className="calendar-month-title">{monthNames[month]} {year}</h3>
+        <button className="btn" onClick={nextMonth}>Вперед →</button>
       </div>
 
       <div className="calendar-grid">

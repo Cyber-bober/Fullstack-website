@@ -1568,3 +1568,55 @@ input[type="date"] {
 .btn-add-news {
   white-space: nowrap; /* Чтобы текст не переносился */
 }
+
+/* ============================================
+   КАЛЕНДАРЬ
+   ============================================ */
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* Строго 7 колонок */
+  border: 1px solid #e5e7eb;
+  background: white;
+}
+
+.calendar-cell {
+  min-height: 120px; /* Фиксированная минимальная высота */
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px;
+  position: relative;
+  overflow: hidden; /* Скрываем вылезающий контент */
+}
+
+/* Убираем границы у последних элементов в строке/столбце */
+.calendar-cell:nth-child(7n) { border-right: none; }
+
+.calendar-day-number {
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+/* Стиль для события матча внутри ячейки */
+.match-event {
+  background-color: #3b82f6;
+  color: white;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  cursor: pointer;
+  
+  /* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ДЛЯ ДЛИННЫХ НАЗВАНИЙ: */
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis; /* Добавляет "..." если текст не влезает */
+  max-width: 100%;
+  display: block;
+}
+
+.match-event:hover {
+  background-color: #2563eb;
+}
