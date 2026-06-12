@@ -12,9 +12,7 @@ export default async function Nav() {
     <nav className="nav">
       <div className="nav-inner">
         <div className="nav-left">
-          <Link href="/" className="nav-logo">
-            Football Hub
-          </Link>
+          <Link href="/" className="nav-logo">Football Hub</Link>
           <div className="nav-links">
             <Link href="/teams" className="nav-link">Команды</Link>
             <Link href="/chat" className="nav-link">Чат</Link>
@@ -25,12 +23,16 @@ export default async function Nav() {
           {session?.user ? (
             <>
               <Link href="/profile" className="nav-link">Профиль</Link>
+              
+              {/* Настройки доступны всем пользователям */}
+              <Link href="/settings" className="nav-link" title="Настройки аккаунта">
+                ⚙️
+              </Link>
+              
               {userRole === "ADMIN" && (
-                <Link href="/admin" className="nav-link">Админка</Link>
+                <Link href="/admin" className="nav-link" style={{ color: "#ef4444" }}>Админка</Link>
               )}
-              {(userRole === "ADMIN" || userRole === "EDITOR") && (
-                <Link href="/settings" className="nav-link">Настройки</Link>
-              )}
+              
               <form action="/api/auth/signout" method="post" style={{ margin: 0 }}>
                 <button type="submit" className="btn btn-primary" style={{ fontSize: "14px", padding: "6px 14px" }}>
                   Выйти

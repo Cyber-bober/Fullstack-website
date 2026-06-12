@@ -50,19 +50,14 @@ export default function ProfilePage() {
         </div>
         
         <h2 style={{ margin: "0 0 4px", fontSize: "24px" }}>{user?.fullName || "Пользователь"}</h2>
-        {/* ИСПРАВЛЕНИЕ: Корректное отображение юзернейма */}
         <p className="text-gray" style={{ marginBottom: "20px", fontSize: "16px" }}>
           @{user?.username || "unknown"}
         </p>
         
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <Link href="/profile/edit" className="btn btn-primary">
-            Редактировать
-          </Link>
-          <Link href="/settings" className="btn" style={{ background: "#f3f4f6", color: "#374151" }}>
-            ⚙️ Настройки
-          </Link>
-        </div>
+        {/* Только кнопка редактирования, настройки теперь в хедере */}
+        <Link href="/profile/edit" className="btn btn-primary">
+          Редактировать профиль
+        </Link>
       </Card>
 
       {/* Сетка с информацией */}

@@ -1,227 +1,193 @@
-// src/app/admin/page.tsx
+// src/app/page.tsx
 
 "use client";
-import { useState, useEffect } from "react";
-import Card from "@/components/ui/Card";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { NewsSection } from "@/components/ui/NewsSection";
+import { LiveSection } from "@/components/ui/LiveSection";
+import { CalendarSection } from "@/components/ui/CalendarSection";
+import Pagination from "@/components/ui/Pagination";
 import Toast from "@/components/ui/Toast";
+import { NewsPost, Match } from "@/types/page";
 
-type User = { id: string; username: string; fullName: string; role: string; createdAt: string };
-
-export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"roles" | "users">("users");
-  const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
+export default function HomePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   
-  // Живой поиск для ролей
-  const [liveSearchQuery, setLiveSearchQuery] = useState("");
-  const [liveSearchResults, setLiveSearchResults] = useState<User[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [foundUser, setFoundUser] = useState<User | null>(null);
-  const [updatingRole, setUpdatingRole] = useState(false);
+  const [activeTab, setActiveTab] = useState<"news" | "live" | "calendar">("news");
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  const [newsData, setNewsData] = useState<{ data: NewsPost[]; meta: any } | null>(null);
+  const [liveNewsQuery, setLiveNewsQuery] = useState(searchParams.get("q") || "");
+  const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
 
-  // Поиск для таблицы пользователей
-  const [userTableSearch, setUserTableSearch] = useState("");
-
-  const [users, setUsers] = useState<User[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [resettingId, setResettingId] = useState<string | null>(null);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
-  const [tempPasswordVisible, setTempPasswordVisible] = useState(false);
+  // Состояния для модального окна матча
+  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [matchForm, setMatchForm] = useState({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
+  const [creatingMatch, setCreatingMatch] = useState(false);
 
   useEffect(() => {
-    loadUsers();
+    const loadData = async () => {
+      try {
+        const [sessionRes, matchesRes, teamsRes] = await Promise.all([
+          fetch("/api/auth/session"),
+          fetch("/api/matches"),
+          fetch("/api/teams?limit=100")
+        ]);
+        
+        if (sessionRes.ok) { 
+          const s = await sessionRes.json(); 
+          setUserRole(s?.user?.role || null); 
+          setCurrentUserId(s?.user?.id || null); 
+        }
+        if (matchesRes.ok) { 
+          const d = await matchesRes.json(); 
+          setMatches(Array.isArray(d) ? d : []); 
+        }
+        if (teamsRes.ok) {
+          const t = await teamsRes.json();
+          setTeams(t.data || []);
+        }
+      } catch (err) { console.error("Ошибка загрузки:", err); }
+    };
+    loadData();
   }, []);
 
-  // Debounce для поиска ролей
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (liveSearchQuery.trim().length >= 2) {
-        setSearchLoading(true);
-        try {
-          const res = await fetch(`/api/users/search?q=${encodeURIComponent(liveSearchQuery)}`);
-          if (res.ok) setLiveSearchResults(await res.json());
-        } catch {} finally { setSearchLoading(false); }
-      } else { setLiveSearchResults([]); }
-    }, 300);
+    if (activeTab !== "news") return;
+    const page = searchParams.get("page") || "1";
+    const q = searchParams.get("q") || "";
+    setLiveNewsQuery(q);
+
+    fetch(`/api/news?page=${page}&limit=10&q=${encodeURIComponent(q)}`)
+      .then(res => { if (!res.ok) throw new Error("Ошибка сервера"); return res.json(); })
+      .then(data => setNewsData(data))
+      .catch(() => setToast({ msg: "Не удалось загрузить новости", type: "error" }));
+  }, [activeTab, searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentQ = searchParams.get("q") || "";
+      if (liveNewsQuery !== currentQ) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("q", liveNewsQuery);
+        params.set("page", "1");
+        router.push(`?${params.toString()}`);
+      }
+    }, 500);
     return () => clearTimeout(timer);
-  }, [liveSearchQuery]);
+  }, [liveNewsQuery]);
 
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && liveSearchResults.length > 0) {
-      setFoundUser(liveSearchResults[0]);
-      setLiveSearchResults([]);
-      setLiveSearchQuery("");
-    }
-  };
+  const handleUpdateNews = useCallback((newPosts: NewsPost[]) => {
+    setNewsData(prev => prev ? { ...prev, data: newPosts } : null);
+  }, []);
 
-  const copyToClipboard = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setToast({ msg: "Пароль скопирован!", type: "success" });
-  };
-
-  const loadUsers = async () => {
-    setLoadingUsers(true);
+  const handleCreateMatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingMatch(true);
     try {
-      const res = await fetch("/api/admin/users");
-      if (res.ok) setUsers(await res.json());
-    } catch (err) { console.error(err); } finally { setLoadingUsers(false); }
-  };
-
-  const handleUpdateRole = async (newRole: string) => {
-    if (!foundUser) return;
-    setUpdatingRole(true);
-    try {
-      const res = await fetch(`/api/users/${foundUser.id}/role`, { 
-        method: "PATCH", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ role: newRole }) 
+      const res = await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(matchForm),
       });
       if (res.ok) {
-        setToast({ msg: `Роль изменена на ${newRole}`, type: "success" });
-        setFoundUser({ ...foundUser, role: newRole }); 
-        loadUsers();
-      } else { setToast({ msg: "Не удалось изменить роль", type: "error" }); }
-    } catch { setToast({ msg: "Ошибка сети", type: "error" }); } finally { setUpdatingRole(false); }
-  };
-
-  const handleResetPassword = async (userId: string) => {
-    if (!confirm("Сбросить пароль?")) return;
-    setResettingId(userId); setTempPassword(null); setTempPasswordVisible(false);
-    try {
-      const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: "POST" });
-      const data = await res.json();
-      if (res.ok) { setTempPassword(data.tempPassword); setToast({ msg: "Пароль сброшен!", type: "success" }); }
-      else { setToast({ msg: data.error || "Ошибка сброса", type: "error" }); }
-    } catch { setToast({ msg: "Ошибка сети", type: "error" }); } finally { setResettingId(null); }
-  };
-
-  const getRoleClass = (role: string) => {
-    switch(role) {
-      case "ADMIN": return "role-badge role-admin";
-      case "EDITOR": return "role-badge role-editor";
-      default: return "role-badge role-user";
+        setToast({ msg: "Матч успешно создан!", type: "success" });
+        setShowMatchModal(false);
+        const mRes = await fetch("/api/matches");
+        if (mRes.ok) setMatches(await mRes.json());
+        setMatchForm({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
+      } else {
+        const err = await res.json();
+        setToast({ msg: err.error || "Ошибка создания", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Ошибка сети", type: "error" });
+    } finally {
+      setCreatingMatch(false);
     }
   };
 
-  // Фильтрация пользователей для таблицы
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(userTableSearch.toLowerCase()) || 
-    u.fullName.toLowerCase().includes(userTableSearch.toLowerCase())
-  );
+  const canManageMatches = userRole === "ADMIN" || userRole === "EDITOR";
 
   return (
     <div className="container">
-      {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-      <h1 className="home-title">Панель администратора</h1>
+      {toast && <div className="toast-container"><Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} /></div>}
       
-      <div className="tabs">
-        <button className={`tab ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>Роли</button>
-        <button className={`tab ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>Пользователи</button>
+      {/* Верхняя панель управления */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1 className="home-title" style={{ margin: 0 }}>Football Hub</h1>
+        {canManageMatches && (
+          <button className="btn btn-primary" onClick={() => setShowMatchModal(true)}>
+            + Добавить матч
+          </button>
+        )}
       </div>
 
-      {activeTab === "roles" && (
-        <Card>
-          <h2 className="section-title">Поиск и назначение ролей</h2>
-          <div className="form-group" style={{ position: "relative" }}>
-            <label>Поиск пользователя</label>
-            <input type="text" placeholder="Начните вводить имя или логин..." value={liveSearchQuery} onChange={e => setLiveSearchQuery(e.target.value)} onKeyDown={handleSearchKeyDown} className="search-input" />
-            {searchLoading && <small className="text-gray">Поиск...</small>}
-            
-            {liveSearchResults.length > 0 && (
-              <ul className="search-dropdown">
-                {liveSearchResults.map(u => (
-                  <li key={u.id} className="search-dropdown-item" onClick={() => { setFoundUser(u); setLiveSearchResults([]); setLiveSearchQuery(""); }}>
-                    <strong>{u.fullName}</strong> <span className="text-gray">@{u.username}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+      <div className="tabs">
+        <button className={`tab ${activeTab === "news" ? "active" : ""}`} onClick={() => setActiveTab("news")}>Новости</button>
+        <button className={`tab ${activeTab === "live" ? "active" : ""}`} onClick={() => setActiveTab("live")}>Текстовая трансляция</button>
+        <button className={`tab ${activeTab === "calendar" ? "active" : ""}`} onClick={() => setActiveTab("calendar")}>Календарь событий</button>
+      </div>
+
+      {activeTab === "news" && (
+        <>
+          <div className="search-bar">
+            <input type="text" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} className="search-input" />
           </div>
-          
-          {foundUser && (
-            <div style={{ padding: "16px", background: "#f9fafb", borderRadius: "8px", marginTop: "16px" }}>
-              <p><strong>{foundUser.fullName}</strong> (@{foundUser.username})</p>
-              <p>Текущая роль: {foundUser.role}</p>
-              <div className="flex gap-2 mt-3">
-                <button onClick={() => handleUpdateRole("EDITOR")} disabled={updatingRole || foundUser.role === "EDITOR"} className="btn" style={{ background: "#3b82f6", color: "white" }}>Сделать редактором</button>
-                <button onClick={() => handleUpdateRole("USER")} disabled={updatingRole || foundUser.role === "USER"} className="btn" style={{ background: "#6b7280", color: "white" }}>Снять права</button>
-              </div>
-            </div>
-          )}
-        </Card>
+          <NewsSection 
+            news={newsData?.data || []} 
+            setNews={handleUpdateNews} 
+            userRole={userRole} 
+            currentUserId={currentUserId ?? undefined} 
+          />
+          {newsData?.meta && <Pagination currentPage={newsData.meta.page} totalPages={newsData.meta.totalPages} />}
+        </>
       )}
+      
+      {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} />}
+      {activeTab === "calendar" && <CalendarSection matches={matches} />}
 
-      {activeTab === "users" && (
-        <Card>
-          <h2 className="section-title">Управление пользователями</h2>
-          
-          {/* ПОИСК ПО ТАБЛИЦЕ */}
-          <div className="form-group" style={{ marginBottom: "20px" }}>
-            <label>Поиск в списке</label>
-            <input 
-              type="text" 
-              placeholder="Введите имя или логин..." 
-              value={userTableSearch} 
-              onChange={e => setUserTableSearch(e.target.value)} 
-              className="search-input" 
-            />
-          </div>
-
-          {tempPassword && (
-            <div className="temp-password-box">
-              <p style={{ margin: 0, color: "#065f46", fontWeight: "bold" }}>Временный пароль:</p>
-              <div className="temp-password-code">
-                <code className="temp-password-value">
-                  {tempPasswordVisible ? tempPassword : "••••••••••"}
-                </code>
-                <button onClick={() => setTempPasswordVisible(!tempPasswordVisible)} className="btn" title="Показать/скрыть">{tempPasswordVisible ? "🙈" : "👁️"}</button>
-                <button onClick={() => copyToClipboard(tempPassword)} className="btn" title="Копировать">📋</button>
+      {/* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МАТЧА */}
+      {showMatchModal && (
+        <div className="modal-overlay" onClick={() => setShowMatchModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: "500px" }}>
+            <h3 className="section-title">Новый матч</h3>
+            <form onSubmit={handleCreateMatch}>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="form-group">
+                  <label>Хозяева</label>
+                  <select value={matchForm.homeTeamId} onChange={e => setMatchForm({...matchForm, homeTeamId: e.target.value})} required>
+                    <option value="">Выберите...</option>
+                    {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Гости</label>
+                  <select value={matchForm.awayTeamId} onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} required>
+                    <option value="">Выберите...</option>
+                    {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
               </div>
-              <p className="temp-password-hint">Сообщите этот пароль пользователю.</p>
-              <button onClick={() => { setTempPassword(null); setTempPasswordVisible(false); }} className="btn" style={{ marginTop: "8px", fontSize: "12px" }}>Закрыть</button>
-            </div>
-          )}
-
-          {loadingUsers ? <p>Загрузка...</p> : (
-            <div className="admin-table-wrapper">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Логин</th>
-                    <th>Имя</th>
-                    <th>Роль</th>
-                    <th>Действия</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map(user => (
-                      <tr key={user.id}>
-                        <td>{user.username}</td>
-                        <td>{user.fullName}</td>
-                        <td><span className={getRoleClass(user.role)}>{user.role}</span></td>
-                        <td>
-                          <button 
-                            onClick={() => handleResetPassword(user.id)} 
-                            disabled={resettingId === user.id} 
-                            className="btn btn-reset-pass"
-                          >
-                            {resettingId === user.id ? "Сброс..." : "Сбросить пароль"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} style={{ textAlign: "center", padding: "20px", color: "#6b7280" }}>
-                        Пользователи не найдены
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
+              <div className="form-group mb-4">
+                <label>Дата и время</label>
+                <input type="datetime-local" value={matchForm.date} onChange={e => setMatchForm({...matchForm, date: e.target.value})} required />
+              </div>
+              <div className="form-group mb-4">
+                <label>Стадион</label>
+                <input type="text" value={matchForm.venue} onChange={e => setMatchForm({...matchForm, venue: e.target.value})} placeholder="Название стадиона" />
+              </div>
+              <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                <button type="button" className="btn" onClick={() => setShowMatchModal(false)}>Отмена</button>
+                <button type="submit" className="btn btn-primary" disabled={creatingMatch}>{creatingMatch ? "Создание..." : "Создать матч"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
