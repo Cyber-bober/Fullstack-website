@@ -1620,3 +1620,199 @@ input[type="date"] {
 .match-event:hover {
   background-color: #2563eb;
 }
+
+/* ============================================
+   ПОЛЕ ПАРОЛЯ С ГЛАЗИКОМ
+   ============================================ */
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 40px !important; /* Место под иконку */
+  width: 100%;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #9ca3af; /* Серый цвет иконки */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.password-toggle-icon:hover {
+  color: #6b7280;
+}
+
+/* ============================================
+   СТРАНИЦА ВХОДА
+   ============================================ */
+
+.signin-container {
+  max-width: 400px;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fff5f5;
+  border-radius: 8px;
+}
+
+/* ============================================
+   НОВОСТИ И УПРАВЛЕНИЕ
+   ============================================ */
+
+.news-card {
+  margin-bottom: 20px;
+  position: relative; /* Для позиционирования кнопок управления */
+}
+
+.news-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.btn-icon {
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  line-height: 1;
+}
+
+.btn-delete {
+  color: #ef4444 !important;
+}
+
+.file-preview-container {
+  margin-top: 10px;
+}
+
+.file-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.form-error {
+  color: #ef4444;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #fff5f5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   АДМИНКА: ПОИСК И ТАБЛИЦА
+   ============================================ */
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 10;
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+}
+
+.search-dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s;
+}
+
+.search-dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th {
+  padding: 12px 8px;
+  border-bottom: 2px solid #e5e7eb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.role-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.role-admin { background: #fee2e2; color: #dc2626; }
+.role-editor { background: #dbeafe; color: #2563eb; }
+.role-user { background: #f3f4f6; color: #4b5563; }
+
+.btn-reset-pass {
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+  background: #f59e0b !important;
+  color: white !important;
+}
+
+.temp-password-box {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #ecfdf5;
+  border: 1px solid #10b981;
+  border-radius: 8px;
+}
+
+.temp-password-code {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.temp-password-value {
+  font-size: 20px;
+  font-family: monospace;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  flex: 1;
+  color: #047857;
+}
+
+.temp-password-hint {
+  font-size: 12px;
+  color: #065f46;
+}

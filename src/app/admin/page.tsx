@@ -5,217 +5,190 @@ import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Toast from "@/components/ui/Toast";
 
+type User = { id: string; username: string; fullName: string; role: string; createdAt: string };
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"matches" | "roles">("matches");
+  const [activeTab, setActiveTab] = useState<"roles" | "users">("users");
   const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
   
-  // Состояния для матчей
-  const [homeTeams, setHomeTeams] = useState<any[]>([]);
-  const [awayTeams, setAwayTeams] = useState<any[]>([]);
-  const [matchData, setMatchData] = useState({ 
-    homeTeamId: "", 
-    awayTeamId: "", 
-    date: "", 
-    venue: "" 
-  });
-  const [creating, setCreating] = useState(false);
-
-  // Состояния для ролей
-  const [searchUser, setSearchUser] = useState("");
-  const [foundUser, setFoundUser] = useState<any>(null);
+  // Живой поиск
+  const [liveSearchQuery, setLiveSearchQuery] = useState("");
+  const [liveSearchResults, setLiveSearchResults] = useState<User[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [foundUser, setFoundUser] = useState<User | null>(null);
   const [updatingRole, setUpdatingRole] = useState(false);
 
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [resettingId, setResettingId] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [tempPasswordVisible, setTempPasswordVisible] = useState(false);
+
   useEffect(() => {
-    fetch("/api/teams")
-      .then(res => res.json())
-      .then(data => {
-        setHomeTeams(data.data || []);
-        setAwayTeams(data.data || []);
-      });
+    loadUsers();
   }, []);
 
-  const handleCreateMatch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!matchData.homeTeamId || !matchData.awayTeamId || !matchData.date) {
-      setToast({ msg: "Заполните все обязательные поля", type: "error" });
-      return;
-    }
-    setCreating(true);
-    try {
-      const res = await fetch("/api/matches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(matchData),
-      });
-      if (res.ok) {
-        setToast({ msg: "Матч успешно добавлен в календарь!", type: "success" });
-        setMatchData({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
-      } else {
-        const err = await res.json();
-        setToast({ msg: err.error || "Ошибка создания", type: "error" });
-      }
-    } catch {
-      setToast({ msg: "Ошибка сети", type: "error" });
-    } finally {
-      setCreating(false);
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (liveSearchQuery.trim().length >= 2) {
+        setSearchLoading(true);
+        try {
+          const res = await fetch(`/api/users/search?q=${encodeURIComponent(liveSearchQuery)}`);
+          if (res.ok) setLiveSearchResults(await res.json());
+        } catch {} finally { setSearchLoading(false); }
+      } else { setLiveSearchResults([]); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [liveSearchQuery]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && liveSearchResults.length > 0) {
+      setFoundUser(liveSearchResults[0]);
+      setLiveSearchResults([]);
+      setLiveSearchQuery("");
     }
   };
 
-  const handleSearchUser = async () => {
-    if (!searchUser.trim()) return;
+  const copyToClipboard = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setToast({ msg: "Пароль скопирован!", type: "success" });
+  };
+
+  const loadUsers = async () => {
+    setLoadingUsers(true);
     try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(searchUser)}`);
-      if (res.ok) {
-        const users = await res.json();
-        setFoundUser(users[0] || null);
-        // ИСПРАВЛЕНИЕ: тип "info" заменен на "error"
-        if (!users.length) setToast({ msg: "Пользователь не найден", type: "error" });
-      }
-    } catch {
-      setToast({ msg: "Ошибка поиска", type: "error" });
-    }
+      const res = await fetch("/api/admin/users");
+      if (res.ok) setUsers(await res.json());
+    } catch (err) { console.error(err); } finally { setLoadingUsers(false); }
   };
 
   const handleUpdateRole = async (newRole: string) => {
     if (!foundUser) return;
     setUpdatingRole(true);
     try {
-      const res = await fetch(`/api/users/${foundUser.id}/role`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: newRole }),
+      const res = await fetch(`/api/users/${foundUser.id}/role`, { 
+        method: "PATCH", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ role: newRole }) 
       });
       if (res.ok) {
         setToast({ msg: `Роль изменена на ${newRole}`, type: "success" });
-        setFoundUser({ ...foundUser, role: newRole });
-      } else {
-        setToast({ msg: "Не удалось изменить роль", type: "error" });
-      }
-    } catch {
-      setToast({ msg: "Ошибка сети", type: "error" });
-    } finally {
-      setUpdatingRole(false);
+        setFoundUser({ ...foundUser, role: newRole }); 
+        loadUsers();
+      } else { setToast({ msg: "Не удалось изменить роль", type: "error" }); }
+    } catch { setToast({ msg: "Ошибка сети", type: "error" }); } finally { setUpdatingRole(false); }
+  };
+
+  const handleResetPassword = async (userId: string) => {
+    if (!confirm("Сбросить пароль?")) return;
+    setResettingId(userId); setTempPassword(null); setTempPasswordVisible(false);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: "POST" });
+      const data = await res.json();
+      if (res.ok) { setTempPassword(data.tempPassword); setToast({ msg: "Пароль сброшен!", type: "success" }); }
+      else { setToast({ msg: data.error || "Ошибка сброса", type: "error" }); }
+    } catch { setToast({ msg: "Ошибка сети", type: "error" }); } finally { setResettingId(null); }
+  };
+
+  const getRoleClass = (role: string) => {
+    switch(role) {
+      case "ADMIN": return "role-badge role-admin";
+      case "EDITOR": return "role-badge role-editor";
+      default: return "role-badge role-user";
     }
   };
 
   return (
     <div className="container">
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-      
       <h1 className="home-title">Панель администратора</h1>
       
       <div className="tabs">
-        <button 
-          className={`tab ${activeTab === "matches" ? "active" : ""}`} 
-          onClick={() => setActiveTab("matches")}
-        >
-          Управление матчами
-        </button>
-        <button 
-          className={`tab ${activeTab === "roles" ? "active" : ""}`} 
-          onClick={() => setActiveTab("roles")}
-        >
-          Назначение ролей
-        </button>
+        <button className={`tab ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>Роли</button>
+        <button className={`tab ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>Пользователи</button>
       </div>
-
-      {activeTab === "matches" && (
-        <Card>
-          <h2 className="section-title">Добавить новый матч</h2>
-          <form onSubmit={handleCreateMatch} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label>Хозяева</label>
-                <select 
-                  value={matchData.homeTeamId} 
-                  onChange={e => setMatchData({...matchData, homeTeamId: e.target.value})}
-                  required
-                >
-                  <option value="">Выберите команду</option>
-                  {homeTeams.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Гости</label>
-                <select 
-                  value={matchData.awayTeamId} 
-                  onChange={e => setMatchData({...matchData, awayTeamId: e.target.value})}
-                  required
-                >
-                  <option value="">Выберите команду</option>
-                  {awayTeams.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label>Дата и время</label>
-              <input 
-                type="datetime-local" 
-                value={matchData.date}
-                onChange={e => setMatchData({...matchData, date: e.target.value})}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Место проведения (необязательно)</label>
-              <input 
-                type="text" 
-                value={matchData.venue}
-                onChange={e => setMatchData({...matchData, venue: e.target.value})}
-                placeholder="Название стадиона"
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" disabled={creating}>
-              {creating ? "Создание..." : "Добавить в календарь"}
-            </button>
-          </form>
-        </Card>
-      )}
 
       {activeTab === "roles" && (
         <Card>
           <h2 className="section-title">Поиск и назначение ролей</h2>
-          <div className="flex gap-2 mb-4">
-            <input 
-              type="text" 
-              placeholder="Введите username или имя..." 
-              value={searchUser}
-              onChange={e => setSearchUser(e.target.value)}
-              className="search-input"
-            />
-            <button onClick={handleSearchUser} className="btn btn-primary">Найти</button>
+          <div className="form-group" style={{ position: "relative" }}>
+            <label>Поиск пользователя</label>
+            <input type="text" placeholder="Начните вводить имя или логин..." value={liveSearchQuery} onChange={e => setLiveSearchQuery(e.target.value)} onKeyDown={handleSearchKeyDown} className="search-input" />
+            {searchLoading && <small className="text-gray">Поиск...</small>}
+            
+            {liveSearchResults.length > 0 && (
+              <ul className="search-dropdown">
+                {liveSearchResults.map(u => (
+                  <li key={u.id} className="search-dropdown-item" onClick={() => { setFoundUser(u); setLiveSearchResults([]); setLiveSearchQuery(""); }}>
+                    <strong>{u.fullName}</strong> <span className="text-gray">@{u.username}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-
+          
           {foundUser && (
-            <div style={{ padding: "16px", background: "#f9fafb", borderRadius: "8px" }}>
+            <div style={{ padding: "16px", background: "#f9fafb", borderRadius: "8px", marginTop: "16px" }}>
               <p><strong>{foundUser.fullName}</strong> (@{foundUser.username})</p>
-              <p>Текущая роль: <span style={{ color: foundUser.role === "ADMIN" ? "#ef4444" : "#3b82f6" }}>{foundUser.role}</span></p>
-              
+              <p>Текущая роль: {foundUser.role}</p>
               <div className="flex gap-2 mt-3">
-                <button 
-                  onClick={() => handleUpdateRole("EDITOR")} 
-                  disabled={updatingRole || foundUser.role === "EDITOR"}
-                  className="btn"
-                  style={{ background: "#3b82f6", color: "white" }}
-                >
-                  Сделать редактором
-                </button>
-                <button 
-                  onClick={() => handleUpdateRole("USER")} 
-                  disabled={updatingRole || foundUser.role === "USER"}
-                  className="btn"
-                  style={{ background: "#6b7280", color: "white" }}
-                >
-                  Снять права
-                </button>
+                <button onClick={() => handleUpdateRole("EDITOR")} disabled={updatingRole || foundUser.role === "EDITOR"} className="btn" style={{ background: "#3b82f6", color: "white" }}>Сделать редактором</button>
+                <button onClick={() => handleUpdateRole("USER")} disabled={updatingRole || foundUser.role === "USER"} className="btn" style={{ background: "#6b7280", color: "white" }}>Снять права</button>
               </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {activeTab === "users" && (
+        <Card>
+          <h2 className="section-title">Управление пользователями</h2>
+          
+          {tempPassword && (
+            <div className="temp-password-box">
+              <p style={{ margin: 0, color: "#065f46", fontWeight: "bold" }}>Временный пароль:</p>
+              <div className="temp-password-code">
+                <code className="temp-password-value">
+                  {tempPasswordVisible ? tempPassword : "••••••••••"}
+                </code>
+                <button onClick={() => setTempPasswordVisible(!tempPasswordVisible)} className="btn" title="Показать/скрыть">{tempPasswordVisible ? "🙈" : "👁️"}</button>
+                <button onClick={() => copyToClipboard(tempPassword)} className="btn" title="Копировать">📋</button>
+              </div>
+              <p className="temp-password-hint">Сообщите этот пароль пользователю.</p>
+              <button onClick={() => { setTempPassword(null); setTempPasswordVisible(false); }} className="btn" style={{ marginTop: "8px", fontSize: "12px" }}>Закрыть</button>
+            </div>
+          )}
+
+          {loadingUsers ? <p>Загрузка...</p> : (
+            <div className="admin-table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Логин</th>
+                    <th>Имя</th>
+                    <th>Роль</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user.id}>
+                      <td>{user.username}</td>
+                      <td>{user.fullName}</td>
+                      <td><span className={getRoleClass(user.role)}>{user.role}</span></td>
+                      <td>
+                        <button 
+                          onClick={() => handleResetPassword(user.id)} 
+                          disabled={resettingId === user.id} 
+                          className="btn btn-reset-pass"
+                        >
+                          {resettingId === user.id ? "Сброс..." : "Сбросить пароль"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </Card>

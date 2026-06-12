@@ -1,5 +1,4 @@
 // src/components/ui/NewsSection.tsx
-
 "use client";
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
@@ -10,19 +9,16 @@ interface ExtendedProps extends Props {
 }
 
 export function NewsSection({ news, setNews, userRole, currentUserId }: ExtendedProps) {
-  // Локальный стейт для мгновенного отклика UI
   const [localNews, setLocalNews] = useState<NewsPost[]>(news);
-
-  // Синхронизация с родительским стейтом при загрузке новой страницы/поиске
-  useEffect(() => {
-    setLocalNews(news);
-  }, [news]);
+  useEffect(() => { setLocalNews(news); }, [news]);
 
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -32,10 +28,19 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
+      setFile(e.target.files[0]);
+      setPreview(URL.createObjectURL(e.target.files[0]));
     }
+  };
+
+  const openEditModal = (post: NewsPost) => {
+    setIsEditing(true);
+    setEditId(post.id);
+    setTitle(post.title);
+    setContent(post.content);
+    setPreview(post.imageUrl || null);
+    setFile(null);
+    setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,28 +54,31 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       formData.append("content", content);
       if (file) formData.append("image", file);
 
-      const res = await fetch("/api/news", { method: "POST", body: formData });
+      const url = isEditing ? `/api/news/${editId}` : "/api/news";
+      const method = isEditing ? "PATCH" : "POST";
+
+      const res = await fetch(url, { method, body: formData });
 
       if (res.ok) {
-        const newPost = await res.json();
+        const updatedPost = await res.json();
         
-        // Обновляем локальный стейт для мгновенного отображения
-        const updatedNews = [newPost, ...localNews];
-        setLocalNews(updatedNews);
+        // ИСПРАВЛЕНИЕ: Сначала формируем новый массив, потом передаем его в setNews
+        let updatedList: NewsPost[];
+        if (isEditing) {
+          updatedList = localNews.map(p => p.id === editId ? updatedPost : p);
+        } else {
+          updatedList = [updatedPost, ...localNews];
+        }
+
+        setLocalNews(updatedList);
+        setNews(updatedList); // Передаем готовый массив, а не функцию
         
-        // Уведомляем родителя об обновлении
-        setNews(updatedNews);
-        
-        setTitle(""); 
-        setContent(""); 
-        setFile(null); 
-        setPreview(null); 
-        setShowForm(false);
+        resetForm();
       } else {
         const errData = await res.json();
-        setError(errData.error || "Ошибка добавления новости");
+        setError(errData.error || "Ошибка");
       }
-    } catch (err) {
+    } catch {
       setError("Ошибка сети");
     } finally {
       setLoading(false);
@@ -78,28 +86,27 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Вы уверены, что хотите удалить эту новость?")) return;
-    
+    if (!confirm("Удалить новость?")) return;
     setDeletingId(id);
     try {
       const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
-      
       if (res.ok) {
-        // Фильтруем локальный стейт
-        const updatedNews = localNews.filter((p) => p.id !== id);
-        setLocalNews(updatedNews);
-        
-        // Уведомляем родителя
-        setNews(updatedNews);
+        const updated = localNews.filter(p => p.id !== id);
+        setLocalNews(updated);
+        setNews(updated); // Передаем готовый массив
       } else {
-        const err = await res.json();
-        alert(err.error || "Не удалось удалить");
+        alert("Не удалось удалить");
       }
-    } catch (err) {
-      alert("Ошибка сети при удалении");
+    } catch {
+      alert("Ошибка сети");
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const resetForm = () => {
+    setTitle(""); setContent(""); setFile(null); setPreview(null); 
+    setShowForm(false); setIsEditing(false); setEditId(null);
   };
 
   return (
@@ -107,7 +114,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       <div className="section-header">
         <h2 className="section-title">Новости</h2>
         {canEdit && (
-          <button className="btn btn-primary btn-add-news" onClick={() => setShowForm(!showForm)}>
+          <button className="btn btn-primary btn-add-news" onClick={() => { resetForm(); setShowForm(true); }}>
             {showForm ? "Отмена" : "Добавить новость"}
           </button>
         )}
@@ -116,31 +123,19 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       {showForm && (
         <Card className="form-card">
           {error && <div className="form-error">{error}</div>}
-          
+          <h3 style={{ marginBottom: "16px" }}>{isEditing ? "Редактирование новости" : "Новая новость"}</h3>
           <form onSubmit={handleSubmit}>
+            <div className="form-group"><label>Заголовок</label><input type="text" value={title} onChange={e => setTitle(e.target.value)} required /></div>
+            <div className="form-group"><label>Содержание</label><textarea value={content} onChange={e => setContent(e.target.value)} required rows={4} /></div>
             <div className="form-group">
-              <label>Заголовок</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
-            </div>
-            
-            <div className="form-group">
-              <label>Содержание</label>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={4} />
-            </div>
-
-            <div className="form-group">
-              <label>Изображение (необязательно)</label>
+              <label>Изображение {isEditing && "(оставьте пустым, чтобы не менять)"}</label>
               <input type="file" accept="image/*" onChange={handleFileChange} style={{ padding: "8px 0" }} />
-              {preview && (
-                <div className="file-preview-container">
-                  <img src={preview} alt="Предпросмотр" className="file-preview" />
-                </div>
-              )}
+              {preview && <div className="file-preview-container"><img src={preview} alt="Preview" className="file-preview" /></div>}
             </div>
-
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? "Публикация..." : "Опубликовать"}
-            </button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? "Сохранение..." : "Сохранить"}</button>
+              <button type="button" className="btn" onClick={resetForm}>Отмена</button>
+            </div>
           </form>
         </Card>
       )}
@@ -151,32 +146,25 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
         localNews.map((post: NewsPost) => {
           const isAuthor = post.author?.id === currentUserId;
           const canDelete = userRole === "ADMIN" || isAuthor;
+          const canEditThis = canEdit || isAuthor;
 
           return (
             <Card key={post.id} className="news-card">
-              {canDelete && (
-                <button
-                  onClick={() => handleDelete(post.id)}
-                  disabled={deletingId === post.id}
-                  className="delete-news-btn"
-                  title="Удалить новость"
-                >
-                  {deletingId === post.id ? "..." : "×"}
-                </button>
-              )}
-
-              {post.imageUrl && (
-                <div className="news-image-wrapper">
-                  <img src={post.imageUrl} alt={post.title} />
+              {canEditThis && (
+                <div className="news-actions">
+                  <button onClick={() => openEditModal(post)} className="btn btn-icon" title="Редактировать">✏️</button>
+                  {canDelete && (
+                    <button onClick={() => handleDelete(post.id)} disabled={deletingId === post.id} className="btn btn-icon btn-delete" title="Удалить">
+                      {deletingId === post.id ? "..." : "🗑️"}
+                    </button>
+                  )}
                 </div>
               )}
-              
+
+              {post.imageUrl && (<div className="news-image-wrapper"><img src={post.imageUrl} alt={post.title} /></div>)}
               <h3 className="news-title">{post.title}</h3>
               <p className="news-content">{post.content}</p>
-              
-              <span className="news-meta">
-                Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}
-              </span>
+              <span className="news-meta">Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}</span>
             </Card>
           );
         })

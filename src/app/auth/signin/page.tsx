@@ -1,8 +1,7 @@
-//src/app/auth/signin/page.tsx
-
+// src/app/auth/signin/page.tsx
 "use client";
-import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 
@@ -13,6 +12,7 @@ export default function SignInPage() {
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,9 +23,7 @@ export default function SignInPage() {
 
     try {
       const result = await signIn("credentials", {
-        username,
-        password,
-        redirect: false,
+        username, password, redirect: false,
       });
 
       if (result?.error) {
@@ -34,75 +32,47 @@ export default function SignInPage() {
         router.push("/profile");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("Ошибка сети");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      await signIn("google", { 
-        callbackUrl: "/profile",
-        redirect: true,
-      });
-    } catch (err) {
-      setError("Ошибка входа через Google");
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="container" style={{ maxWidth: "400px" }}>
+    <div className="container signin-container">
       <Card>
         <h1 className="home-title text-center">Вход</h1>
 
-        {error && (
-          <div style={{
-            color: "#dc3545",
-            marginBottom: "16px",
-            padding: "12px",
-            background: "#fff5f5",
-            borderRadius: "8px",
-          }}>
-            {error}
-          </div>
-        )}
-
-        {errorParam && (
-          <div style={{
-            color: "#dc3545",
-            marginBottom: "16px",
-            padding: "12px",
-            background: "#fff5f5",
-            borderRadius: "8px",
-          }}>
-            Ошибка: {errorParam}
+        {(error || errorParam) && (
+          <div className="error-message">
+            {error || `Ошибка авторизации: ${errorParam}`}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
             <label>Имя пользователя</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="ivan_petrov"
-              required
-            />
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ivan_petrov" required />
           </div>
 
           <div className="form-group">
             <label>Пароль</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-input-wrapper">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+              />
+              <span className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                )}
+              </span>
+            </div>
           </div>
 
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
@@ -112,27 +82,8 @@ export default function SignInPage() {
 
         <div style={{ marginTop: "16px", textAlign: "center" }}>
           <p className="text-gray" style={{ fontSize: "14px" }}>
-            Нет аккаунта?{" "}
-            <a href="/auth/register">Зарегистрироваться</a>
+            Нет аккаунта? <a href="/auth/register" style={{ color: "#0070f3", textDecoration: "none" }}>Зарегистрироваться</a>
           </p>
-        </div>
-
-        <div style={{
-          marginTop: "24px",
-          borderTop: "1px solid #e5e5e7",
-          paddingTop: "24px",
-        }}>
-          <p className="text-center text-gray" style={{ fontSize: "14px", marginBottom: "16px" }}>
-            Или войдите через Google
-          </p>
-          <button
-            className="btn w-full"
-            style={{ background: "#4267B2", color: "white" }}
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-          >
-            {loading ? "Вход..." : "Войти через Google"}
-          </button>
         </div>
       </Card>
     </div>
