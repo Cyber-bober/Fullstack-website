@@ -8,56 +8,61 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  username     String         @unique
-  passwordHash String
-  fullName     String
-  birthDate    DateTime?
-  city         String?
-  role         String         @default("USER")
-  position     String?
-  photos       String[]
-  contacts     String?
-  stats        String?
-  teamId       String?
-  privacyAcceptedAt DateTime? // Дата и время принятия политики
-  team         Team?          @relation(fields: [teamId], references: [id])
-  captainOf    Team?          @relation("TeamCaptain")
-
-  newsPosts    NewsPost[]
-  sentMessages ChatMessage[]  @relation("Sender")
-  recvMessages ChatMessage[]  @relation("Receiver")
-  roleRequests RoleRequest[]
-  createdAt    DateTime       @default(now())
+  id                String           @id @default(uuid())
+  username          String           @unique
+  passwordHash      String
+  fullName          String
+  birthDate         DateTime?
+  city              String?
+  role              String           @default("USER")
+  position          String?
+  photos            String[]
+  contacts          String?
+  stats             String?
+  teamId            String?
+  privacyAcceptedAt DateTime?
+  
+  team              Team?            @relation(fields: [teamId], references: [id])
+  captainOf         Team?            @relation("TeamCaptain")
+  newsPosts         NewsPost[]
+  sentMessages      ChatMessage[]    @relation("Sender")
+  recvMessages      ChatMessage[]    @relation("Receiver")
+  roleRequests      RoleRequest[]
+  
+  // ДОБАВЛЕНО: Связь с тикетами поддержки
+  supportTickets    SupportTicket[]
+  supportMessages   SupportMessage[]
+  
+  createdAt         DateTime         @default(now())
 }
 
 model Team {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
   logoUrl   String?
   photos    String[]
-  captainId String?  @unique
-  captain   User?    @relation("TeamCaptain", fields: [captainId], references: [id])
+  captainId String?   @unique
+  captain   User?     @relation("TeamCaptain", fields: [captainId], references: [id])
   stats     String?
   players   User[]
   homeMatches Match[] @relation("HomeTeam")
   awayMatches Match[] @relation("AwayTeam")
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model Match {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   homeTeamId String
   awayTeamId String
   date       DateTime
-  status     String   @default("SCHEDULED")
+  status     String       @default("SCHEDULED")
   score      String?
   stats      String?
   venue      String?
-  homeTeam   Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeam   Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  homeTeam   Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
   events     MatchEvent[]
-  createdAt  DateTime @default(now())
+  createdAt  DateTime     @default(now())
 }
 
 model NewsPost {
@@ -94,19 +99,37 @@ model RoleRequest {
   createdAt     DateTime @default(now())
 }
 
-model SupportMessage {
-  id        String   @id @default(uuid())
-  userId    String
-  subject   String
-  message   String
-  createdAt DateTime @default(now())
-}
+// УДАЛЕНА СТАРАЯ МОДЕЛЬ SupportMessage (была здесь)
 
 model MatchEvent {
   id        String   @id @default(uuid())
   matchId   String
-  minute    Int?     // Минута матча (например, 45)
-  text      String   // Текст события ("Гол!", "Замена")
+  minute    Int?
+  text      String
   createdAt DateTime @default(now())
   match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+// НОВАЯ СИСТЕМА ПОДДЕРЖКИ
+model SupportTicket {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  subject   String
+  status    String           @default("OPEN")
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  
+  messages  SupportMessage[]
+}
+
+model SupportMessage {
+  id        String          @id @default(uuid())
+  ticketId  String
+  ticket    SupportTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User            @relation(fields: [senderId], references: [id])
+  text      String
+  isAdmin   Boolean         @default(false)
+  createdAt DateTime        @default(now())
 }

@@ -8,15 +8,18 @@ import Toast from "@/components/ui/Toast";
 type User = { id: string; username: string; fullName: string; role: string; createdAt: string };
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"roles" | "users">("users");
+  const [activeTab, setActiveTab] = useState<"roles" | "users" | "support">("users");
   const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
   
-  // Живой поиск
+  // Живой поиск для ролей
   const [liveSearchQuery, setLiveSearchQuery] = useState("");
   const [liveSearchResults, setLiveSearchResults] = useState<User[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [foundUser, setFoundUser] = useState<User | null>(null);
   const [updatingRole, setUpdatingRole] = useState(false);
+
+  // Поиск для таблицы пользователей
+  const [userTableSearch, setUserTableSearch] = useState("");
 
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -24,10 +27,21 @@ export default function AdminPage() {
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [tempPasswordVisible, setTempPasswordVisible] = useState(false);
 
+  // Поддержка
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [adminReply, setAdminReply] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
+
   useEffect(() => {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === "support") loadSupportTickets();
+  }, [activeTab]);
+
+  // Debounce для поиска ролей
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (liveSearchQuery.trim().length >= 2) {
@@ -62,6 +76,13 @@ export default function AdminPage() {
     } catch (err) { console.error(err); } finally { setLoadingUsers(false); }
   };
 
+  const loadSupportTickets = async () => {
+    try {
+      const res = await fetch("/api/support/tickets");
+      if (res.ok) setSupportTickets(await res.json());
+    } catch {}
+  };
+
   const handleUpdateRole = async (newRole: string) => {
     if (!foundUser) return;
     setUpdatingRole(true);
@@ -90,6 +111,31 @@ export default function AdminPage() {
     } catch { setToast({ msg: "Ошибка сети", type: "error" }); } finally { setResettingId(null); }
   };
 
+  const handleAdminReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicket || !adminReply.trim()) return;
+    setSendingReply(true);
+    try {
+      const res = await fetch(`/api/support/tickets/${selectedTicket.id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: adminReply }),
+      });
+      if (res.ok) {
+        setAdminReply("");
+        const tRes = await fetch(`/api/support/tickets/${selectedTicket.id}`);
+        if (tRes.ok) setSelectedTicket(await tRes.json());
+        loadSupportTickets();
+        setToast({ msg: "Ответ отправлен!", type: "success" });
+      } else {
+        const err = await res.json();
+        setToast({ msg: err.error || "Ошибка отправки", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Ошибка сети", type: "error" });
+    } finally { setSendingReply(false); }
+  };
+
   const getRoleClass = (role: string) => {
     switch(role) {
       case "ADMIN": return "role-badge role-admin";
@@ -97,6 +143,12 @@ export default function AdminPage() {
       default: return "role-badge role-user";
     }
   };
+
+  // Фильтрация пользователей для таблицы
+  const filteredUsers = users.filter(u => 
+    u.username.toLowerCase().includes(userTableSearch.toLowerCase()) || 
+    u.fullName.toLowerCase().includes(userTableSearch.toLowerCase())
+  );
 
   return (
     <div className="container">
@@ -106,6 +158,9 @@ export default function AdminPage() {
       <div className="tabs">
         <button className={`tab ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>Роли</button>
         <button className={`tab ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>Пользователи</button>
+        <button className={`tab ${activeTab === "support" ? "active" : ""}`} onClick={() => setActiveTab("support")}>
+          Поддержка ({supportTickets.filter(t => t.status === "OPEN").length})
+        </button>
       </div>
 
       {activeTab === "roles" && (
@@ -144,6 +199,17 @@ export default function AdminPage() {
         <Card>
           <h2 className="section-title">Управление пользователями</h2>
           
+          <div className="form-group" style={{ marginBottom: "20px" }}>
+            <label>Поиск в списке</label>
+            <input 
+              type="text" 
+              placeholder="Введите имя или логин..." 
+              value={userTableSearch} 
+              onChange={e => setUserTableSearch(e.target.value)} 
+              className="search-input" 
+            />
+          </div>
+
           {tempPassword && (
             <div className="temp-password-box">
               <p style={{ margin: 0, color: "#065f46", fontWeight: "bold" }}>Временный пароль:</p>
@@ -171,26 +237,96 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map(user => (
-                    <tr key={user.id}>
-                      <td>{user.username}</td>
-                      <td>{user.fullName}</td>
-                      <td><span className={getRoleClass(user.role)}>{user.role}</span></td>
-                      <td>
-                        <button 
-                          onClick={() => handleResetPassword(user.id)} 
-                          disabled={resettingId === user.id} 
-                          className="btn btn-reset-pass"
-                        >
-                          {resettingId === user.id ? "Сброс..." : "Сбросить пароль"}
-                        </button>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map(user => (
+                      <tr key={user.id}>
+                        <td>{user.username}</td>
+                        <td>{user.fullName}</td>
+                        <td><span className={getRoleClass(user.role)}>{user.role}</span></td>
+                        <td>
+                          <button 
+                            onClick={() => handleResetPassword(user.id)} 
+                            disabled={resettingId === user.id} 
+                            className="btn btn-reset-pass"
+                          >
+                            {resettingId === user.id ? "Сброс..." : "Сбросить пароль"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} style={{ textAlign: "center", padding: "20px", color: "#6b7280" }}>
+                        Пользователи не найдены
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           )}
+        </Card>
+      )}
+
+      {activeTab === "support" && (
+        <Card>
+          <h2 className="section-title">Обращения в поддержку</h2>
+          <div className="support-layout">
+            {/* Список тикетов */}
+            <div className="support-ticket-list">
+              {supportTickets.map((t: any) => (
+                <div 
+                  key={t.id} 
+                  onClick={() => setSelectedTicket(t)}
+                  className={`support-ticket-item ${selectedTicket?.id === t.id ? "active" : ""}`}
+                  style={{ border: `1px solid ${t.status === "OPEN" ? "#bfdbfe" : "#e5e7eb"}` }}
+                >
+                  <div style={{ fontWeight: 600, fontSize: "14px" }}>{t.subject}</div>
+                  <div style={{ fontSize: "12px", color: "#6b7280" }}>{t.user.fullName} (@{t.user.username})</div>
+                  <div style={{ fontSize: "11px", color: "#9ca3af", marginTop: "4px" }}>
+                    {new Date(t.updatedAt).toLocaleString()} • {t._count.messages} сообщ.
+                  </div>
+                </div>
+              ))}
+              {supportTickets.length === 0 && <p className="text-gray">Нет обращений</p>}
+            </div>
+
+            {/* Детали тикета */}
+            {selectedTicket ? (
+              <div className="support-chat-area">
+                <div style={{ padding: "12px", background: "#f9fafb", borderRadius: "8px", marginBottom: "16px" }}>
+                  <strong>{selectedTicket.subject}</strong>
+                  <span style={{ marginLeft: "8px", fontSize: "12px", padding: "2px 8px", borderRadius: "12px", background: selectedTicket.status === "OPEN" ? "#dbeafe" : "#d1fae5", color: selectedTicket.status === "OPEN" ? "#2563eb" : "#059669" }}>
+                    {selectedTicket.status === "OPEN" ? "Открыт" : "В работе"}
+                  </span>
+                </div>
+
+                <div className="support-messages-container">
+                  {selectedTicket.messages?.map((msg: any) => (
+                    <div key={msg.id} className={`support-message ${msg.isAdmin ? "support-message-admin" : "support-message-user"}`}>
+                      <p style={{ margin: "0 0 4px", fontSize: "13px" }}>{msg.text}</p>
+                      <small style={{ opacity: 0.7, fontSize: "11px" }}>{msg.sender.fullName} • {new Date(msg.createdAt).toLocaleTimeString()}</small>
+                    </div>
+                  ))}
+                </div>
+
+                <form onSubmit={handleAdminReply} style={{ display: "flex", gap: "8px" }}>
+                  <input 
+                    value={adminReply} onChange={e => setAdminReply(e.target.value)}
+                    placeholder="Ответить пользователю..." required
+                    style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                  />
+                  <button type="submit" className="btn btn-primary" disabled={sendingReply}>
+                    {sendingReply ? "..." : "Отправить"}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af" }}>
+                Выберите обращение слева
+              </div>
+            )}
+          </div>
         </Card>
       )}
     </div>
