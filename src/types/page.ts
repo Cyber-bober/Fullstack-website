@@ -1,19 +1,14 @@
-//src/types/page.ts
+// src/types/page.ts
 
-export type NewsPost = {
-  id: string;
-  title: string;
-  content: string;
-  imageUrl?: string;
-  author: { fullName: string };
-  createdAt: string;
-};
+import { NewsPost as NewsPostType } from "./NewsSection";
 
-export type Match = {
+export interface Match {
   id: string;
-  date: string;
   homeTeam: { name: string };
   awayTeam: { name: string };
-  venue?: string;
+  date: string;
   status: string;
-};
+  score?: string | null;
+}
+
+export type NewsPost = NewsPostType; 

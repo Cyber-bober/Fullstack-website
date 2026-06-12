@@ -1,46 +1,38 @@
-//src/app/api/teams/route.ts
+// src/app/api/teams/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
-export async function GET() {
-  const teams = await prisma.team.findMany({
-    include: {
-      _count: { select: { players: true } },
-      players: {
-        select: {
-          id: true,
-          username: true,
-          fullName: true,
-          position: true,
-          photos: true,
-        },
-      },
-    },
-  });
-  return NextResponse.json(teams);
-}
-
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Только админ" }, { status: 403 });
-  }
-  const { name, logoUrl } = await req.json();
-  const team = await prisma.team.create({ data: { name, logoUrl } });
-  return NextResponse.json(team, { status: 201 });
-}
-
-export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Только админ" }, { status: 403 });
-  }
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
-  await prisma.team.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+  
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "12");
+  const query = searchParams.get("q") || "";
+
+  const skip = (page - 1) * limit;
+
+  const where = query 
+    ? { name: { contains: query, mode: Prisma.QueryMode.insensitive } } 
+    : {};
+
+  const [teams, total] = await Promise.all([
+    prisma.team.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { name: "asc" },
+      include: {
+        captain: { select: { fullName: true } },
+        _count: { select: { players: true } }
+      }
+    }),
+    prisma.team.count({ where })
+  ]);
+
+  return NextResponse.json({
+    data: teams,
+    meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+  });
 }

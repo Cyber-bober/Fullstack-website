@@ -1,55 +1,73 @@
-//src/app/teams/page.tsx
+// src/app/teams/page.tsx
 
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
-import { Team } from "@/types/team";
+import Pagination from "@/components/ui/Pagination";
+
+type Team = {
+  id: string;
+  name: string;
+  logoUrl?: string | null;
+  captain?: { fullName: string } | null;
+  _count?: { players: number };
+};
 
 export default function TeamsPage() {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [teamsData, setTeamsData] = useState<{ data: Team[]; meta: any } | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
+  // Загрузка команды и сессии при изменении URL (поиск/пагинация)
   useEffect(() => {
-    loadTeams();
-    loadSession();
-  }, []);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const page = searchParams.get("page") || "1";
+        const q = searchParams.get("q") || "";
+        setSearchQuery(q);
 
-  const loadSession = async () => {
-    try {
-      const res = await fetch("/api/auth/session");
-      if (res.ok) {
-        const session = await res.json();
-        setUserRole(session?.user?.role || null);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        const [teamsRes, sessionRes] = await Promise.all([
+          fetch(`/api/teams?page=${page}&limit=12&q=${encodeURIComponent(q)}`),
+          fetch("/api/auth/session"),
+        ]);
 
-  const loadTeams = async () => {
-    try {
-      const res = await fetch("/api/teams");
-      if (res.ok) {
-        const data = await res.json();
-        const teamsWithCount: Team[] = data.map((t: any) => ({
-          id: t.id,
-          name: t.name,
-          logoUrl: t.logoUrl,
-          playersCount: t._count?.players || 0,
-          captain: t.captain || null,
-        }));
-        setTeams(teamsWithCount);
+        if (teamsRes.ok) {
+          const data = await teamsRes.json();
+          setTeamsData(data);
+        } else {
+          setTeamsData({ data: [], meta: {} });
+        }
+
+        if (sessionRes.ok) {
+          const session = await sessionRes.json();
+          setUserRole(session?.user?.role || null);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    loadData();
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("q", searchQuery);
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
   };
 
   const handleCreateTeam = async (e: React.FormEvent) => {
@@ -67,13 +85,13 @@ export default function TeamsPage() {
       if (res.ok) {
         setNewTeamName("");
         setShowCreateForm(false);
-        await loadTeams();
+        // Перезагружаем первую страницу после создания
+        router.push("?page=1"); 
       } else {
         const error = await res.json();
         alert(error.error || "Ошибка создания команды");
       }
     } catch (err) {
-      console.error(err);
       alert("Ошибка сети");
     } finally {
       setCreating(false);
@@ -84,7 +102,7 @@ export default function TeamsPage() {
 
   return (
     <div className="container">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div className="section-header">
         <h1 className="home-title" style={{ margin: 0 }}>Команды</h1>
         {userRole === "ADMIN" && (
           <button
@@ -96,8 +114,9 @@ export default function TeamsPage() {
         )}
       </div>
 
+      {/* Форма создания */}
       {showCreateForm && (
-        <Card className="form-card">
+        <Card className="form-card" style={{ marginBottom: "24px" }}>
           <form onSubmit={handleCreateTeam}>
             <div className="form-group">
               <label>Название команды</label>
@@ -116,11 +135,24 @@ export default function TeamsPage() {
         </Card>
       )}
 
-      {teams.length === 0 ? (
+      {/* Поиск */}
+      <form onSubmit={handleSearch} className="search-bar">
+        <input 
+          type="text" 
+          placeholder="Поиск по названию команды..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input"
+        />
+        <button type="submit" className="btn btn-primary">Найти</button>
+      </form>
+
+      {/* Список команд */}
+      {!teamsData?.data || teamsData.data.length === 0 ? (
         <p className="empty-text">Команды не найдены</p>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          {teams.map((team) => (
+          {teamsData.data.map((team) => (
             <Link
               key={team.id}
               href={`/teams/${team.id}`}
@@ -129,7 +161,7 @@ export default function TeamsPage() {
             >
               <Card>
                 <div className="font-bold text-lg">{team.name}</div>
-                <div className="text-gray">Игроков: {team.playersCount}</div>
+                <div className="text-gray">Игроков: {team._count?.players || 0}</div>
                 {team.captain && (
                   <div className="text-gray" style={{ fontSize: "12px", marginTop: "4px" }}>
                     Капитан: {team.captain.fullName}
@@ -139,6 +171,14 @@ export default function TeamsPage() {
             </Link>
           ))}
         </div>
+      )}
+
+      {/* Пагинация */}
+      {teamsData?.meta && (
+        <Pagination 
+          currentPage={teamsData.meta.page} 
+          totalPages={teamsData.meta.totalPages} 
+        />
       )}
     </div>
   );

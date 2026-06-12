@@ -1,16 +1,22 @@
-//src/types/NewsSection.ts
+// src/types/NewsSection.ts
 
-export type NewsPost = {
+export interface NewsAuthor {
+  id: string;
+  fullName: string;
+}
+
+export interface NewsPost {
   id: string;
   title: string;
   content: string;
-  imageUrl?: string;
-  author: { fullName: string };
+  imageUrl?: string | null;
   createdAt: string;
-};
+  author?: NewsAuthor | null;
+  authorId?: string;
+}
 
-export type Props = {
+export interface Props {
   news: NewsPost[];
-  setNews: React.Dispatch<React.SetStateAction<NewsPost[]>>;
-  userRole: string | null;
-};
+  setNews: (posts: NewsPost[]) => void; 
+  userRole?: string | null;
+}

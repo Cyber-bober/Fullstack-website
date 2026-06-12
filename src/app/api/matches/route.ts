@@ -1,4 +1,4 @@
-//src/app/api/matches/route.ts
+// src/app/api/matches/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const matches = await prisma.match.findMany({
-    orderBy: { date: "asc" },
+    orderBy: { date: "desc" },
     include: {
       homeTeam: { select: { name: true } },
       awayTeam: { select: { name: true } },
