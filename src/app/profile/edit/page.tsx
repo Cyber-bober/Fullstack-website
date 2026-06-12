@@ -1,127 +1,138 @@
-//src/app/profile/edit/page.tsx
-
+// src/app/profile/edit/page.tsx
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
-import { positionLabels } from "@/types/positions";
+import Toast from "@/components/ui/Toast";
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "error" | "success" } | null>(null);
+  
+  // Локальная ошибка именно для поля username
+  const [usernameError, setUsernameError] = useState("");
+
   const [formData, setFormData] = useState({
     fullName: "",
+    username: "",
     city: "",
     position: "",
     contacts: "",
     stats: "",
     birthDate: "",
   });
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const res = await fetch("/api/profile");
-        if (!res.ok) throw new Error("Не удалось загрузить профиль");
-        const user = await res.json();
+    fetch("/api/profile/me")
+      .then((res) => res.json())
+      .then((data) => {
         setFormData({
-          fullName: user.fullName || "",
-          city: user.city || "",
-          position: user.position || "",
-          contacts: user.contacts || "",
-          stats: user.stats || "",
-          birthDate: user.birthDate
-            ? new Date(user.birthDate).toISOString().split("T")[0]
-            : "",
+          fullName: data.fullName || "",
+          username: data.username || "",
+          city: data.city || "",
+          position: data.position || "",
+          contacts: data.contacts || "",
+          stats: data.stats || "",
+          birthDate: data.birthDate ? new Date(data.birthDate).toISOString().split("T")[0] : "",
         });
-        setPreviewUrls(user.photos || []);
-      } catch (err) {
-        console.error(err);
-        alert("Ошибка загрузки профиля");
-      }
-    };
-    loadProfile();
+        setLoading(false);
+      })
+      .catch(() => {
+        setToast({ message: "Не удалось загрузить данные профиля", type: "error" });
+        setLoading(false);
+      });
   }, []);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const newFiles = Array.from(files).slice(0, 3 - previewUrls.length);
-    if (newFiles.length === 0) return;
-
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-    setPreviewUrls((prev) => [...prev, ...newPreviews]);
-  };
-
-  const removePhoto = (index: number) => {
-    const newPreviews = [...previewUrls];
-    const removed = newPreviews.splice(index, 1);
-    setPreviewUrls(newPreviews);
-
-    if (removed[0]) URL.revokeObjectURL(removed[0]);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
+    setSaving(true);
+    setUsernameError(""); // Сбрасываем ошибку поля
+    
     try {
-      const res = await fetch("/api/profile", {
-        method: "PATCH",
+      const res = await fetch("/api/profile/update", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          photos: previewUrls,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        router.push("/profile");
-        router.refresh();
+        setToast({ message: "Профиль успешно обновлен!", type: "success" });
+        setTimeout(() => router.push("/profile"), 1500);
       } else {
-        const errorData = await res.json();
-        alert(errorData.error || "Ошибка сохранения");
+        const err = await res.json();
+        
+        // Если ошибка специфична для username, показываем её под полем
+        if (err.error && err.error.toLowerCase().includes("username")) {
+          setUsernameError(err.error);
+        } else {
+          // Иначе показываем общий тост
+          setToast({ message: err.error || "Ошибка сохранения", type: "error" });
+        }
       }
     } catch (err) {
-      console.error(err);
-      alert("Ошибка сети");
+      setToast({ message: "Ошибка сети. Попробуйте позже.", type: "error" });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  if (loading) return <p className="empty-text">Загрузка...</p>;
+
   return (
-    <div className="edit-profile-container">
+    <div className="container" style={{ maxWidth: "600px" }}>
+      {/* Глобальные уведомления */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+
       <Card>
-        <h1 style={{ marginTop: 0, marginBottom: "1.5rem", fontSize: "1.5rem", fontWeight: "bold" }}>
-          Редактирование профиля
-        </h1>
-        
-        <form onSubmit={handleSubmit} className="edit-profile-form">
-          {/* ФИО */}
+        <h1 className="home-title text-center">Редактирование профиля</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {/* Поле Username с красивой обработкой ошибки */}
           <div className="form-group">
-            <label>ФИО</label>
+            <label>@username</label>
+            <input
+              type="text"
+              value={formData.username}
+              onChange={(e) => {
+                setFormData({ ...formData, username: e.target.value });
+                setUsernameError(""); // Убираем ошибку при начале ввода
+              }}
+              required
+              minLength={3}
+              maxLength={30}
+              pattern="[a-zA-Z0-9_]+"
+              style={{ 
+                borderColor: usernameError ? "#ef4444" : undefined,
+                background: usernameError ? "#fff5f5" : undefined 
+              }}
+            />
+            {usernameError ? (
+              <p style={{ color: "#ef4444", fontSize: "13px", marginTop: "4px" }}>
+                ⚠️ {usernameError}
+              </p>
+            ) : (
+              <small className="text-gray">Только латинские буквы, цифры и _</small>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label>Полное имя</label>
             <input
               type="text"
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              required
             />
           </div>
 
-          {/* Дата рождения */}
-          <div className="form-group">
-            <label>Дата рождения</label>
-            <input
-              type="date"
-              value={formData.birthDate}
-              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-            />
-          </div>
-
-          {/* Город */}
           <div className="form-group">
             <label>Город</label>
             <input
@@ -131,90 +142,44 @@ export default function EditProfilePage() {
             />
           </div>
 
-          {/* Позиция */}
           <div className="form-group">
             <label>Позиция</label>
-            <select
+            <input
+              type="text"
               value={formData.position}
               onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-            >
-              <option value="">Выберите позицию</option>
-              {Object.entries(positionLabels).map(([key, label]) => (
-                <option key={key} value={label}>
-                  {label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
-          {/* Контакты */}
+          <div className="form-group">
+            <label>Дата рождения</label>
+            <input
+              type="date"
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+            />
+          </div>
+
           <div className="form-group">
             <label>Контакты</label>
-            <input
-              type="text"
+            <textarea
               value={formData.contacts}
               onChange={(e) => setFormData({ ...formData, contacts: e.target.value })}
+              rows={3}
             />
           </div>
 
-          {/* Статистика */}
           <div className="form-group">
             <label>Статистика</label>
-            <input
-              type="text"
+            <textarea
               value={formData.stats}
               onChange={(e) => setFormData({ ...formData, stats: e.target.value })}
+              rows={3}
             />
           </div>
 
-          {/* ФОТОГРАФИИ */}
-          <div className="photos-upload-section">
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>
-              Фотографии (до 3)
-            </label>
-            
-            <div className="photos-preview">
-              {previewUrls.map((url, index) => (
-                <div key={index} className="photo-preview-item">
-                  <img src={url} alt={`Preview ${index + 1}`} />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(index)}
-                    className="photo-remove-btn"
-                    title="Удалить фото"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: "none" }} // Скрываем стандартный инпут
-              multiple
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={previewUrls.length >= 3}
-              className="upload-btn"
-            >
-              {previewUrls.length >= 3 ? "Максимум 3 фото" : "Добавить фото"}
-            </button>
-          </div>
-
-          {/* Кнопка сохранения */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary"
-            style={{ width: "100%", marginTop: "1rem", padding: "12px" }}
-          >
-            {loading ? "Сохранение..." : "Сохранить"}
+          <button type="submit" className="btn btn-primary w-full" disabled={saving}>
+            {saving ? "Сохранение..." : "Сохранить изменения"}
           </button>
         </form>
       </Card>

@@ -1,4 +1,4 @@
-//src/app/profile/page.tsx
+// src/app/profile/page.tsx
 
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
@@ -16,11 +16,6 @@ export default async function ProfilePage() {
   });
 
   if (!user) redirect("/");
-
-  // Если username начинается с oauth_ — перенаправляем на выбор ника
-  if (user.username.startsWith("oauth_")) {
-    redirect("/auth/choose-username");
-  }
 
   return <ProfileClient user={user} isOwnProfile={true} />;
 }

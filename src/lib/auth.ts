@@ -1,4 +1,4 @@
-//src/lib/auth.ts
+// src/lib/auth.ts
 
 import { NextAuthOptions, Profile } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
         });
         
         if (!user) return null;
+        if (!user.passwordHash) return null;
         
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) return null;
@@ -57,21 +58,27 @@ export const authOptions: NextAuthOptions = {
           };
 
           const email = googleProfile.email;
-          if (!email) {
-            console.error("Google не вернул email");
-            return false;
-          }
+          const sub = googleProfile.sub;
 
-          // Ищем пользователя по email
+          if (!email || !sub) return false;
+
           let existingUser = await prisma.user.findUnique({
-            where: { username: email }, // используем email как username для OAuth
+            where: { username: email },
           });
 
           if (!existingUser) {
-            // Создаём нового пользователя
+            existingUser = await prisma.user.findUnique({
+              where: { username: `user_${sub.slice(-8)}` },
+            });
+          }
+
+          if (!existingUser) {
+            // Генерируем красивый временный ник: user_12345678
+            const tempUsername = `user_${sub.slice(-8)}`;
+            
             existingUser = await prisma.user.create({
               data: {
-                username: `oauth_${googleProfile.sub}`,
+                username: tempUsername,
                 fullName: googleProfile.name || email.split("@")[0],
                 passwordHash: "",
                 photos: googleProfile.picture ? [googleProfile.picture] : [],
@@ -79,9 +86,7 @@ export const authOptions: NextAuthOptions = {
                 city: "",
               },
             });
-            console.log("Создан новый пользователь через Google:", existingUser.id);
           } else {
-            // Обновляем данные
             await prisma.user.update({
               where: { id: existingUser.id },
               data: {
@@ -89,13 +94,13 @@ export const authOptions: NextAuthOptions = {
                 photos: googleProfile.picture ? [googleProfile.picture] : existingUser.photos,
               },
             });
-            console.log("Обновлён пользователь через Google:", existingUser.id);
           }
 
-          // Обновляем user объект для next-auth
           user.id = existingUser.id;
           user.name = existingUser.fullName;
           user.email = existingUser.username;
+          (user as any).role = existingUser.role;
+
         } catch (error) {
           console.error("Ошибка в Google OAuth:", error);
           return false;
@@ -103,11 +108,11 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
-        token.email = user.email;
+        token.username = user.email ?? undefined;
       }
       return token;
     },
@@ -115,7 +120,7 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.role = token.role;
-        session.user.email = token.email;
+        session.user.email = token.username ?? undefined;
       }
       return session;
     },
