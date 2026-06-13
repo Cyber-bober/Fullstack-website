@@ -12,7 +12,7 @@ export default async function Nav() {
     <nav className="nav">
       <div className="nav-inner glass-effect">
         <div className="nav-left">
-          <Link href="/" className="nav-logo">RTLive&</Link>
+          <Link href="/" className="nav-logo">RTLive</Link>
           <div className="nav-links">
             <Link href="/teams" className="nav-link">Команды</Link>
             <Link href="/chat" className="nav-link">Чат</Link>

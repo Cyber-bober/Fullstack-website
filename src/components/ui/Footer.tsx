@@ -2,16 +2,10 @@
 
 export default function Footer() {
   return (
-    <footer style={{ 
-      background: "#f9fafb", 
-      borderTop: "1px solid #e5e7eb", 
-      padding: "24px 0", 
-      marginTop: "48px",
-      textAlign: "center"
-    }}>
+    <footer className="footer">
       <div className="container">
         <p className="text-gray" style={{ marginBottom: "12px", fontSize: "14px" }}>
-          © {new Date().getFullYear()} Football Hub. Все права защищены.
+          © {new Date().getFullYear()} RTLive. Все права защищены.
         </p>
         
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "24px", flexWrap: "wrap" }}>

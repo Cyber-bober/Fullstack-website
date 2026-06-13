@@ -69,7 +69,7 @@ export function CalendarSection({ matches }: Props) {
       </div>
 
       <div className="calendar-grid glass-effect">
-        {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d => <div key={d} className="calendar-day-header glass-effect">{d}</div>)}
+        {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d => <div key={d} className="calendar-day-header day-header-glass">{d}</div>)}
         {days}
       </div>
 

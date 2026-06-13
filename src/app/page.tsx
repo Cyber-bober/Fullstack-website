@@ -119,7 +119,7 @@ export default function HomePage() {
       
       {/* Верхняя панель управления */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h1 className="home-title" style={{ margin: 0 }}>RTLive&</h1>
+        <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
         {canManageMatches && (
           <button className="btn btn-primary" onClick={() => setShowMatchModal(true)}>
             + Добавить матч
@@ -136,8 +136,7 @@ export default function HomePage() {
       {activeTab === "news" && (
         <>
           <div className="search-bar glass-effect">
-            <div className="glass-shine"></div>
-            <input type="text" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} className="search-input" />
+            <input type="text" className="search-input" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} />
           </div>
           <NewsSection 
             news={newsData?.data || []} 

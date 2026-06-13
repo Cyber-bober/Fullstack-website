@@ -125,13 +125,13 @@ export default function ChatPage() {
   return (
     <div className="chat-page">
       <h1 className="home-title">Чат</h1>
-
       <div className="chat-layout">
         {/* Левая панель: поиск и диалоги */}
           {/* Поиск */}
           <div className="chat-search glass-effect">
             <input
               type="text"
+              className="search-input"
               placeholder="Поиск по имени, username или ID..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
