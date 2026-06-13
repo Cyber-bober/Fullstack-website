@@ -87,7 +87,7 @@ export default function TeamsPage() {
       )}
 
       {/* Живой поиск без кнопки */}
-      <div className="search-bar">
+      <div className="search-bar glass-effect">
         <input type="text" placeholder="Поиск команд (введите и подождите)..." value={liveTeamQuery} onChange={(e) => setLiveTeamQuery(e.target.value)} className="search-input" />
       </div>
 

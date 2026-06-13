@@ -10,9 +10,9 @@ export default async function Nav() {
 
   return (
     <nav className="nav">
-      <div className="nav-inner">
+      <div className="nav-inner glass-effect">
         <div className="nav-left">
-          <Link href="/" className="nav-logo">Football Hub</Link>
+          <Link href="/" className="nav-logo">RTLive&</Link>
           <div className="nav-links">
             <Link href="/teams" className="nav-link">Команды</Link>
             <Link href="/chat" className="nav-link">Чат</Link>
@@ -34,13 +34,13 @@ export default async function Nav() {
               )}
               
               <form action="/api/auth/signout" method="post" style={{ margin: 0 }}>
-                <button type="submit" className="btn btn-primary" style={{ fontSize: "14px", padding: "6px 14px" }}>
+                <button type="submit" className="btn btn-primary glass effect" style={{ fontSize: "14px", padding: "6px 14px" }}>
                   Выйти
                 </button>
               </form>
             </>
           ) : (
-            <Link href="/auth/signin" className="btn btn-primary" style={{ fontSize: "14px", padding: "6px 14px" }}>Войти</Link>
+            <Link href="/auth/signin" className="btn btn-primary glass-effect" style={{ fontSize: "14px", padding: "6px 14px" }}>Войти</Link>
           )}
         </div>
       </div>

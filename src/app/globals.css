@@ -1,6 +1,18 @@
 /*src/app/globals.css*/
 
 /* ============================================
+   СБРОС БРАУЗЕРНЫХ СТИЛЕЙ
+   ============================================ */
+
+text:focus {
+  outline: none;
+}
+
+text {
+  border: none;
+}
+
+/* ============================================
    БАЗОВЫЕ СТИЛИ
    ============================================ */
 
@@ -14,7 +26,7 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background: #f5f5f7;
+  background: #F4EDE8;
   color: #1a1a1a;
   line-height: 1.5;
 }
@@ -28,74 +40,6 @@ a {
 a:hover {
   text-decoration: underline;
   color: #0059c8;
-}
-
-/* ============================================
-   НАВИГАЦИЯ (ШАПКА)
-   ============================================ */
-
-.nav {
-  background: white;
-  border-bottom: 1px solid #e5e5e7;
-  height: 64px;
-}
-
-.nav-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  height: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
-}
-
-.nav-logo {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #2563eb;
-  text-decoration: none;
-}
-
-.nav-logo:hover {
-  color: #1d4ed8;
-  text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.nav-link {
-  color: #6b7280;
-  text-decoration: none;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.nav-link:hover {
-  color: #374151;
-  text-decoration: none;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.nav-right .nav-link {
-  margin-right: 0;
 }
 
 /* ============================================
@@ -122,10 +66,17 @@ button:disabled {
 .btn-primary {
   background: #0070f3;
   color: white;
+  text-decoration: none;
 }
 
 .btn-primary:hover:not(:disabled) {
   background: #0059c8;
+  color: white;
+  text-decoration: none;
+}
+
+.btn-primary.glass-effect {
+  background: #0070f3;
 }
 
 .btn-danger {
@@ -152,8 +103,7 @@ button:disabled {
 
 input, select, textarea {
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: none;
   font-size: 14px;
   width: 100%;
   font-family: inherit;
@@ -162,8 +112,6 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #0070f3;
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
 }
 
 input[type="file"] {
@@ -466,12 +414,13 @@ input[type="date"] {
 
 .home-container {
   max-width: 900px;
-  margin: 0 auto;
+  margin: 0 auto 24px auto;
   padding: 20px;
 }
 
 .home-title {
-  font-size: 28px;
+  font-size: 2rem;
+  font-weight: 800;
   margin-bottom: 20px;
   color: #1a1a1a;
 }
@@ -479,32 +428,31 @@ input[type="date"] {
 .tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #e5e5e7;
-  padding-bottom: 12px;
+  margin-bottom: 36px;
+  align-items: center;
 }
 
 .tab {
-  padding: 8px 16px;
+  padding: 12px 24px;
   border: none;
-  background: none;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: #666;
-  border-radius: 6px 6px 0 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-radius: 14px;
   transition: all 0.2s;
 }
 
 .tab:hover {
-  background: #f5f5f7;
-  color: #0070f3;
+  color: inherit;
+  background-color: white;
 }
 
 .tab.active {
   color: #0070f3;
-  border-bottom: 2px solid #0070f3;
   margin-bottom: -14px;
+  font-weight: 600;
+  border-radius: 18px;
 }
 
 .section-title {
@@ -570,8 +518,6 @@ input[type="date"] {
 .form-group select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
 }
@@ -611,7 +557,7 @@ input[type="date"] {
 
 .calendar-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   margin-bottom: 16px;
 }
@@ -639,11 +585,19 @@ input[type="date"] {
   color: #666;
 }
 
+.calendar-day-header.glass-effect:hover {
+  transform: none;
+}
+
 .calendar-day {
   background: white;
   min-height: 80px;
   padding: 4px;
   border-radius: 4px;
+}
+
+.calendar-day.glass-effect:hover {
+  transform: none;
 }
 
 .calendar-day.empty {
@@ -656,6 +610,10 @@ input[type="date"] {
   color: #666;
   display: block;
   margin-bottom: 4px;
+}
+
+.calendar-btn {
+  width: 350px;
 }
 
 .match-event {
@@ -820,14 +778,13 @@ input[type="date"] {
    ============================================ */
 
 .nav {
-  background: white;
-  border-bottom: 1px solid #e5e5e7;
+  background: inherit;
   height: 64px;
 }
 
 .nav-inner {
-  max-width: 1280px;
-  margin: 0 auto;
+  max-width: 1920px;
+  margin: 10px 20px 20px 20px;
   padding: 0 1.5rem;
   height: 100%;
   display: flex;
@@ -959,20 +916,28 @@ input[type="date"] {
 }
 
 .chat-layout {
-  display: flex;
+  display: grid;
+  grid-template-areas: 
+  "search chat"
+  "dialogs-list chat";
+  grid-template-columns: 300px auto;
+  grid-template-rows: 40px auto;
   gap: 20px;
   height: calc(100vh - 150px);
 }
 
 .chat-sidebar {
+  background: inherit;
   flex: 0 0 350px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: none;
 }
 
 .chat-search {
-  margin-bottom: 16px;
+  grid-area: search;
+  max-height: 40px;
 }
 
 .chat-search input {
@@ -1029,6 +994,7 @@ input[type="date"] {
 .conversations-list {
   flex: 1;
   overflow-y: auto;
+  grid-area: dialogs-list;
 }
 
 .conversation-item {
@@ -1101,6 +1067,11 @@ input[type="date"] {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  grid-area: chat;
+}
+
+.card.chat-main {
+  margin: 0;
 }
 
 .chat-empty {
@@ -1336,48 +1307,6 @@ input[type="date"] {
 }
 
 /* ============================================
-   ГЛАВНАЯ СТРАНИЦА И ТАБЫ
-   ============================================ */
-
-.home-title {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 24px;
-  color: #1a1a1a;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  border-bottom: 2px solid #e5e7eb;
-  margin-bottom: 24px;
-}
-
-.tab {
-  padding: 12px 24px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7280;
-  transition: all 0.2s ease;
-}
-
-.tab:hover {
-  color: #1a1a1a;
-  background-color: #f9fafb;
-}
-
-.tab.active {
-  color: #0070f3;
-  border-bottom-color: #0070f3;
-  font-weight: 600;
-}
-
-/* ============================================
    НОВОСТИ (Исправленный вариант)
    ============================================ */
 
@@ -1489,7 +1418,7 @@ input[type="date"] {
 
 .toast {
   padding: 16px 24px;
-  border-radius: 12px;
+  border-radius: 22px;
   color: white;
   font-weight: 500;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
@@ -1536,6 +1465,11 @@ input[type="date"] {
 
 .search-input {
   flex: 1;
+  border: none;
+}
+
+.search-input:focus {
+  outline: none;
 }
 
 .pagination {
@@ -1657,7 +1591,13 @@ input[type="date"] {
    ============================================ */
 
 .signin-container {
-  max-width: 400px;
+  margin-top: 70px;
+  max-width: 360px;
+}
+
+.register-container {
+  margin-top: 40px;
+  width: 360px;
 }
 
 .error-message {
@@ -1999,4 +1939,111 @@ input[type="date"] {
   margin-bottom: 16px;
   max-height: 300px;
   padding-right: 8px;
+}
+
+/* ============================================
+   ЭФФЕКТ LIQUID GLASS
+   ============================================ */
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.glass-effect {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  box-sizing: border-box;
+  background: rgba(176, 176, 176, 0.5);
+  backdrop-filter: blur(35px) saturate(200%);
+  -webkit-backdrop-filter: blur(35px) saturate(200%);
+  border: 1px solid rgba(176, 176, 176, 0.55);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(176, 176, 176, 0.675);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-effect:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.glass-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+  animation: blob 7s infinite ease-in-out;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.glass-btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.55);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.glass-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 22px;
+}
+
+.glass-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  border-radius: 14px 14px 0 0;
+}
+
+.glass-input {
+  border: none;
+}
+
+.glass-input:focus {
+  outline: none;
 }

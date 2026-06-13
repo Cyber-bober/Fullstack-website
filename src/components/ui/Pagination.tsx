@@ -28,7 +28,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginTop: "24px" }}>
       <button
-        className="btn"
+        className="btn glass-effect"
         disabled={currentPage === 1}
         onClick={() => handlePageChange(currentPage - 1)}
         style={{ opacity: currentPage === 1 ? 0.5 : 1 }}

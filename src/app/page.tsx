@@ -119,7 +119,7 @@ export default function HomePage() {
       
       {/* Верхняя панель управления */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h1 className="home-title" style={{ margin: 0 }}>Football Hub</h1>
+        <h1 className="home-title" style={{ margin: 0 }}>RTLive&</h1>
         {canManageMatches && (
           <button className="btn btn-primary" onClick={() => setShowMatchModal(true)}>
             + Добавить матч
@@ -128,14 +128,15 @@ export default function HomePage() {
       </div>
 
       <div className="tabs">
-        <button className={`tab ${activeTab === "news" ? "active" : ""}`} onClick={() => setActiveTab("news")}>Новости</button>
-        <button className={`tab ${activeTab === "live" ? "active" : ""}`} onClick={() => setActiveTab("live")}>Текстовая трансляция</button>
-        <button className={`tab ${activeTab === "calendar" ? "active" : ""}`} onClick={() => setActiveTab("calendar")}>Календарь событий</button>
+        <button className={`tab glass-btn ${activeTab === "news" ? "active" : ""}`} onClick={() => setActiveTab("news")}>Новости</button>
+        <button className={`tab glass-btn ${activeTab === "live" ? "active" : ""}`} onClick={() => setActiveTab("live")}>Текстовая трансляция</button>
+        <button className={`tab glass-btn ${activeTab === "calendar" ? "active" : ""}`} onClick={() => setActiveTab("calendar")}>Календарь событий</button>
       </div>
 
       {activeTab === "news" && (
         <>
-          <div className="search-bar">
+          <div className="search-bar glass-effect">
+            <div className="glass-shine"></div>
             <input type="text" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} className="search-input" />
           </div>
           <NewsSection 

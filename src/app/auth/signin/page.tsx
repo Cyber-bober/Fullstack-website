@@ -41,7 +41,7 @@ export default function SignInPage() {
 
   return (
     <div className="container signin-container">
-      <Card>
+      <Card className="glass-effect">
         <h1 className="home-title text-center">Вход</h1>
 
         {(error || errorParam) && (
@@ -53,16 +53,18 @@ export default function SignInPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
             <label>Имя пользователя</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ivan_petrov" required />
+            <div className="glass-effect"><input type="text" className="glass-input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ivan_petrov" required /></div>
           </div>
 
           <div className="form-group">
             <label>Пароль</label>
-            <div className="password-input-wrapper">
+            <div className="password-input-wrapper glass-effect">
               <input 
                 type={showPassword ? "text" : "password"} 
+                className="glass-input"
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
+                placeholder="123456"
                 required 
               />
               <span className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)}>

@@ -128,9 +128,8 @@ export default function ChatPage() {
 
       <div className="chat-layout">
         {/* Левая панель: поиск и диалоги */}
-        <Card className="chat-sidebar">
           {/* Поиск */}
-          <div className="chat-search">
+          <div className="chat-search glass-effect">
             <input
               type="text"
               placeholder="Поиск по имени, username или ID..."
@@ -160,7 +159,7 @@ export default function ChatPage() {
           </div>
 
           {/* Список диалогов */}
-          <div className="conversations-list">
+          <div className="conversations-list glass-effect">
             {conversations.length === 0 ? (
               <p className="empty-text">Нет диалогов</p>
             ) : (
@@ -192,10 +191,9 @@ export default function ChatPage() {
               ))
             )}
           </div>
-        </Card>
 
         {/* Правая панель: переписка */}
-        <Card className="chat-main">
+        <Card className="chat-main glass-effect">
           {selectedUser ? (
             <>
               {/* Заголовок диалога */}

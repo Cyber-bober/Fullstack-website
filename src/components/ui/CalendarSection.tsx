@@ -38,7 +38,7 @@ export function CalendarSection({ matches }: Props) {
   };
 
   const days = [];
-  for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+  for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="calendar-day glass-effect empty"></div>);
   for (let day = 1; day <= daysInMonth; day++) {
     const dayMatches = getMatchesForDay(day);
     days.push(
@@ -60,16 +60,16 @@ export function CalendarSection({ matches }: Props) {
     <div>
       {/* Панель выбора даты */}
       <div className="calendar-header">
-        <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))} className="btn" style={{ minWidth: "140px" }}>
+        <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))} className="btn calendar-btn glass-effect" style={{ minWidth: "140px" }}>
           {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
-        <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} className="btn" style={{ minWidth: "100px" }}>
+        <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} className="btn calendar-btn glass-effect" style={{ minWidth: "100px" }}>
           {years.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
-      <div className="calendar-grid">
-        {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d => <div key={d} className="calendar-day-header">{d}</div>)}
+      <div className="calendar-grid glass-effect">
+        {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d => <div key={d} className="calendar-day-header glass-effect">{d}</div>)}
         {days}
       </div>
 
