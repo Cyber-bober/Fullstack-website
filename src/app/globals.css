@@ -2024,7 +2024,6 @@ input[type="date"] {
   outline: none;
 }
 
-<<<<<<< HEAD
 .day-header-glass {
   position: relative;
   overflow: hidden;
@@ -2042,11 +2041,10 @@ input[type="date"] {
 
 .calendar-day-header.glass-effect:hover {
   transform: none;
-=======
 /* ============================================
    ВИДЖЕТ ПОДДЕРЖКИ
    ============================================ */
-
+}
 .support-widget-btn {
   position: fixed;
   bottom: 24px;
@@ -2170,5 +2168,4 @@ input[type="date"] {
   margin-bottom: 16px;
   max-height: 300px;
   padding-right: 8px;
->>>>>>> 7b015c3 (support)
 }
