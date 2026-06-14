@@ -1,10 +1,26 @@
 // src/components/ui/CalendarSection.tsx
-
 "use client";
 import { useState, useMemo } from "react";
-import { Match, Props } from "@/types/CalendarSection";
+import { Match } from "@/types/CalendarSection"; // Убедись, что тип Match экспортируется отсюда
 
-export function CalendarSection({ matches }: Props) {
+// ✅ ОБНОВЛЕННЫЙ ИНТЕРФЕЙС ПРОПСОВ
+interface Props {
+  matches: Match[];
+  onDeleteMatch?: (id: string) => Promise<void>;
+  deletingId?: string | null;
+}
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "SCHEDULED": return "Запланирован";
+    case "LIVE": return "Идет сейчас";
+    case "FINISHED": return "Завершен";
+    case "CANCELLED": return "Отменен";
+    default: return status;
+  }
+};
+
+export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
@@ -12,7 +28,6 @@ export function CalendarSection({ matches }: Props) {
 
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   
-  // Генерируем список годов (текущий ± 5 лет)
   const years = useMemo(() => {
     const y = [];
     for (let i = now.getFullYear() - 5; i <= now.getFullYear() + 5; i++) y.push(i);
@@ -21,7 +36,7 @@ export function CalendarSection({ matches }: Props) {
 
   const firstDay = useMemo(() => {
     let d = new Date(selectedYear, selectedMonth, 1).getDay();
-    return d === 0 ? 6 : d - 1; // Корректировка под Пн-Вс
+    return d === 0 ? 6 : d - 1;
   }, [selectedYear, selectedMonth]);
 
   const daysInMonth = useMemo(() => new Date(selectedYear, selectedMonth + 1, 0).getDate(), [selectedYear, selectedMonth]);
@@ -52,13 +67,11 @@ export function CalendarSection({ matches }: Props) {
       </div>
     );
   }
-  // Дозаполнение сетки
   const remainder = (firstDay + daysInMonth) % 7;
   if (remainder !== 0) for (let i = 0; i < 7 - remainder; i++) days.push(<div key={`end-${i}`} className="calendar-day empty"></div>);
 
   return (
     <div>
-      {/* Панель выбора даты */}
       <div className="calendar-header">
         <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))} className="btn calendar-btn glass-effect" style={{ minWidth: "140px" }}>
           {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
@@ -80,8 +93,27 @@ export function CalendarSection({ matches }: Props) {
             <p><strong>{selectedMatch.homeTeam.name}</strong> vs <strong>{selectedMatch.awayTeam.name}</strong></p>
             <p>Дата: {new Date(selectedMatch.date).toLocaleString()}</p>
             {selectedMatch.venue && <p>Место: {selectedMatch.venue}</p>}
-            <p>Статус: {selectedMatch.status}</p>
-            <button className="btn btn-primary" onClick={() => setSelectedMatch(null)}>Закрыть</button>
+            
+            {/* СТАТУС */}
+            <p style={{ marginBottom: 16 }}>Статус: {getStatusText(selectedMatch.status)}</p>
+            
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              {/*  КНОПКА УДАЛЕНИЯ ДЛЯ АДМИНОВ */}
+              {onDeleteMatch && (
+                <button 
+                  className="btn" 
+                  style={{ background: "#ef4444", color: "white" }}
+                  onClick={() => {
+                    onDeleteMatch(selectedMatch.id);
+                    setSelectedMatch(null);
+                  }}
+                  disabled={deletingId === selectedMatch.id}
+                >
+                  {deletingId === selectedMatch.id ? "Удаление..." : "Удалить"}
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={() => setSelectedMatch(null)}>Закрыть</button>
+            </div>
           </div>
         </div>
       )}

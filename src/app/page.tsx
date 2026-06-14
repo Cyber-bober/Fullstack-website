@@ -1,5 +1,4 @@
 // src/app/page.tsx
-
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,7 +11,7 @@ import { NewsPost, Match } from "@/types/page";
 
 export default function HomePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   
   const [activeTab, setActiveTab] = useState<"news" | "live" | "calendar">("news");
   const [matches, setMatches] = useState<Match[]>([]);
@@ -28,6 +27,7 @@ export default function HomePage() {
   const [teams, setTeams] = useState<any[]>([]);
   const [matchForm, setMatchForm] = useState({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
   const [creatingMatch, setCreatingMatch] = useState(false);
+  const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -79,14 +79,42 @@ export default function HomePage() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [liveNewsQuery]);
+  }, [liveNewsQuery, searchParams, router]);
 
   const handleUpdateNews = useCallback((newPosts: NewsPost[]) => {
     setNewsData(prev => prev ? { ...prev, data: newPosts } : null);
   }, []);
 
+  const handleDeleteMatch = async (id: string) => {
+    if (!confirm("Вы уверены, что хотите удалить этот матч?")) return;
+    
+    setDeletingMatchId(id);
+    try {
+      const res = await fetch(`/api/matches?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setToast({ msg: "Матч успешно удален!", type: "success" });
+        // Обновляем список матчей
+        const mRes = await fetch("/api/matches");
+        if (mRes.ok) setMatches(await mRes.json());
+      } else {
+        const err = await res.json();
+        setToast({ msg: err.error || "Ошибка удаления", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Ошибка сети", type: "error" });
+    } finally {
+      setDeletingMatchId(null);
+    }
+  };
+
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (matchForm.homeTeamId === matchForm.awayTeamId) {
+      setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" });
+      return;
+    }
+
     setCreatingMatch(true);
     try {
       const res = await fetch("/api/matches", {
@@ -112,6 +140,7 @@ export default function HomePage() {
   };
 
   const canManageMatches = userRole === "ADMIN" || userRole === "EDITOR";
+  const isAdmin = userRole === "ADMIN";
 
   return (
     <div className="container">
@@ -148,8 +177,8 @@ export default function HomePage() {
         </>
       )}
       
-      {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} />}
-      {activeTab === "calendar" && <CalendarSection matches={matches} />}
+      {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
+      {activeTab === "calendar" && <CalendarSection matches={matches} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
 
       {/* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МАТЧА */}
       {showMatchModal && (
@@ -167,9 +196,22 @@ export default function HomePage() {
                 </div>
                 <div className="form-group">
                   <label>Гости</label>
-                  <select value={matchForm.awayTeamId} onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} required>
+                  <select 
+                    value={matchForm.awayTeamId} 
+                    onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} 
+                    required
+                    // ✅ ОТКЛЮЧАЕМ ОПЦИЮ, ЕСЛИ ОНА ВЫБРАНА В ПОЛЕ ХОЗЯЕВ
+                  >
                     <option value="">Выберите...</option>
-                    {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    {teams.map(t => (
+                      <option 
+                        key={t.id} 
+                        value={t.id} 
+                        disabled={t.id === matchForm.homeTeamId}
+                      >
+                        {t.name} {t.id === matchForm.homeTeamId ? "(уже выбраны)" : ""}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

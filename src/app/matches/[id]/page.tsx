@@ -1,7 +1,17 @@
-//src/app/matches/[id]/page.tsx
-
+// src/app/matches/[id]/page.tsx
 import { prisma } from "@/lib/prisma";
 import Card from "@/components/ui/Card";
+
+// Вспомогательная функция для перевода статуса
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "SCHEDULED": return "Запланирован";
+    case "LIVE": return "Идет сейчас";
+    case "FINISHED": return "Завершен";
+    case "CANCELLED": return "Отменен";
+    default: return status;
+  }
+};
 
 export default async function MatchPage({ params }: { params: { id: string } }) {
   const match = await prisma.match.findUnique({
@@ -36,9 +46,11 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
             <p style={{ color: '#888' }}>Матч ещё не начался</p>
           )}
 
-          <p> {new Date(match.date).toLocaleDateString()}</p>
+          <p>️ {new Date(match.date).toLocaleDateString()}</p>
           <p> {match.venue || "Стадион не указан"}</p>
-          <p> Статус: {match.status}</p>
+          
+          {/* СТАТУС */}
+          <p style={{ marginTop: 10, fontWeight: 500 }}>Статус: {getStatusText(match.status)}</p>
         </div>
       </Card>
     </div>

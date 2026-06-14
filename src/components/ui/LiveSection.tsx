@@ -1,10 +1,17 @@
 // src/components/ui/LiveSection.tsx
-
+"use client";
 import { useState } from "react";
 import Card from "@/components/ui/Card";
-import { Match, MatchEvent, Props } from "@/types/LiveSection";
+import { Match, MatchEvent } from "@/types/LiveSection";
 
-export function LiveSection({ matches, userRole }: Props) {
+interface Props {
+  matches: Match[];
+  userRole?: string | null;
+  onDeleteMatch?: (id: string) => Promise<void>;
+  deletingId?: string | null;
+}
+
+export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Props) {
   const [selectedMatchId, setSelectedMatchId] = useState<string>("");
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [newEvent, setNewEvent] = useState({ minute: "", text: "" });
@@ -76,6 +83,9 @@ export function LiveSection({ matches, userRole }: Props) {
     (m) => m.status === "SCHEDULED" || m.status === "LIVE"
   );
 
+  // Находим текущий выбранный матч для кнопки удаления
+  const currentMatch = matches.find(m => m.id === selectedMatchId);
+
   return (
     <div>
       <h2 className="section-title">Текстовая трансляция</h2>
@@ -84,19 +94,39 @@ export function LiveSection({ matches, userRole }: Props) {
         <p className="empty-text">Нет активных матчей для трансляции</p>
       ) : (
         <>
-          <div className="form-group">
-            <label>Выберите матч</label>
-            <select
-              value={selectedMatchId}
-              onChange={(e) => handleMatchSelect(e.target.value)}
-            >
-              <option value="">-- Выберите матч --</option>
-              {activeMatches.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.homeTeam.name} vs {m.awayTeam.name} — {new Date(m.date).toLocaleString()}
-                </option>
-              ))}
-            </select>
+          <div className="form-group" style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <div style={{ flex: 1 }}>
+              <label>Выберите матч</label>
+              <select
+                value={selectedMatchId}
+                onChange={(e) => handleMatchSelect(e.target.value)}
+                style={{ width: "100%" }}
+              >
+                <option value="">-- Выберите матч --</option>
+                {activeMatches.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.homeTeam.name} vs {m.awayTeam.name} — {new Date(m.date).toLocaleString()}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* КНОПКА УДАЛЕНИЯ МАТЧА РЯДОМ С ВЫБОРОМ */}
+            {isAdmin && selectedMatchId && currentMatch && (
+              <button 
+                className="btn" 
+                style={{ background: "#ef4444", color: "white", marginBottom: 4 }}
+                onClick={() => {
+                  if (onDeleteMatch) onDeleteMatch(selectedMatchId);
+                  setSelectedMatchId("");
+                  setEvents([]);
+                }}
+                disabled={deletingId === selectedMatchId}
+                title="Удалить этот матч"
+              >
+                {deletingId === selectedMatchId ? "..." : "🗑️"}
+              </button>
+            )}
           </div>
 
           {selectedMatchId && canEdit && (
