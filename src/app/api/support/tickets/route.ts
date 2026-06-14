@@ -1,5 +1,4 @@
 // src/app/api/support/tickets/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -19,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Сообщение должно быть от 50 до 2000 символов" }, { status: 400 });
   }
 
-  // RATE LIMITING: Проверка последнего тикета
+  // RATE LIMITING: Проверка последнего тикета (не чаще 1 раза в 5 мин)
   const lastTicket = await prisma.supportTicket.findFirst({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
@@ -38,26 +37,73 @@ export async function POST(req: NextRequest) {
   }
 
   // Создаем тикет и первое сообщение транзакцией
-  const ticket = await prisma.$transaction(async (tx) => {
-    const newTicket = await tx.supportTicket.create({
-      data: {
-        userId: session.user.id,
-        subject,
-        status: "OPEN",
-      }
+  try {
+    const ticket = await prisma.$transaction(async (tx) => {
+      const newTicket = await tx.supportTicket.create({
+        data: {
+          userId: session.user.id,
+          subject,
+          status: "OPEN",
+        }
+      });
+
+      await tx.supportMessage.create({
+        data: {
+          ticketId: newTicket.id,
+          senderId: session.user.id,
+          text,
+          isAdmin: false,
+        }
+      });
+
+      return newTicket;
     });
 
-    await tx.supportMessage.create({
-      data: {
-        ticketId: newTicket.id,
-        senderId: session.user.id,
-        text,
-        isAdmin: false,
-      }
-    });
+    return NextResponse.json(ticket, { status: 201 });
+  } catch (error) {
+    console.error("Ошибка создания тикета:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
 
-    return newTicket;
-  });
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
-  return NextResponse.json(ticket, { status: 201 });
+  const isAdmin = session.user.role === "ADMIN";
+
+  try {
+    if (isAdmin) {
+      const tickets = await prisma.supportTicket.findMany({
+        include: {
+          user: { select: { username: true, fullName: true } },
+          messages: { 
+            orderBy: { createdAt: "asc" },
+            take: 1,
+            include: { sender: { select: { fullName: true } } }
+          },
+          _count: { select: { messages: true } }
+        },
+        orderBy: { updatedAt: "desc" }
+      });
+      return NextResponse.json(tickets);
+    } else {
+      const tickets = await prisma.supportTicket.findMany({
+        where: { userId: session.user.id },
+        include: {
+          messages: { 
+            orderBy: { createdAt: "asc" },
+            take: 1,
+            include: { sender: { select: { fullName: true } } }
+          },
+          _count: { select: { messages: true } }
+        },
+        orderBy: { updatedAt: "desc" }
+      });
+      return NextResponse.json(tickets);
+    }
+  } catch (error) {
+    console.error("Ошибка загрузки тикетов:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
 }

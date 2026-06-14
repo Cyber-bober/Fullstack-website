@@ -1,4 +1,5 @@
 // src/components/ui/SupportWidget.tsx
+
 "use client";
 import { useState, useEffect } from "react";
 import Toast from "@/components/ui/Toast";

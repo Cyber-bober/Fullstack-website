@@ -2024,6 +2024,7 @@ input[type="date"] {
   outline: none;
 }
 
+<<<<<<< HEAD
 .day-header-glass {
   position: relative;
   overflow: hidden;
@@ -2041,4 +2042,133 @@ input[type="date"] {
 
 .calendar-day-header.glass-effect:hover {
   transform: none;
+=======
+/* ============================================
+   ВИДЖЕТ ПОДДЕРЖКИ
+   ============================================ */
+
+.support-widget-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #0070f3;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.4);
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.support-widget-btn:hover {
+  transform: scale(1.05);
+}
+
+.support-widget-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 400px;
+  max-height: 600px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 9991;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.support-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.support-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.support-message {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.support-message-user {
+  align-self: flex-end;
+  background: #0070f3;
+  color: white;
+}
+
+.support-message-admin {
+  align-self: flex-start;
+  background: #f3f4f6;
+  color: #1a1a1a;
+}
+
+/* ============================================
+   АДМИНКА: ПОДДЕРЖКА
+   ============================================ */
+
+.support-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  min-height: 400px;
+}
+
+.support-ticket-list {
+  border-right: 1px solid #e5e7eb;
+  padding-right: 16px;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.support-ticket-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.support-ticket-item:hover {
+  background: #f9fafb;
+}
+
+.support-ticket-item.active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.support-chat-area {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.support-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 300px;
+  padding-right: 8px;
+>>>>>>> 7b015c3 (support)
 }
