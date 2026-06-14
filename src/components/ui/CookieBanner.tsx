@@ -20,7 +20,7 @@ export default function CookieBanner() {
   return (
     <div className="glass-effect" style={{
       position: "fixed", bottom: 0, left: 0, right: 0,
-      color: "rgba(243, 243, 243, 0.75)", padding: "16px 24px", margin: "0 30px 20px 30px",
+      color: "rgba(243, 243, 243, 0.75)", padding: "16px 24px", margin: "0 30px 30px 30px",
       display: "flex", alignItems: "center", justifyContent: "space-between",
       gap: "16px", zIndex: 9998, flexWrap: "wrap"
     }}>

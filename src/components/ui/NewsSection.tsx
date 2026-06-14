@@ -114,27 +114,27 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       <div className="section-header">
         <h2 className="section-title glass-effect">Новости</h2>
         {canEdit && (
-          <button className="btn btn-primary btn-add-news" onClick={() => { resetForm(); setShowForm(true); }}>
+          <button className="btn btn-primary btn-add-news glass-effect" onClick={() => { resetForm(); setShowForm(true); }}>
             {showForm ? "Отмена" : "Добавить новость"}
           </button>
         )}
       </div>
 
       {showForm && (
-        <Card className="form-card">
+        <Card className="form-card glass-effect">
           {error && <div className="form-error">{error}</div>}
-          <h3 style={{ marginBottom: "16px" }}>{isEditing ? "Редактирование новости" : "Новая новость"}</h3>
+          <h3 style={{ marginBottom: "16px", color: '#0160ce' }}>{isEditing ? "Редактирование новости" : "Новая новость"}</h3>
           <form onSubmit={handleSubmit}>
-            <div className="form-group"><label>Заголовок</label><input type="text" value={title} onChange={e => setTitle(e.target.value)} required /></div>
-            <div className="form-group"><label>Содержание</label><textarea value={content} onChange={e => setContent(e.target.value)} required rows={4} /></div>
+            <div className="form-group"><label style={{ color: 'black' }}>Заголовок</label><input type="text" className="glass-effect" value={title} onChange={e => setTitle(e.target.value)} required /></div>
+            <div className="form-group"><label style={{ color: 'black' }}>Содержание</label><textarea className="glass-effect" value={content} onChange={e => setContent(e.target.value)} required rows={4} /></div>
             <div className="form-group">
-              <label>Изображение {isEditing && "(оставьте пустым, чтобы не менять)"}</label>
-              <input type="file" accept="image/*" onChange={handleFileChange} style={{ padding: "8px 0" }} />
+              <label style={{ color: 'black' }}>Изображение {isEditing && "(оставьте пустым, чтобы не менять)"}</label>
+              <input type="file" accept="image/*" onChange={handleFileChange} style={{ padding: "8px 0", background: 'transparent' }} />
               {preview && <div className="file-preview-container"><img src={preview} alt="Preview" className="file-preview" /></div>}
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
-              <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? "Сохранение..." : "Сохранить"}</button>
-              <button type="button" className="btn" onClick={resetForm}>Отмена</button>
+              <button type="submit" className="btn btn-primary glass-effect" disabled={loading}>{loading ? "Сохранение..." : "Сохранить"}</button>
+              <button type="button" className="btn btn-secondary glass-effect" onClick={resetForm}>Отмена</button>
             </div>
           </form>
         </Card>
@@ -152,9 +152,9 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
             <Card key={post.id} className="news-card glass-effect">
               {canEditThis && (
                 <div className="news-actions">
-                  <button onClick={() => openEditModal(post)} className="btn btn-icon" title="Редактировать">✏️</button>
+                  <button onClick={() => openEditModal(post)} className="btn btn-icon btn-edit glass-effect" title="Редактировать">✏️</button>
                   {canDelete && (
-                    <button onClick={() => handleDelete(post.id)} disabled={deletingId === post.id} className="btn btn-icon btn-delete" title="Удалить">
+                    <button onClick={() => handleDelete(post.id)} disabled={deletingId === post.id} className="btn btn-icon btn-delete glass-effect" title="Удалить">
                       {deletingId === post.id ? "..." : "🗑️"}
                     </button>
                   )}

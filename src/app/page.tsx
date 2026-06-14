@@ -150,8 +150,8 @@ export default function HomePage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
         {canManageMatches && (
-          <button className="btn btn-primary" onClick={() => setShowMatchModal(true)}>
-            + Добавить матч
+          <button className="btn btn-primary glass-effect" onClick={() => setShowMatchModal(true)}>
+            Добавить матч
           </button>
         )}
       </div>
@@ -183,20 +183,21 @@ export default function HomePage() {
       {/* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МАТЧА */}
       {showMatchModal && (
         <div className="modal-overlay" onClick={() => setShowMatchModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: "500px" }}>
+          <div className="modal-content glass-effect" onClick={e => e.stopPropagation()} style={{ maxWidth: "500px" }}>
             <h3 className="section-title">Новый матч</h3>
             <form onSubmit={handleCreateMatch}>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
-                  <label>Хозяева</label>
-                  <select value={matchForm.homeTeamId} onChange={e => setMatchForm({...matchForm, homeTeamId: e.target.value})} required>
+                  <label style={{ color: 'black' }}>Хозяева</label>
+                  <select className="glass-effect" value={matchForm.homeTeamId} onChange={e => setMatchForm({...matchForm, homeTeamId: e.target.value})} required>
                     <option value="">Выберите...</option>
                     {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Гости</label>
+                  <label style={{ color: 'black' }}>Гости</label>
                   <select 
+                    className="glass-effect"
                     value={matchForm.awayTeamId} 
                     onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} 
                     required
@@ -216,16 +217,16 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="form-group mb-4">
-                <label>Дата и время</label>
-                <input type="datetime-local" value={matchForm.date} onChange={e => setMatchForm({...matchForm, date: e.target.value})} required />
+                <label style={{ color: 'black' }}>Дата и время</label>
+                <input className="glass-effect" type="datetime-local" value={matchForm.date} onChange={e => setMatchForm({...matchForm, date: e.target.value})} required />
               </div>
               <div className="form-group mb-4">
-                <label>Стадион</label>
-                <input type="text" value={matchForm.venue} onChange={e => setMatchForm({...matchForm, venue: e.target.value})} placeholder="Название стадиона" />
+                <label style={{ color: 'black' }}>Стадион</label>
+                <input className="glass-effect" type="text" value={matchForm.venue} onChange={e => setMatchForm({...matchForm, venue: e.target.value})} placeholder="Название стадиона" />
               </div>
               <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                <button type="button" className="btn" onClick={() => setShowMatchModal(false)}>Отмена</button>
-                <button type="submit" className="btn btn-primary" disabled={creatingMatch}>{creatingMatch ? "Создание..." : "Создать матч"}</button>
+                <button type="submit" className="btn btn-primary glass-effect" disabled={creatingMatch}>{creatingMatch ? "Создание..." : "Создать матч"}</button>
+                <button type="button" className="btn btn-secondary glass-effect" onClick={() => setShowMatchModal(false)}>Отмена</button>
               </div>
             </form>
           </div>

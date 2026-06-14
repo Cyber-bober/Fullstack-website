@@ -34,7 +34,7 @@ export default async function Nav() {
               )}
               
               <form action="/api/auth/signout" method="post" style={{ margin: 0 }}>
-                <button type="submit" className="btn btn-primary glass effect" style={{ fontSize: "14px", padding: "6px 14px" }}>
+                <button type="submit" className="btn btn-primary glass-effect" style={{ fontSize: "14px", padding: "6px 14px" }}>
                   Выйти
                 </button>
               </form>

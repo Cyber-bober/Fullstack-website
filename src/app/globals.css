@@ -35,7 +35,7 @@ body {
 }
 
 a {
-  color: #0070f3;
+  color: #0160ce;
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -67,7 +67,7 @@ button:disabled {
 }
 
 .btn-primary {
-  background: #0070f3;
+  background: #0160ce;
   color: white;
   text-decoration: none;
 }
@@ -79,7 +79,11 @@ button:disabled {
 }
 
 .btn-primary.glass-effect {
-  background: #0070f3;
+  background: #0160ce;
+}
+
+.btn-secondary.glass-effect {
+  background: rgba(240, 23, 23, 0.8);
 }
 
 .btn-danger {
@@ -189,7 +193,7 @@ input[type="date"] {
 }
 
 .profile-photo:hover {
-  border-color: #0070f3;
+  border-color: #0160ce;
   transform: scale(1.05);
 }
 
@@ -215,7 +219,7 @@ input[type="date"] {
 }
 
 .edit-link {
-  color: #0070f3;
+  color: #0160ce;
   text-decoration: underline;
   font-size: 0.875rem;
   display: inline-block;
@@ -335,7 +339,7 @@ input[type="date"] {
 
 .upload-btn:hover:not(:disabled) {
   background: #f5f5f7;
-  border-color: #0070f3;
+  border-color: #0160ce;
 }
 
 .upload-btn:disabled {
@@ -473,21 +477,11 @@ input[type="date"] {
 }
 
 .news-title {
+  font-size: 1.25rem;
+  font-weight: 700;
   margin: 0 0 8px;
   font-size: 18px;
-  color: #1a1a1a;
-}
-
-.news-content {
-  color: #666;
-  font-size: 14px;
-  line-height: 1.6;
-  margin-bottom: 12px;
-}
-
-.news-meta {
-  font-size: 12px;
-  color: #999;
+  color: #0160ce;
 }
 
 .form-card {
@@ -534,7 +528,7 @@ input[type="date"] {
 
 .event-minute {
   font-weight: 700;
-  color: #0070f3;
+  color: #0160ce;
   min-width: 40px;
 }
 
@@ -606,7 +600,7 @@ input[type="date"] {
 }
 
 .match-event {
-  background: #0070f3;
+  background: #0160ce;
   color: white;
   padding: 4px 6px;
   border-radius: 4px;
@@ -687,7 +681,7 @@ input[type="date"] {
 .team-player-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
-  border-color: #0070f3;
+  border-color: #0160ce;
 }
 
 .player-avatar {
@@ -974,7 +968,7 @@ input[type="date"] {
 
 .conversation-item.active {
   background: #eff6ff;
-  border-left: 3px solid #0070f3;
+  border-left: 3px solid #0160ce;
 }
 
 .conversation-avatar, 
@@ -1085,7 +1079,7 @@ input[type="date"] {
 }
 
 .chat-message.own .chat-message-bubble {
-  background: #0070f3;
+  background: #0160ce;
   color: white;
   border-bottom-right-radius: 4px;
 }
@@ -1181,26 +1175,12 @@ input[type="date"] {
   display: block;
 }
 
-.news-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #1a1a1a;
-}
-
 .news-content {
-  color: #4b5563;
+  color: rgba(243, 243, 243, 0.75);
   line-height: 1.6;
   margin-bottom: 12px;
+  font-size: 14px;
   white-space: pre-wrap; /* Сохраняет переносы строк из textarea */
-}
-
-.news-meta {
-  display: block;
-  font-size: 0.875rem;
-  color: #9ca3af;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 12px;
 }
 
 /* ============================================
@@ -1228,25 +1208,12 @@ input[type="date"] {
   display: block;
 }
 
-.news-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #1a1a1a;
-}
-
-.news-content {
-  color: #4b5563;
-  line-height: 1.6;
-  margin-bottom: 12px;
-  white-space: pre-wrap;
-}
-
 .news-meta {
   display: block;
   font-size: 0.875rem;
-  color: #9ca3af;
-  border-top: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: black;
+  border-top: 1px solid black;
   padding-top: 12px;
 }
 
@@ -1531,8 +1498,16 @@ input[type="date"] {
   line-height: 1;
 }
 
+.btn-edit.glass-effect {
+  background: rgba(251, 192, 30, 0.8);
+}
+
 .btn-delete {
   color: #ef4444 !important;
+}
+
+.btn-delete.glass-effect {
+  background: rgba(240, 23, 23, 0.8);
 }
 
 .file-preview-container {
@@ -1669,7 +1644,7 @@ input[type="date"] {
 
 .pd-consent-checkbox {
   margin-top: 4px;
-  accent-color: #0070f3;
+  accent-color: #0160ce;
   cursor: pointer;
 }
 
@@ -1681,7 +1656,7 @@ input[type="date"] {
 }
 
 .pd-consent-link {
-  color: #0070f3;
+  color: #0160ce;
   text-decoration: underline;
 }
 
@@ -1722,7 +1697,7 @@ input[type="date"] {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #0070f3;
+  background: #0160ce;
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(0, 112, 243, 0.4);
@@ -1777,7 +1752,7 @@ input[type="date"] {
 
 .support-message-user {
   align-self: flex-end;
-  background: #0070f3;
+  background: #0160ce;
   color: white;
 }
 
@@ -1935,7 +1910,7 @@ input[type="date"] {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #0070f3;
+  background: #0160ce;
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(0, 112, 243, 0.4);
@@ -1990,7 +1965,7 @@ input[type="date"] {
 
 .support-message-user {
   align-self: flex-end;
-  background: #0070f3;
+  background: #0160ce;
   color: white;
 }
 
