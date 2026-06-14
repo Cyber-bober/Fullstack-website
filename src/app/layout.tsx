@@ -6,7 +6,7 @@ import Footer from "@/components/ui/Footer";
 import Providers from "@/components/ui/Providers";
 import { Inter } from "next/font/google";
 import CookieBanner from "@/components/ui/CookieBanner";
-import SupportWidget from "@/components/ui/SupportMessage";
+import SupportWidget from "@/components/ui/SupportWidget";
 
 const inter = Inter({ subsets: ["latin"] });
 

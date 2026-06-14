@@ -1,5 +1,4 @@
-//src/app/chat/page.tsx
-
+// src/app/chat/page.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Card from "@/components/ui/Card";
@@ -11,11 +10,16 @@ export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  
+  // Поиск
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ChatUser[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Инициализация
   useEffect(() => {
     const init = async () => {
       try {
@@ -24,52 +28,57 @@ export default function ChatPage() {
           const session = await sessionRes.json();
           setCurrentUserId(session?.user?.id);
         }
-      } catch (err) {
-        console.error("Ошибка загрузки сессии:", err);
-      }
+      } catch (err) { console.error("Ошибка сессии:", err); }
       await loadConversations();
     };
     init();
   }, []);
 
+  // Автопрокрутка
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, selectedUser]);
+
+  // ✅ ПОИСК С DEBOUNCE
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      const trimmed = searchQuery.trim();
+      
+      if (trimmed.length >= 2) {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`/api/users/search?q=${encodeURIComponent(trimmed)}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSearchResults(data);
+          } else {
+            setSearchResults([]);
+          }
+        } catch (err) {
+          console.error("Ошибка поиска:", err);
+          setSearchResults([]);
+        }
+      } else {
+        setIsSearching(false);
+        setSearchResults([]);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const loadConversations = async () => {
     try {
       const res = await fetch("/api/chat/conversations");
-      if (res.ok) {
-        const data = await res.json();
-        setConversations(data);
-      }
-    } catch (err) {
-      console.error("Ошибка загрузки диалогов:", err);
-    }
-  };
-
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSearchResults(data);
-      }
-    } catch (err) {
-      console.error("Ошибка поиска:", err);
-    }
+      if (res.ok) setConversations(await res.json());
+    } catch (err) { console.error("Ошибка диалогов:", err); }
   };
 
   const selectUser = async (user: ChatUser) => {
     setSelectedUser(user);
     setSearchQuery("");
     setSearchResults([]);
+    setIsSearching(false);
     await loadMessages(user.id);
   };
 
@@ -77,15 +86,9 @@ export default function ChatPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/chat/messages?userId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data);
-      }
-    } catch (err) {
-      console.error("Ошибка загрузки сообщений:", err);
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setMessages(await res.json());
+    } catch (err) { console.error("Ошибка сообщений:", err); }
+    finally { setLoading(false); }
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -96,10 +99,7 @@ export default function ChatPage() {
       const res = await fetch("/api/chat/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          receiverId: selectedUser.id,
-          text: newMessage,
-        }),
+        body: JSON.stringify({ receiverId: selectedUser.id, text: newMessage }),
       });
 
       if (res.ok) {
@@ -117,90 +117,104 @@ export default function ChatPage() {
     }
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  // ✅ ИСПРАВЛЕНИЕ: Добавлена проверка на undefined/null
+  const formatTime = (dateStr: string | undefined | null) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleTimeString("ru-RU", { 
+      hour: "2-digit", minute: "2-digit" 
+    });
   };
 
   return (
     <div className="chat-page">
       <h1 className="home-title">Чат</h1>
       <div className="chat-layout">
-        {/* Левая панель: поиск и диалоги */}
-          {/* Поиск */}
-          <div className="chat-search glass-effect">
+        
+        {/* ЛЕВАЯ ПАНЕЛЬ */}
+        <div className="chat-sidebar glass-effect">
+          {/* Поле поиска */}
+          <div className="chat-search">
             <input
               type="text"
               className="search-input"
-              placeholder="Поиск по имени, username или ID..."
+              placeholder="Поиск по имени или @username..."
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoComplete="off"
             />
-
-            {searchResults.length > 0 && (
-              <div className="search-results">
-                {searchResults.map((user) => (
-                  <div
-                    key={user.id}
-                    className="search-result-item"
-                    onClick={() => selectUser(user)}
-                  >
-                    <div className="search-result-avatar">
-                      {user.photos[0] && <img src={user.photos[0]} alt="" />}
-                    </div>
-                    <div>
-                      <div className="search-result-name">{user.fullName}</div>
-                      <div className="search-result-username">@{user.username}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Список диалогов */}
-          <div className="conversations-list glass-effect">
-            {conversations.length === 0 ? (
-              <p className="empty-text">Нет диалогов</p>
-            ) : (
-              conversations.map((conv) => (
+          {/* УСЛОВНЫЙ РЕНДЕРИНГ */}
+          {isSearching && searchResults.length > 0 ? (
+            <div className="search-results-list">
+              <div className="section-label">Найдено пользователей:</div>
+              {searchResults.map((user) => (
                 <div
-                  key={conv.user.id}
-                  className={`conversation-item ${
-                    selectedUser?.id === conv.user.id ? "active" : ""
-                  }`}
-                  onClick={() => selectUser(conv.user)}
+                  key={user.id}
+                  className="conversation-item hoverable"
+                  onClick={() => selectUser(user)}
                 >
-                  <div className="conversation-row">
+                  <div className="conversation-avatar">
+                    {user.photos?.[0] ? (
+                      <img src={user.photos[0]} alt="" />
+                    ) : (
+                      <div className="avatar-placeholder">{user.fullName?.[0] || "?"}</div>
+                    )}
+                  </div>
+                  <div className="conversation-info">
+                    <div className="conversation-name">{user.fullName}</div>
+                    <div className="conversation-username">@{user.username}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="conversations-list">
+              {conversations.length === 0 ? (
+                <p className="empty-text">Нет активных диалогов</p>
+              ) : (
+                conversations.map((conv) => (
+                  <div
+                    key={conv.user.id}
+                    className={`conversation-item ${
+                      selectedUser?.id === conv.user.id ? "active" : ""
+                    }`}
+                    onClick={() => selectUser(conv.user)}
+                  >
                     <div className="conversation-avatar">
-                      {conv.user.photos[0] && (
+                      {conv.user.photos?.[0] ? (
                         <img src={conv.user.photos[0]} alt="" />
+                      ) : (
+                        <div className="avatar-placeholder">{conv.user.fullName?.[0] || "?"}</div>
                       )}
                     </div>
                     <div className="conversation-info">
                       <div className="conversation-name">{conv.user.fullName}</div>
                       <div className="conversation-last-message">
-                        {conv.lastMessage.text}
+                        {conv.lastMessage?.text || "Нет сообщений"}
                       </div>
                     </div>
                     <div className="conversation-time">
-                      {formatTime(conv.lastMessage.createdAt)}
+                      {/* ✅ ИСПРАВЛЕНИЕ: Передаем дату безопасно */}
+                      {formatTime(conv.lastMessage?.createdAt)}
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* Правая панель: переписка */}
+        {/* ПРАВАЯ ПАНЕЛЬ */}
         <Card className="chat-main glass-effect">
           {selectedUser ? (
             <>
-              {/* Заголовок диалога */}
               <div className="chat-header">
                 <div className="chat-header-avatar">
-                  {selectedUser.photos[0] && (
+                  {selectedUser.photos?.[0] ? (
                     <img src={selectedUser.photos[0]} alt="" />
+                  ) : (
+                    <div className="avatar-placeholder">{selectedUser.fullName?.[0] || "?"}</div>
                   )}
                 </div>
                 <div>
@@ -209,25 +223,19 @@ export default function ChatPage() {
                 </div>
               </div>
 
-              {/* Сообщения */}
               <div className="chat-messages">
                 {loading ? (
-                  <p className="empty-text">Загрузка...</p>
+                  <p className="empty-text">Загрузка истории...</p>
                 ) : messages.length === 0 ? (
-                  <p className="empty-text">Начните диалог</p>
+                  <p className="empty-text">Начните диалог первым!</p>
                 ) : (
                   messages.map((msg) => {
                     const isOwn = msg.senderId === currentUserId;
                     return (
-                      <div
-                        key={msg.id}
-                        className={`chat-message ${isOwn ? "own" : "other"}`}
-                      >
+                      <div key={msg.id} className={`chat-message ${isOwn ? "own" : "other"}`}>
                         <div className="chat-message-bubble">
                           <div>{msg.text}</div>
-                          <div className="chat-message-time">
-                            {formatTime(msg.createdAt)}
-                          </div>
+                          <div className="chat-message-time">{formatTime(msg.createdAt)}</div>
                         </div>
                       </div>
                     );
@@ -236,7 +244,6 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Ввод сообщения */}
               <form className="chat-input-form" onSubmit={sendMessage}>
                 <input
                   type="text"
@@ -245,18 +252,14 @@ export default function ChatPage() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                 />
-                <button
-                  type="submit"
-                  className="btn btn-primary chat-send-btn"
-                  disabled={!newMessage.trim()}
-                >
+                <button type="submit" className="btn btn-primary chat-send-btn" disabled={!newMessage.trim()}>
                   ➤
                 </button>
               </form>
             </>
           ) : (
             <div className="chat-empty">
-              <p className="empty-text">Выберите пользователя для начала диалога</p>
+              <p className="empty-text">Выберите собеседника слева</p>
             </div>
           )}
         </Card>

@@ -1,8 +1,8 @@
 // src/components/ui/SupportWidget.tsx
-
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Toast from "@/components/ui/Toast";
+import { io, Socket } from "socket.io-client";
 
 export default function SupportWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +14,51 @@ export default function SupportWidget() {
   const [formData, setFormData] = useState({ subject: "", text: "" });
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
+  
+  const socketRef = useRef<Socket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Инициализация сокета при открытии виджета
+  useEffect(() => {
+    if (isOpen && !socketRef.current) {
+      socketRef.current = io({ path: "/api/socket" });
+      
+      socketRef.current.on("connect", () => {
+        console.log("✅ Подключено к сокету");
+      });
+
+      // Слушаем входящие сообщения
+      socketRef.current.on("receive_message", (newMessage) => {
+        setActiveTicket((prev: any) => {
+          if (prev && prev.id === newMessage.ticketId) {
+            // Добавляем новое сообщение в список
+            return { ...prev, messages: [...prev.messages, newMessage] };
+          }
+          return prev;
+        });
+        
+        // Обновляем список тикетов (для счетчиков)
+        loadTickets();
+      });
+    }
+
+    return () => {
+      if (socketRef.current) socketRef.current.disconnect();
+    };
+  }, [isOpen]);
+
+  // Вход в комнату тикета при выборе активного обращения
+  useEffect(() => {
+    if (socketRef.current && activeTicket?.id) {
+      socketRef.current.emit("join_support", activeTicket.id);
+      scrollToBottom();
+    }
+  }, [activeTicket]);
+
+  // Автопрокрутка вниз при новых сообщениях
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     if (isOpen && !activeTicket) loadTickets();
@@ -51,20 +96,41 @@ export default function SupportWidget() {
 
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeTicket || !replyText.trim()) return;
+    if (!activeTicket || !replyText.trim() || !socketRef.current) return;
+    
     setSending(true);
+    const messageData = {
+      ticketId: activeTicket.id,
+      text: replyText,
+      senderId: "me", // Временный ID для локального отображения
+      sender: { fullName: "Вы", role: "USER" },
+      createdAt: new Date().toISOString(),
+      isAdmin: false,
+    };
+
+    // 1. Сразу показываем сообщение у себя (Optimistic UI)
+    setActiveTicket((prev: any) => ({
+      ...prev,
+      messages: [...prev.messages, messageData],
+    }));
+    setReplyText("");
+    scrollToBottom();
+
+    // 2. Отправляем через сокет (для мгновенной доставки другим)
+    socketRef.current.emit("send_message", messageData);
+
+    // 3. Сохраняем в БД (фоновая задача)
     try {
-      const res = await fetch(`/api/support/tickets/${activeTicket.id}/messages`, {
+      await fetch(`/api/support/tickets/${activeTicket.id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: replyText }),
+        body: JSON.stringify({ text: messageData.text }),
       });
-      if (res.ok) {
-        setReplyText("");
-        const tRes = await fetch(`/api/support/tickets/${activeTicket.id}`);
-        if (tRes.ok) setActiveTicket(await tRes.json());
-      }
-    } catch {} finally { setSending(false); }
+    } catch {
+      setToast({ msg: "Ошибка сохранения сообщения", type: "error" });
+    } finally { 
+      setSending(false); 
+    }
   };
 
   if (!isOpen) {
@@ -95,13 +161,15 @@ export default function SupportWidget() {
                 </span>
               </div>
               
-              <div style={{ display: "flex", flexDirection: "column", marginBottom: "16px" }}>
-                {activeTicket.messages?.map((msg: any) => (
-                  <div key={msg.id} className={`support-message ${msg.senderId === activeTicket.userId ? "support-message-user" : "support-message-admin"}`}>
+              {/* Контейнер сообщений с автопрокруткой */}
+              <div style={{ display: "flex", flexDirection: "column", marginBottom: "16px", maxHeight: "300px", overflowY: "auto" }}>
+                {activeTicket.messages?.map((msg: any, idx: number) => (
+                  <div key={msg.id || idx} className={`support-message ${msg.senderId === activeTicket.userId || msg.senderId === "me" ? "support-message-user" : "support-message-admin"}`}>
                     <p style={{ margin: "0 0 4px", fontSize: "13px" }}>{msg.text}</p>
                     <small style={{ opacity: 0.7, fontSize: "11px" }}>{msg.sender.fullName} • {new Date(msg.createdAt).toLocaleTimeString()}</small>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               <form onSubmit={handleSendReply} style={{ display: "flex", gap: "8px" }}>

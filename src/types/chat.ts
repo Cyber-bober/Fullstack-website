@@ -4,7 +4,7 @@ export type ChatUser = {
   id: string;
   fullName: string;
   username: string;
-  photos: string[];
+  photos: string[] | null;
 };
 
 export type ChatMessage = {
@@ -21,6 +21,6 @@ export type ChatMessage = {
 
 export type Conversation = {
   user: ChatUser;
-  lastMessage: ChatMessage;
+  lastMessage: ChatMessage | null;
   unreadCount: number;
 };
