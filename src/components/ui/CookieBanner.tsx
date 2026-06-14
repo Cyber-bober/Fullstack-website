@@ -18,18 +18,18 @@ export default function CookieBanner() {
   if (!visible) return null;
 
   return (
-    <div style={{
+    <div className="glass-effect" style={{
       position: "fixed", bottom: 0, left: 0, right: 0,
-      background: "#1a1a1a", color: "white", padding: "16px 24px",
+      color: "rgba(243, 243, 243, 0.75)", padding: "16px 24px", margin: "0 30px 20px 30px",
       display: "flex", alignItems: "center", justifyContent: "space-between",
       gap: "16px", zIndex: 9998, flexWrap: "wrap"
     }}>
       <p style={{ margin: 0, fontSize: "14px", flex: 1, minWidth: "200px" }}>
         Мы используем cookies для работы системы входа и улучшения сервиса. 
         Продолжая использовать сайт, вы соглашаетесь с нашей{" "}
-        <a href="/privacy-policy" style={{ color: "#60a5fa" }}>Политикой конфиденциальности</a>.
+        <a href="/privacy-policy" style={{ color: "#0070f3" }}>Политикой конфиденциальности</a>.
       </p>
-      <button onClick={handleAccept} className="btn btn-primary" style={{ whiteSpace: "nowrap" }}>
+      <button onClick={handleAccept} className="btn btn-primary glass-effect" style={{ whiteSpace: "nowrap" }}>
         Принять
       </button>
     </div>

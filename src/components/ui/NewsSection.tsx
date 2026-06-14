@@ -112,7 +112,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
   return (
     <div>
       <div className="section-header">
-        <h2 className="section-title">Новости</h2>
+        <h2 className="section-title glass-effect">Новости</h2>
         {canEdit && (
           <button className="btn btn-primary btn-add-news" onClick={() => { resetForm(); setShowForm(true); }}>
             {showForm ? "Отмена" : "Добавить новость"}
@@ -149,7 +149,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
           const canEditThis = canEdit || isAuthor;
 
           return (
-            <Card key={post.id} className="news-card">
+            <Card key={post.id} className="news-card glass-effect">
               {canEditThis && (
                 <div className="news-actions">
                   <button onClick={() => openEditModal(post)} className="btn btn-icon" title="Редактировать">✏️</button>
@@ -161,7 +161,6 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
                 </div>
               )}
 
-              {post.imageUrl && (<div className="news-image-wrapper"><img src={post.imageUrl} alt={post.title} /></div>)}
               <h3 className="news-title">{post.title}</h3>
               <p className="news-content">{post.content}</p>
               <span className="news-meta">Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}</span>

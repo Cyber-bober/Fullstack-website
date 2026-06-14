@@ -39,7 +39,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       {pages.map((p) => (
         <button
           key={p}
-          className={`btn ${p === currentPage ? "btn-primary" : ""}`}
+          className={`glass-effect btn ${p === currentPage ? "btn-primary" : ""}`}
           onClick={() => handlePageChange(p)}
           style={{ minWidth: "40px" }}
         >
@@ -48,7 +48,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       ))}
 
       <button
-        className="btn"
+        className="btn glass-effect"
         disabled={currentPage === totalPages}
         onClick={() => handlePageChange(currentPage + 1)}
         style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}

@@ -22,16 +22,15 @@ text {
   padding: 0;
 }
 
-/*html {
-  background: url('/uploads/img/bg.jpg') center center / cover no-repeat fixed #f3f3f3;
-}*/
+html {
+  background: url('/uploads/img/bg-3.jpg') center center / cover no-repeat fixed #f3f3f3;
+}
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background: #f3f3f3;
-  color: #1a1a1a;
+  /*background: #f3f3f3;*/
   line-height: 1.5;
 }
 
@@ -352,10 +351,6 @@ input[type="date"] {
   text-align: center;
 }
 
-.text-gray {
-  color: #6b7280;
-}
-
 .mt-4 {
   margin-top: 1rem;
 }
@@ -426,7 +421,7 @@ input[type="date"] {
   font-size: 2rem;
   font-weight: 800;
   margin-bottom: 20px;
-  color: #1a1a1a;
+  color: #0059c8;
 }
 
 .tabs {
@@ -442,8 +437,7 @@ input[type="date"] {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
-  color: #6b7280;
-  border-radius: 14px;
+  color: rgba(243, 243, 243, 0.75);
   transition: all 0.2s;
 }
 
@@ -453,16 +447,11 @@ input[type="date"] {
 }
 
 .tab.active {
-  color: #0070f3;
+  color: #0059c8;
   margin-bottom: -14px;
   font-weight: 600;
   border-radius: 18px;
-}
-
-.section-title {
-  font-size: 20px;
-  margin-bottom: 16px;
-  color: #1a1a1a;
+  padding: 8px 20px;
 }
 
 .empty-text {
@@ -801,7 +790,7 @@ input[type="date"] {
 .nav-logo {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #2563eb;
+  color: #0059c8;
   text-decoration: none;
 }
 
@@ -817,7 +806,7 @@ input[type="date"] {
 }
 
 .nav-link {
-  color: #6b7280;
+  color: rgba(243, 243, 243, 0.75);
   text-decoration: none;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
@@ -841,11 +830,9 @@ input[type="date"] {
    ============================================ */
 
 .footer {
-  background: #f3f3f3;
-  border-top: 1px solid #979797;
-  padding: 2rem 1.5rem;
   text-align: center;
-  color: #6b7280;
+  margin: 20px 20px 10px 20px;
+  color: rgba(243, 243, 243, 0.75);
   font-size: 0.875rem;
 }
 
@@ -1398,8 +1385,9 @@ input[type="date"] {
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 16px; /* Отступ снизу до контента */
-  color: #1a1a1a;
+  margin-bottom: 16px;
+  color: #0059c8;
+  padding: 3px 12px;
 }
 
 /* Контейнер для заголовка и кнопки управления */
@@ -1856,33 +1844,18 @@ input[type="date"] {
    ЭФФЕКТ LIQUID GLASS
    ============================================ */
 
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
 .glass-effect {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
   box-sizing: border-box;
-  background: rgba(198, 198, 198, 0.5);
+  background: rgba(176, 176, 176, 0.5);
   backdrop-filter: blur(35px) saturate(200%);
   -webkit-backdrop-filter: blur(35px) saturate(200%);
-  border: 1px solid rgba(198, 198, 198, 0.6);
+  border: 1px solid rgba(176, 176, 176, 0.6);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(176, 176, 176, 0.675);
+    inset 0 1px 0 rgba(146, 146, 146, 0.675);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -1890,7 +1863,7 @@ input[type="date"] {
   transform: translateY(-2px);
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(176, 176, 176, 0.675);
+    inset 0 1px 0 rgba(146, 146, 146, 0.7);
 }
 
 .glass-btn {
@@ -1898,30 +1871,30 @@ input[type="date"] {
   overflow: hidden;
   border-radius: 22px;
   box-sizing: border-box;
-  background: rgba(198, 198, 198, 0.5);
+  background: rgba(176, 176, 176, 0.5);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(198, 198, 198, 0.6);
+  border: 1px solid rgba(176, 176, 176, 0.6);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(176, 176, 176, 0.675);
+    inset 0 1px 0 rgba(146, 146, 146, 0.675);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .glass-btn:hover {
-  background: rgba(198, 198, 198, 0.55);
+  background: rgba(176, 176, 176, 0.55);
   transform: translateY(-1px);
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(176, 176, 176, 0.775);
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(146, 146, 146, 0.7);
 }
 
 .glass-btn:active {
   transform: translateY(0);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    inset 0 2px 4px rgba(0, 0, 0, 0.13);
   border-radius: 22px;
 }
 
@@ -1949,12 +1922,12 @@ input[type="date"] {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.calendar-day-header.glass-effect:hover {
-  transform: none;
+.calendar-day-header.glass-effect:hover { transform: none; }
+
 /* ============================================
    ВИДЖЕТ ПОДДЕРЖКИ
    ============================================ */
-}
+
 .support-widget-btn {
   position: fixed;
   bottom: 24px;
