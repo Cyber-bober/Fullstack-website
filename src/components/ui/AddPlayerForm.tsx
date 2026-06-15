@@ -15,7 +15,6 @@ export default function AddPlayerForm({ onAddPlayer, addingPlayer, teamId }: Add
     }
 
     try {
-      // Добавляем excludeTeamId, чтобы поиск работал корректнее
       const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&excludeTeamId=${teamId || ''}`);
       if (res.ok) {
         const data = await res.json();
@@ -52,7 +51,6 @@ export default function AddPlayerForm({ onAddPlayer, addingPlayer, teamId }: Add
                     <div className="search-result-name">{user.fullName}</div>
                     <div className="search-result-username">@{user.username}</div>
                     
-                    {/* ✅ УЛУЧШЕННАЯ ЛОГИКА ОТОБРАЖЕНИЯ СТАТУСА */}
                     {isInCurrentTeam && (
                       <div className="search-result-warning" style={{ color: '#0160ce' }}>
                         Уже в этой команде
@@ -66,7 +64,6 @@ export default function AddPlayerForm({ onAddPlayer, addingPlayer, teamId }: Add
                   </div>
                 </div>
 
-                {/* ✅ КНОПКА ДОБАВЛЕНИЯ */}
                 {!isInCurrentTeam && (
                   <button
                     className="btn btn-primary btn-sm"

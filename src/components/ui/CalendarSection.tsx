@@ -1,9 +1,8 @@
 // src/components/ui/CalendarSection.tsx
 "use client";
 import { useState, useMemo } from "react";
-import { Match } from "@/types/CalendarSection"; // Убедись, что тип Match экспортируется отсюда
+import { Match } from "@/types/CalendarSection";
 
-// ✅ ОБНОВЛЕННЫЙ ИНТЕРФЕЙС ПРОПСОВ
 interface Props {
   matches: Match[];
   onDeleteMatch?: (id: string) => Promise<void>;
