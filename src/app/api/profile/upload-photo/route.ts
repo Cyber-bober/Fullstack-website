@@ -23,14 +23,25 @@ export async function POST(req: NextRequest) {
       select: { photos: true }
     });
     
+    let oldPhotoDeleted = false;
     if (currentUser?.photos && currentUser.photos.length > 0) {
       const oldPhotoPath = currentUser.photos[0];
+      
       try {
         const fullPath = path.join(process.cwd(), "public", oldPhotoPath);
         await unlink(fullPath);
-      } catch (err) {
-        console.warn("Не удалось удалить старое фото:", err);
+        console.log(`Старое фото удалено с диска: ${oldPhotoPath}`);
+        oldPhotoDeleted = true;
+      } catch (err: any) {
+        // Если файла нет на диске (например, уже удален вручную), это не критично
+        if (err.code !== 'ENOENT') {
+          console.error("Ошибка при удалении старого фото:", err);
+        } else {
+          console.warn(`Файл не найден на диске (уже удален?): ${oldPhotoPath}`);
+        }
       }
+    } else {
+      console.log("У пользователя не было старого фото, удалять нечего.");
     }
 
     const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
@@ -46,6 +57,8 @@ export async function POST(req: NextRequest) {
       where: { id: session.user.id },
       data: { photos: [photoUrl] },
     });
+
+    console.log(`Новое фото сохранено: ${photoUrl} (старое удалено: ${oldPhotoDeleted})`);
 
     return NextResponse.json({ url: photoUrl });
   } catch (error) {

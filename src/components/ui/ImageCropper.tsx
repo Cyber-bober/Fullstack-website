@@ -1,6 +1,6 @@
 // src/components/ui/ImageCropper.tsx
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import type { Point, Area } from "react-easy-crop";
 
@@ -16,57 +16,13 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
   const [rotation, setRotation] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pixelCrop, setPixelCrop] = useState<Area | null>(null);
-  
-  // ✅ ДОБАВЛЕНО: Состояние для хранения размеров изображения
-  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
 
-  // Получаем реальные размеры картинки при загрузке
-  useEffect(() => {
-    const img = new Image();
-    img.src = imageSrc;
-    img.onload = () => {
-      setImageSize({ width: img.width, height: img.height });
-    };
-  }, [imageSrc]);
+  // Сохраняем пиксельные координаты при каждом изменении кропа
+  const onCropCompleteHandler = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    setPixelCrop(croppedAreaPixels);
+  }, []);
 
-  const getCroppedImg = async (imageSrc: string, pixelCrop: Area, rotation: number) => {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    const maxSize = Math.max(image.width, image.height);
-    const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
-
-    canvas.width = safeArea;
-    canvas.height = safeArea;
-
-    ctx.translate(safeArea / 2, safeArea / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(-safeArea / 2, -safeArea / 2);
-    ctx.drawImage(image, 0, 0);
-
-    const data = ctx.getImageData(0, 0, safeArea, safeArea);
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-
-    ctx.putImageData(
-      data,
-      Math.round(0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x),
-      Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
-    );
-
-    return new Promise<File | null>((resolve) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(new File([blob], "avatar-cropped.png", { type: "image/png" }));
-        } else {
-          resolve(null);
-        }
-      }, "image/png");
-    });
-  };
-
+  // Функция для создания HTMLImageElement из URL
   const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
       const image = new Image();
@@ -76,10 +32,57 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
       image.src = url;
     });
 
-  const onCropCompleteHandler = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
-    setPixelCrop(croppedAreaPixels);
-  }, []);
+  // Основная функция обрезки с учетом поворота
+  const getCroppedImg = async (imageSrc: string, pixelCrop: Area, rotation: number) => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    
+    if (!ctx) return null;
 
+    // Устанавливаем размер холста равным размеру области обрезки
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    // Рисуем изображение с учетом поворота и смещения
+    drawRotatedImage(ctx, image, pixelCrop, rotation);
+
+    return new Promise<File | null>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(new File([blob], "avatar-cropped.png", { type: "image/png" }));
+        } else {
+          resolve(null);
+        }
+      }, "image/png", 0.95);
+    });
+  };
+
+  // Вспомогательная функция для корректной отрисовки повернутого изображения
+  const drawRotatedImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, crop: Area, rotation: number) => {
+    const { width, height } = image;
+    const { x, y, width: cropWidth, height: cropHeight } = crop;
+    
+    // 1. Создаем временный холст размером с оригинал
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext("2d")!;
+    
+    // 2. Рисуем на нем повернутое изображение
+    tempCtx.translate(width / 2, height / 2);
+    tempCtx.rotate((rotation * Math.PI) / 180);
+    tempCtx.drawImage(image, -width / 2, -height / 2);
+    
+    // 3. Вырезаем нужную область из временного холста на основной
+    ctx.drawImage(
+      tempCanvas,
+      x, y, cropWidth, cropHeight, // source
+      0, 0, cropWidth, cropHeight  // destination
+    );
+  };
+
+  // Обработчик сохранения (вызывается по кнопке или Enter)
   const handleFinalSave = useCallback(async () => {
     if (!pixelCrop || isProcessing) return;
     setIsProcessing(true);
@@ -97,29 +100,17 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
   }, [imageSrc, rotation, pixelCrop, onCropComplete, isProcessing]);
 
   return (
-    // ✅ ИСПРАВЛЕНИЕ 1: Добавлен overflow-y-auto и max-h-screen, чтобы окно можно было прокрутить
-    <div className="modal-overlay" style={{ 
-      zIndex: 99999, 
-      background: 'rgba(0,0,0,0.85)',
-      overflowY: 'auto',
-      padding: '20px 0'
-    }}>
-      <div className="modal-content" style={{ 
-        maxWidth: '600px', 
-        width: '95%',
-        margin: 'auto' // Центрирование по вертикали при прокрутке
-      }}>
+    <div 
+      className="modal-overlay" 
+      style={{ zIndex: 99999, background: 'rgba(0,0,0,0.85)', overflowY: 'auto', padding: '20px 0' }}
+      onKeyDown={(e) => { if (e.key === 'Enter') handleFinalSave(); }} // ✅ Обработка Enter
+    >
+      <div className="modal-content" style={{ maxWidth: '600px', width: '95%', margin: 'auto' }}>
         <h3>Настройка аватара</h3>
         
-        {/* ✅ ИСПРАВЛЕНИЕ 2: Уменьшена высота до 300px, чтобы влезало на экраны ноутбуков */}
         <div style={{ 
-          position: 'relative', 
-          width: '100%', 
-          height: '300px', 
-          background: '#f3f4f6',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          marginBottom: '16px'
+          position: 'relative', width: '100%', height: '300px', 
+          background: '#f3f4f6', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px'
         }}>
           <Cropper
             image={imageSrc}
@@ -133,15 +124,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             onZoomChange={setZoom}
             onRotationChange={setRotation}
             onCropComplete={onCropCompleteHandler}
-            // ✅ ИСПРАВЛЕНИЕ 3: initialCroppedAreaPercentages помогает центрировать портретные фото
-            {...(imageSize && {
-              initialCroppedAreaPercentages: {
-                width: 100,
-                height: 100,
-                x: 0,
-                y: 0
-              }
-            })}
           />
         </div>
 

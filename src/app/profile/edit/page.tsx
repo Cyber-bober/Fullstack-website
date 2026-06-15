@@ -25,6 +25,9 @@ export default function EditProfilePage() {
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
   
+  // Флаг для удаления фото (если true, то при сохранении фото удалится из БД)
+  const [shouldDeleteAvatar, setShouldDeleteAvatar] = useState(false);
+  
   // Состояние для окна кроппера
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   
@@ -83,19 +86,27 @@ export default function EditProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  // Обрезка завершена -> сохраняем файл локально (не отправляем на сервер!)
+  // Обрезка завершена -> сохраняем файл локально
   const handleCropComplete = async (croppedFile: File) => {
     setPendingAvatarFile(croppedFile);
-    
-    // Создаем превью для отображения в форме
     const previewUrl = URL.createObjectURL(croppedFile);
     setPendingAvatarPreview(previewUrl);
+    setShouldDeleteAvatar(false); // Если выбрали новое фото, отменяем флаг удаления
     
-    setCropImageSrc(null); // Закрываем кроппер
+    setCropImageSrc(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Финальное сохранение ВСЕХ данных (текст + фото)
+  // ✅ НОВАЯ ФУНКЦИЯ: Удаление фото
+  const handleRemovePhoto = () => {
+    setCurrentAvatar(null);
+    setPendingAvatarFile(null);
+    setPendingAvatarPreview(null);
+    setShouldDeleteAvatar(true); // Помечаем, что нужно удалить фото из БД
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Финальное сохранение ВСЕХ данных
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setConsentError(false);
@@ -108,9 +119,9 @@ export default function EditProfilePage() {
 
     setSaving(true);
     try {
-      let finalAvatarUrl = currentAvatar;
+      let finalAvatarUrl: string | null = currentAvatar;
 
-      // ✅ ЕСЛИ ЕСТЬ НОВОЕ ФОТО - ЗАГРУЖАЕМ ЕГО ПРЯМО ЗДЕСЬ
+      // 1. Если есть новое фото - загружаем его
       if (pendingAvatarFile) {
         const photoFormData = new FormData();
         photoFormData.append("photo", pendingAvatarFile);
@@ -127,6 +138,19 @@ export default function EditProfilePage() {
           const err = await uploadRes.json();
           throw new Error(err.error || "Ошибка загрузки фото");
         }
+      } 
+      // 2. Если стоит флаг удаления - удаляем фото через API
+      else if (shouldDeleteAvatar) {
+        const deleteRes = await fetch("/api/profile/remove-photo", { 
+          method: "POST" 
+        });
+        
+        if (!deleteRes.ok) {
+          const err = await deleteRes.json();
+          console.error("Ошибка удаления фото:", err);
+          // Не прерываем выполнение, если удаление фото не критично
+        }
+        finalAvatarUrl = null;
       }
 
       // Обновляем текстовые данные профиля
@@ -139,12 +163,11 @@ export default function EditProfilePage() {
       const updateData = await updateRes.json();
 
       if (updateRes.ok) {
-        // Если аватар изменился, обновляем текущее состояние
-        if (finalAvatarUrl !== currentAvatar) {
-          setCurrentAvatar(finalAvatarUrl);
-          setPendingAvatarFile(null);
-          setPendingAvatarPreview(null);
-        }
+        // Синхронизируем локальное состояние
+        setCurrentAvatar(finalAvatarUrl);
+        setPendingAvatarFile(null);
+        setPendingAvatarPreview(null);
+        setShouldDeleteAvatar(false);
         
         setToast({ message: "Профиль успешно обновлен!", type: "success" });
         setTimeout(() => router.push("/profile"), 800);
@@ -177,12 +200,11 @@ export default function EditProfilePage() {
 
   if (loading) return <p className="empty-text" style={{ marginTop: '40px' }}>Загрузка...</p>;
 
-  // Определяем, какое фото показывать: новое (превью) или старое (из БД)
+  // Определяем, какое фото показывать
   const displayAvatar = pendingAvatarPreview || currentAvatar;
 
   return (
     <>
-      {/* Окно кроппера */}
       {cropImageSrc && (
         <ImageCropper 
           imageSrc={cropImageSrc} 
@@ -209,18 +231,22 @@ export default function EditProfilePage() {
               <div className="avatar-large">
                 {displayAvatar ? <img src={displayAvatar} alt="Avatar" /> : formData.fullName?.[0]?.toUpperCase() || "?"}
               </div>
-              <div className="avatar-edit-overlay">📷 Изменить</div>
+              <div className="avatar-edit-overlay"> Изменить</div>
               
-              {/* Индикатор того, что фото изменено, но не сохранено */}
-              {pendingAvatarFile && (
+              {/* Индикатор изменений */}
+              {(pendingAvatarFile || shouldDeleteAvatar) && (
                 <div style={{ 
                   position: 'absolute', top: '-8px', right: '-8px', 
-                  background: '#f59e0b', color: 'white', borderRadius: '50%', 
+                  background: shouldDeleteAvatar ? '#ef4444' : '#f59e0b', 
+                  color: 'white', borderRadius: '50%', 
                   width: '24px', height: '24px', display: 'flex', alignItems: 'center', 
-                  justifyContent: 'center', fontSize: '14px', border: '2px solid white' 
-                }}>!</div>
+                  justifyContent: 'center', fontSize: '14px', border: '2px solid white', zIndex: 10
+                }}>
+                  {shouldDeleteAvatar ? "🗑️" : "!"}
+                </div>
               )}
             </div>
+            
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -228,12 +254,28 @@ export default function EditProfilePage() {
               accept="image/*" 
               className="hidden-input" 
             />
-            <p className="avatar-upload-hint">
-              {pendingAvatarFile ? "Фото выбрано. Нажмите 'Сохранить изменения' внизу." : "Нажми на фото, чтобы загрузить новое"}
-            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <p className="avatar-upload-hint">
+                {pendingAvatarFile ? "Новое фото выбрано." : shouldDeleteAvatar ? "Фото будет удалено." : "Нажми на фото, чтобы загрузить"}
+              </p>
+              
+              {/* ✅ КНОПКА УДАЛЕНИЯ */}
+              {displayAvatar && !pendingAvatarFile && (
+                <button 
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleRemovePhoto(); }}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '12px', padding: '4px 12px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                >
+                  🗑️ Удалить фото
+                </button>
+              )}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="edit-form">
+            {/* ... остальная форма без изменений ... */}
             <div className="form-group">
               <label>@username</label>
               <input 
