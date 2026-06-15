@@ -87,3 +87,8 @@ docker-compose exec app npx tsx scripts/reset-db.ts
 ```bash
 docker-compose exec app npx tsx scripts/seed.ts
 ```
+
+Проверка текущего IP чтоб зайти с браузера телефона
+```bash
+ip addr show | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | cut -d/ -f1 | head -1
+```
