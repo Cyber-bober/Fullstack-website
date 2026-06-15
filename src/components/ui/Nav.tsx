@@ -1,4 +1,3 @@
-// src/components/ui/Nav.tsx
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -21,7 +20,6 @@ export default async function Nav() {
     <aside className="sidebar glass-effect">
       <div className="sidebar-top">
         <Link href="/" className="sidebar-logo">RTLive</Link>
-        
         <nav className="sidebar-nav">
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/main-page.svg" className="sidebar-svg"/>
@@ -57,18 +55,13 @@ export default async function Nav() {
           )}
         </nav>
       </div>
-
       <div className="sidebar-bottom">
         {session?.user ? (
           <form action="/api/auth/signout" method="post" style={{ width: '100%' }}>
-            <button type="submit" className="sidebar-link logout-btn w-full">
-              Выйти
-            </button>
+            <button type="submit" className="sidebar-link logout-btn w-full">Выйти</button>
           </form>
         ) : (
-          <Link href="/auth/signin" className="btn btn-primary w-full glass-btn">
-            Войти
-          </Link>
+          <Link href="/auth/signin" className="btn btn-primary w-full glass-btn">Войти</Link>
         )}
       </div>
     </aside>
