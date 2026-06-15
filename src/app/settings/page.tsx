@@ -41,7 +41,7 @@ export default function SettingsPage() {
     <div className="container" style={{ maxWidth: "600px" }}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <Card>
+      <Card className="glass-effect">
         <h1 className="home-title text-center">Настройки аккаунта</h1>
         
         <div style={{ marginBottom: "32px", paddingBottom: "24px", borderBottom: "1px solid #e5e7eb" }}>
@@ -56,6 +56,7 @@ export default function SettingsPage() {
               <div className="password-input-wrapper">
                 <input 
                   type={showCurrentPass ? "text" : "password"} 
+                  className="glass-effect"
                   value={passwordData.current}
                   onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
                   required 
@@ -71,6 +72,7 @@ export default function SettingsPage() {
               <div className="password-input-wrapper">
                 <input 
                   type={showNewPass ? "text" : "password"} 
+                  className="glass-effect"
                   value={passwordData.new}
                   onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
                   required 
@@ -82,7 +84,7 @@ export default function SettingsPage() {
               </div>
             </div>
             
-            <button type="submit" className="btn btn-primary" disabled={changingPass}>
+            <button type="submit" className="btn btn-primary glass-effect" disabled={changingPass}>
               {changingPass ? "Сохранение..." : "Изменить пароль"}
             </button>
           </form>

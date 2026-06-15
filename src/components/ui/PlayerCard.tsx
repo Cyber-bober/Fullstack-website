@@ -12,7 +12,7 @@ export default function PlayerCard({
   onRemovePlayer,
 }: PlayerCardProps) {
   return (
-    <div className="team-player-card" style={{ position: "relative" }}>
+    <div className="team-player-card glass-effect" style={{ position: "relative" }}>
       <Link
         href={`/profile/${player.id}`}
         className="player-link"

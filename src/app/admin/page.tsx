@@ -156,19 +156,19 @@ export default function AdminPage() {
       <h1 className="home-title">Панель администратора</h1>
       
       <div className="tabs">
-        <button className={`tab ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>Роли</button>
-        <button className={`tab ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>Пользователи</button>
-        <button className={`tab ${activeTab === "support" ? "active" : ""}`} onClick={() => setActiveTab("support")}>
+        <button className={`tab glass-btn ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>Роли</button>
+        <button className={`tab glass-btn ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>Пользователи</button>
+        <button className={`tab glass-btn ${activeTab === "support" ? "active" : ""}`} onClick={() => setActiveTab("support")}>
           Поддержка ({supportTickets.filter(t => t.status === "OPEN").length})
         </button>
       </div>
 
       {activeTab === "roles" && (
-        <Card>
+        <Card className="glass-effect">
           <h2 className="section-title">Поиск и назначение ролей</h2>
           <div className="form-group" style={{ position: "relative" }}>
-            <label>Поиск пользователя</label>
-            <input type="text" placeholder="Начните вводить имя или логин..." value={liveSearchQuery} onChange={e => setLiveSearchQuery(e.target.value)} onKeyDown={handleSearchKeyDown} className="search-input" />
+            <label className="text">Поиск пользователя</label>
+            <input type="text" placeholder="Начните вводить имя или логин..." value={liveSearchQuery} onChange={e => setLiveSearchQuery(e.target.value)} onKeyDown={handleSearchKeyDown} className="search-input glass-effect" />
             {searchLoading && <small className="text-gray">Поиск...</small>}
             
             {liveSearchResults.length > 0 && (
@@ -196,7 +196,7 @@ export default function AdminPage() {
       )}
 
       {activeTab === "users" && (
-        <Card>
+        <Card className="glass-effect">
           <h2 className="section-title">Управление пользователями</h2>
           
           <div className="form-group" style={{ marginBottom: "20px" }}>
@@ -206,7 +206,7 @@ export default function AdminPage() {
               placeholder="Введите имя или логин..." 
               value={userTableSearch} 
               onChange={e => setUserTableSearch(e.target.value)} 
-              className="search-input" 
+              className="search-input glass-effect" 
             />
           </div>
 
@@ -269,7 +269,7 @@ export default function AdminPage() {
       )}
 
       {activeTab === "support" && (
-        <Card>
+        <Card className="glass-effect">
           <h2 className="section-title">Обращения в поддержку</h2>
           <div className="support-layout">
             {/* Список тикетов */}

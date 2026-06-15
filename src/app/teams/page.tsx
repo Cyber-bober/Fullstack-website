@@ -16,7 +16,6 @@ type Team = {
 
 export default function TeamsPage() {
   const router = useRouter();
-  // ✅ ИСПРАВЛЕНИЕ: Добавлена проверка на null для searchParams
   const searchParams = useSearchParams() ?? new URLSearchParams();
   
   const [teamsData, setTeamsData] = useState<{ data: Team[]; meta: any } | null>(null);
@@ -78,24 +77,22 @@ export default function TeamsPage() {
 
   return (
     <div className="container">
-      <div className="section-header">
-        <h1 className="home-title" style={{ margin: 0 }}>Команды</h1>
-        {userRole === "ADMIN" && <button className="btn btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "+ Создать команду"}</button>}
-      </div>
-
-      {showCreateForm && (
-        <Card className="form-card" style={{ marginBottom: "24px" }}>
-          <form onSubmit={handleCreateTeam}>
-            <div className="form-group"><label>Название команды</label><input type="text" value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)} placeholder="Введите название команды" required /></div>
-            <button type="submit" className="btn btn-primary" disabled={creating}>{creating ? "Создание..." : "Создать"}</button>
-          </form>
-        </Card>
-      )}
-
-      {/* Живой поиск без кнопки */}
       <div className="search-bar glass-effect">
         <input type="text" placeholder="Поиск команд (введите и подождите)..." value={liveTeamQuery} onChange={(e) => setLiveTeamQuery(e.target.value)} className="search-input" />
       </div>
+
+      <div className="section-header">
+        {userRole === "ADMIN" && <button className="btn btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "Создать команду"}</button>}
+      </div>
+
+      {showCreateForm && (
+        <Card className="form-card glass-effect" style={{ marginBottom: "24px" }}>
+          <form onSubmit={handleCreateTeam}>
+            <div className="form-group"><label style={{ color: '#000000' }}>Название команды</label><input type="text" className="glass-effect" value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)} placeholder="Введите название команды" required /></div>
+            <button type="submit" className="btn btn-primary glass-effect" disabled={creating}>{creating ? "Создание..." : "Создать"}</button>
+          </form>
+        </Card>
+      )}
 
       {!teamsData?.data || teamsData.data.length === 0 ? (
         <p className="empty-text">Команды не найдены</p>
@@ -103,14 +100,8 @@ export default function TeamsPage() {
         <div className="grid grid-cols-2 gap-4">
           {teamsData.data.map((team) => (
             <Link key={team.id} href={`/teams/${team.id}`} className="block" style={{ textDecoration: "none", color: "inherit" }}>
-              <Card style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
-                {/* ✅ ЛОГОТИП КОМАНДЫ */}
-                <div style={{ 
-                  width: '60px', height: '60px', borderRadius: '50%', 
-                  background: '#f3f4f6', flexShrink: 0, overflow: 'hidden',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '1px solid #e5e7eb'
-                }}>
+              <Card className="glass-effect team-card">
+                <div className="team-logo">
                   {team.logoUrl ? (
                     <img src={team.logoUrl} alt={team.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
@@ -123,7 +114,7 @@ export default function TeamsPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="font-bold text-lg" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
                   <div className="text-gray" style={{ fontSize: '13px' }}>Игроков: {team._count?.players || 0}</div>
-                  {team.captain && <div className="text-gray" style={{ fontSize: "12px", marginTop: "4px", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Капитан: {team.captain.fullName}</div>}
+                  {team.captain && <div className="text-gray captain">Капитан: {team.captain.fullName}</div>}
                 </div>
               </Card>
             </Link>

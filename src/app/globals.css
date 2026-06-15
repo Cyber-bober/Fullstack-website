@@ -30,8 +30,25 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  /*background: #f3f3f3;*/
   line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 a {
@@ -59,6 +76,10 @@ button, .btn {
   transition: all 0.2s ease;
   display: inline-block;
   text-align: center;
+}
+
+.btn:hover {
+  text-decoration: none;
 }
 
 button:disabled {
@@ -659,6 +680,33 @@ input[type="date"] {
    КОМАНДА
    ============================================ */
 
+.team-logo {
+  width: 60px; 
+  height: 60px;
+  border-radius: 50%;
+  background: #f3f4f6; 
+  flex-shrink: 0;
+  overflow: hidden; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-card {
+  display: flex;
+  align-items: center; 
+  gap: 16px;
+  padding: 16px;
+}
+
+.captain {
+  font-size: 12px;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .team-players {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -671,8 +719,6 @@ input[type="date"] {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: white;
-  border: 1px solid #e5e5e7;
   border-radius: 12px;
   text-decoration: none;
   color: inherit;
@@ -719,6 +765,9 @@ input[type="date"] {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(176, 176, 176, 0.5);
+  border: 1px solid rgba(176, 176, 176, 0.6);
+  border-radius: 22px;
 }
 
 .player-info {
@@ -824,9 +873,13 @@ input[type="date"] {
    ФУТЕР
    ============================================ */
 
+footer {
+  margin-top: auto;
+}
+
 .footer {
   text-align: center;
-  margin: 20px 20px 10px 20px;
+  margin: auto 20px 10px 20px;
   color: rgba(243, 243, 243, 0.75);
   font-size: 0.875rem;
 }
@@ -1567,7 +1620,7 @@ input[type="date"] {
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #9ca3af; /* Серый цвет иконки */
+  color: #2d2d2d; /* Серый цвет иконки */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1575,7 +1628,7 @@ input[type="date"] {
 }
 
 .password-toggle-icon:hover {
-  color: #6b7280;
+  color: #4f4f4f;
 }
 
 /* ============================================
@@ -1950,6 +2003,7 @@ input[type="date"] {
   overflow: hidden;
   border-radius: 22px;
   box-sizing: border-box;
+  z-index: 5;
   background: rgba(176, 176, 176, 0.5);
   backdrop-filter: blur(35px) saturate(200%);
   -webkit-backdrop-filter: blur(35px) saturate(200%);
@@ -2162,11 +2216,6 @@ input[type="date"] {
    ГЛОБАЛЬНАЯ РАСКЛАДКА И ФОН (ИСПРАВЛЕНО)
    ============================================ */
 
-/* Возвращаем твое оригинальное фоновое фото */
-html {
-  background: url('/uploads/img/bg-3.jpg') center center / cover no-repeat fixed #f3f3f3;
-}
-
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -2182,26 +2231,43 @@ body {
 }
 
 .sidebar {
-  width: 260px;
+  width: 80px;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 24px 12px;
   position: fixed;
   left: 0;
   top: 0;
+  bottom: 0;
   z-index: 50;
   margin: 10px 0 30px 20px;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar-logo {
-  font-size: 28px;
-  font-weight: 800;
-  color: #0059c8;
-  margin-bottom: 40px;
-  display: block;
-  text-decoration: none;
-  letter-spacing: -0.5px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.sidebar:hover {
+  width: 260px;
+  padding: 24px;
+}
+
+.sidebar::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.sidebar:hover::before {
+  opacity: 1;
 }
 
 .sidebar-nav {
@@ -2212,37 +2278,55 @@ body {
 }
 
 .sidebar-btn {
-  padding-left: 20px;
   display: flex;
   flex-direction: row;
-  gap: 10px;
   justify-content: flex-start;
   align-items: center;
+  padding: 5px 15px;
+  border-radius: 12px;
 }
 
-.sidebar-svg {
+.sidebar-btn.btn-primary {
+  background: transparent;
+}
+
+.svg {
   width: 25px;
   height: 25px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .sidebar-link {
-  padding: 12px 16px;
   border-radius: 12px;
   text-decoration: none;
   color: rgba(243, 243, 243, 0.75);
   font-weight: 500;
-  transition: all 0.2s;
+  transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s,
+              opacity 0.2s ease, padding 0.3s ease;
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 15px;
+  white-space: nowrap;
+  opacity: 0;
+  padding-left: 0;
+  padding-right: 0;
+  pointer-events: none;
+}
+
+.sidebar:hover .sidebar-link {
+  opacity: 1;
+  padding-left: 16px;
+  padding-right: 16px;
+  pointer-events: auto;
+  transition-delay: 0.1s;
 }
 
 .sidebar-link:hover {
   color: #0160ce;
   transform: translateX(4px);
   text-decoration: none;
-  
 }
 
 .sidebar-link.active {
@@ -2255,76 +2339,46 @@ body {
 .admin-link {
   color: #ef4444;
 }
+
 .admin-link:hover {
   color: #dc2626;
 }
 
 .sidebar-bottom {
-  margin-top: auto;
-  border-top: 1px solid rgba(0,0,0,0.1);
+  margin-top: 24px;
   padding-top: 20px;
 }
 
 .logout-btn {
   color: #ef4444;
   justify-content: flex-start;
-  background: transparent !important;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 15px;
+  padding: 5px 15px;
+}
+
+.logout-btn:hover {
+  color: #ef4444;
+}
+
+.login-btn {
+  color: #0059c8;
+  justify-content: flex-start;
   border: none;
   cursor: pointer;
   width: 100%;
   font-size: 15px;
   padding: 12px 16px;
 }
-.logout-btn:hover {
-  background: rgba(254, 242, 242, 0.6) !important;
+
+.login-btn:hover {
+  color: #0160ce;
 }
 
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-  padding: 40px;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* Адаптив: на мобильных меню сверху */
-@media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column;
-  }
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-    padding: 16px;
-  }
-  .sidebar-nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .sidebar-link {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  .main-wrapper {
-    margin-left: 0;
-  }
-  .main-content {
-    padding: 20px;
-  }
-  .sidebar-bottom {
-    display: none; /* На мобильном кнопку выхода можно спрятать или перенести */
-  }
+.sidebar-link-text {
+  white-space: nowrap;
 }
 
 /* ============================================
@@ -2342,11 +2396,6 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 32px;
-  background: rgba(255, 255, 255, 0.85); /* Полупрозрачная карточка */
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .profile-avatar-section {
@@ -2386,7 +2435,7 @@ body {
 
 .username {
   margin: 0;
-  color: #6b7280;
+  color: #000000;
   font-size: 16px;
   font-weight: 500;
 }
@@ -2398,25 +2447,20 @@ body {
 }
 
 .detail-item {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
   padding: 20px;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: transform 0.2s;
 }
 
 .detail-item:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.95);
 }
 
 .detail-item .label {
   font-size: 12px;
-  color: #6b7280;
+  color: rgba(243, 243, 243, 0.75);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
@@ -2623,4 +2667,8 @@ body {
 
 .text-center {
   text-align: center;
+}
+
+label.text {
+  color: rgba(243, 243, 243, 0.75);
 }

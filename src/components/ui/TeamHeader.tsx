@@ -72,7 +72,7 @@ export default function TeamHeader({
               />
             </label>
             <button className="btn btn-primary" onClick={onAddPlayer}>
-              + Добавить игрока
+              Добавить игрока
             </button>
           </div>
         )}

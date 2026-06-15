@@ -42,7 +42,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <Card className="profile-header-card">
+      <Card className="profile-header-card glass-effect">
         <div className="profile-avatar-section">
           <div 
             className={`avatar-large ${user?.photos?.[0] ? "clickable-avatar" : ""}`} 
@@ -60,16 +60,16 @@ export default function ProfilePage() {
             <p className="username">@{user?.username || "unknown"}</p>
           </div>
         </div>
-        <Link href="/profile/edit" className="btn btn-secondary">Редактировать профиль</Link>
+        <Link href="/profile/edit" className="btn btn-primary glass-effect">Редактировать профиль</Link>
       </Card>
 
       <div className="profile-details-grid">
-        <div className="detail-item"><span className="label">Дата рождения</span><span className="value">{user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : "—"}</span></div>
-        <div className="detail-item"><span className="label">Город</span><span className="value">{user?.city || "—"}</span></div>
-        <div className="detail-item"><span className="label">Позиция</span><span className="value">{user?.position || "—"}</span></div>
-        <div className="detail-item"><span className="label">Команда</span><span className="value">{user?.team?.name || "—"}</span></div>
-        <div className="detail-item"><span className="label">Рост</span><span className="value">{user?.height ? `${user.height} см` : "—"}</span></div>
-        <div className="detail-item"><span className="label">Вес</span><span className="value">{user?.weight ? `${user.weight} кг` : "—"}</span></div>
+        <div className="detail-item glass-effect"><span className="label">Дата рождения</span><span className="value">{user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : "—"}</span></div>
+        <div className="detail-item glass-effect"><span className="label">Город</span><span className="value">{user?.city || "—"}</span></div>
+        <div className="detail-item glass-effect"><span className="label">Позиция</span><span className="value">{user?.position || "—"}</span></div>
+        <div className="detail-item glass-effect"><span className="label">Команда</span><span className="value">{user?.team?.name || "—"}</span></div>
+        <div className="detail-item glass-effect"><span className="label">Рост</span><span className="value">{user?.height ? `${user.height} см` : "—"}</span></div>
+        <div className="detail-item glass-effect"><span className="label">Вес</span><span className="value">{user?.weight ? `${user.weight} кг` : "—"}</span></div>
       </div>
     </div>
   );

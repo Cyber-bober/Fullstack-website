@@ -165,7 +165,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
               {canEditThis && (
                 <div className="news-actions">
                   <button onClick={() => openEditModal(post)} className="btn btn-icon btn-edit glass-effect" title="Редактировать">
-                    ✏️
+                    <img src="/uploads/svg/edit.svg" className="svg"/>
                   </button>
                   {canDelete && (
                     <button 
@@ -174,7 +174,8 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
                       className="btn btn-icon btn-delete glass-effect" 
                       title="Удалить"
                     >
-                      {deletingId === post.id ? "..." : "🗑️"}
+                      <img src="/uploads/svg/delete.svg" className="svg"/>
+                      {deletingId === post.id ? "..." : ""}
                     </button>
                   )}
                 </div>
