@@ -1,9 +1,4 @@
 /*src/app/globals.css*/
-
-/* ============================================
-   СБРОС БРАУЗЕРНЫХ СТИЛЕЙ
-   ============================================ */
-
 text:focus {
   outline: none;
 }
@@ -11,10 +6,6 @@ text:focus {
 text {
   border: none;
 }
-
-/* ============================================
-   БАЗОВЫЕ СТИЛИ
-   ============================================ */
 
 * {
   box-sizing: border-box;
@@ -62,10 +53,6 @@ a:hover {
   color: #0059c8;
 }
 
-/* ============================================
-   КНОПКИ
-   ============================================ */
-
 button, .btn {
   padding: 8px 16px;
   border-radius: 8px;
@@ -104,7 +91,7 @@ button:disabled {
 }
 
 .btn-secondary.glass-effect {
-  background: rgba(240, 23, 23, 0.8);
+  background: rgba(240, 23, 23, 0.65);
 }
 
 .btn-danger {
@@ -124,10 +111,6 @@ button:disabled {
 .btn-success:hover:not(:disabled) {
   background: #218838;
 }
-
-/* ============================================
-   ФОРМЫ (input, select, textarea)
-   ============================================ */
 
 input, select, textarea {
   padding: 10px 12px;
@@ -150,10 +133,6 @@ input[type="date"] {
   cursor: pointer;
 }
 
-/* ============================================
-   КАРТОЧКИ
-   ============================================ */
-
 .card {
   background: white;
   border: 1px solid #e5e5e7;
@@ -163,19 +142,11 @@ input[type="date"] {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* ============================================
-   КОНТЕЙНЕРЫ
-   ============================================ */
-
 .container {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
 }
-
-/* ============================================
-   ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
-   ============================================ */
 
 .profile-container {
   max-width: 800px;
@@ -266,10 +237,6 @@ input[type="date"] {
   margin-right: 0.5rem;
 }
 
-/* ============================================
-   РЕДАКТИРОВАНИЕ ПРОФИЛЯ
-   ============================================ */
-
 .edit-profile-container {
   max-width: 600px;
   margin: 2rem auto;
@@ -283,15 +250,10 @@ input[type="date"] {
 }
 
 .form-group {
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.form-group label {
-  font-weight: 500;
-  color: #374151;
-  font-size: 0.875rem;
 }
 
 .photos-upload-section {
@@ -367,10 +329,6 @@ input[type="date"] {
   cursor: not-allowed;
 }
 
-/* ============================================
-   УТИЛИТЫ
-   ============================================ */
-
 .text-center {
   text-align: center;
 }
@@ -431,10 +389,6 @@ input[type="date"] {
   padding: 1.5rem;
 }
 
-/* ============================================
-   ГЛАВНАЯ СТРАНИЦА
-   ============================================ */
-
 .home-container {
   max-width: 900px;
   margin: 0 auto 24px auto;
@@ -484,23 +438,20 @@ input[type="date"] {
   padding: 40px 0;
 }
 
-.news-card {
-  margin-bottom: 16px;
-}
-
 .news-image {
   width: 100%;
+  height: auto;
   max-height: 300px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 12px;
+  display: block;
 }
 
 .news-title {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 8px;
-  font-size: 18px;
   color: #0160ce;
 }
 
@@ -508,16 +459,12 @@ input[type="date"] {
   margin-bottom: 20px;
 }
 
-.form-group {
-  margin-bottom: 16px;
-}
-
 .form-group label {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
   color: #374151;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .form-group input,
@@ -580,9 +527,7 @@ input[type="date"] {
   overflow-y: scroll;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  background: #e5e5e7;
   padding: 4px;
-  border-radius: 8px;
 }
 
 .calendar-day-header {
@@ -631,6 +576,8 @@ input[type="date"] {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
   transition: background 0.2s;
 }
 
@@ -675,10 +622,6 @@ input[type="date"] {
   margin-top: 16px;
   width: 100%;
 }
-
-/* ============================================
-   КОМАНДА
-   ============================================ */
 
 .team-logo {
   width: 60px; 
@@ -757,7 +700,6 @@ input[type="date"] {
   top: -4px;
   right: -4px;
   font-size: 20px;
-  background: white;
   border-radius: 50%;
   width: 28px;
   height: 28px;
@@ -805,10 +747,6 @@ input[type="date"] {
   font-size: 12px;
   color: #9ca3af;
 }
-
-/* ============================================
-   НАВИГАЦИЯ (ШАПКА)
-   ============================================ */
 
 .nav {
   background: inherit;
@@ -869,10 +807,6 @@ input[type="date"] {
   gap: 1rem;
 }
 
-/* ============================================
-   ФУТЕР
-   ============================================ */
-
 footer {
   margin-top: auto;
 }
@@ -884,66 +818,6 @@ footer {
   font-size: 0.875rem;
 }
 
-/* ============================================
-   АДАПТИВНОСТЬ
-   ============================================ */
-
-@media (max-width: 640px) {
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-photo {
-    width: 64px !important;
-    height: 64px !important;
-  }
-
-  .profile-photo-empty {
-    width: 64px;
-    height: 64px;
-  }
-
-  .photo-preview-item img {
-    width: 64px !important;
-    height: 64px !important;
-  }
-
-  .profile-name {
-    font-size: 1.25rem;
-  }
-
-  .profile-card {
-    padding: 1.5rem;
-  }
-
-  .team-players {
-    grid-template-columns: 1fr;
-  }
-
-  .nav-links {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .calendar-day {
-    min-height: 60px;
-  }
-
-  .match-event {
-    font-size: 10px;
-    padding: 2px 4px;
-  }
-
-  .tabs {
-    flex-wrap: wrap;
-  }
-}
-
-/* ============================================
-   ЧАТ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
-   ============================================ */
-
 .chat-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -951,20 +825,19 @@ footer {
 }
 
 .chat-layout {
-  display: flex; /* Меняем Grid на Flex для надежности */
+  display: flex;
   gap: 20px;
   height: calc(100vh - 150px);
 }
 
-/* Левая панель: Поиск + Список */
 .chat-sidebar {
   width: 350px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: white; /* Добавил фон, иначе glass-effect может не работать */
+  background: white;
   border-radius: 12px;
-  overflow: hidden; /* Скрываем скругления */
+  overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -982,7 +855,6 @@ footer {
   outline: none;
 }
 
-/* Список результатов поиска */
 .search-results-list {
   flex: 1;
   overflow-y: auto;
@@ -999,13 +871,11 @@ footer {
   letter-spacing: 0.05em;
 }
 
-/* Список диалогов */
 .conversations-list {
   flex: 1;
   overflow-y: auto;
 }
 
-/* Общие стили для элементов списка (и поиска, и диалогов) */
 .conversation-item {
   padding: 12px 16px;
   cursor: pointer;
@@ -1076,7 +946,6 @@ footer {
   white-space: nowrap;
 }
 
-/* Правая панель: Чат */
 .chat-main {
   flex: 1;
   display: flex;
@@ -1185,48 +1054,19 @@ footer {
   color: #9ca3af;
 }
 
-.empty-text {
-  color: #9ca3af;
-  text-align: center;
-}
-
-@media (max-width: 768px) {
-  .chat-layout {
-    flex-direction: column;
-    height: auto;
-  }
-  .chat-sidebar {
-    width: 100%;
-    max-height: 400px;
-  }
-  .chat-main {
-    min-height: 500px;
-  }
-}
-
-/* ============================================
-   НОВОСТИ
-   ============================================ */
-
 .news-card {
   margin-bottom: 20px;
-  overflow: hidden; /* Чтобы картинка не вылезала за скругления */
+  overflow: hidden;
+  position: relative;
 }
 
 .news-image-container {
   width: 100%;
-  height: 300px; /* Фиксированная высота превью */
+  height: 300px;
   overflow: hidden;
-  background-color: #f3f4f6; /* Цвет фона пока картинка грузится */
-  border-radius: 8px 8px 0 0; /* Скругление только сверху */
-  margin: -16px -16px 16px -16px; /* Растягиваем на всю ширину карточки */
-}
-
-.news-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ключевое свойство: обрезает лишнее, заполняя область */
-  display: block;
+  background-color: #f3f4f6;
+  border-radius: 8px 8px 0 0;
+  margin: -16px -16px 16px -16px;
 }
 
 .news-content {
@@ -1234,16 +1074,7 @@ footer {
   line-height: 1.6;
   margin-bottom: 12px;
   font-size: 14px;
-  white-space: pre-wrap; /* Сохраняет переносы строк из textarea */
-}
-
-/* ============================================
-   НОВОСТИ (Исправленный вариант)
-   ============================================ */
-
-.news-card {
-  margin-bottom: 20px;
-  position: relative; /* Для позиционирования кнопки удаления */
+  white-space: pre-wrap;
 }
 
 .news-image-wrapper {
@@ -1271,14 +1102,13 @@ footer {
   padding-top: 12px;
 }
 
-/* Кнопка удаления новости */
 .delete-news-btn {
   position: absolute;
   top: 12px;
   right: 12px;
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: rgba(240, 23, 23, 0.8);
   cursor: pointer;
   font-size: 24px;
   line-height: 1;
@@ -1296,12 +1126,8 @@ footer {
   cursor: not-allowed;
 }
 
-/* ============================================
-   ФОРМА ДОБАВЛЕНИЯ НОВОСТИ
-   ============================================ */
-
 .form-error {
-  color: #ef4444;
+  color: rgba(240, 23, 23, 0.8);
   margin-bottom: 12px;
   padding: 8px 12px;
   background: #fff5f5;
@@ -1309,20 +1135,13 @@ footer {
   font-size: 0.9rem;
 }
 
-.file-preview-container {
-  margin-top: 10px;
-}
-
 .file-preview {
   max-width: 100%;
+  height: auto;
   max-height: 200px;
   border-radius: 8px;
   object-fit: cover;
 }
-
-/* ============================================
-   НОВОСТИ
-   ============================================ */
 
 .section-header {
   display: flex;
@@ -1345,28 +1164,16 @@ footer {
 }
 
 .file-preview-container {
-  margin-top: 12px;
+  margin-top: 10px;
   border-radius: 8px;
   overflow: hidden;
   max-width: 400px;
-}
-
-.file-preview {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
 }
 
 .form-actions {
   display: flex;
   gap: 8px;
   margin-top: 16px;
-}
-
-.news-card {
-  position: relative;
-  margin-bottom: 16px;
 }
 
 .news-actions {
@@ -1381,13 +1188,14 @@ footer {
 .btn-icon {
   width: 36px;
   height: 36px;
-  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  font-size: 16px;
   transition: transform 0.2s;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  line-height: 1;
 }
 
 .btn-icon:hover {
@@ -1401,23 +1209,14 @@ footer {
 
 .btn-delete {
   background: rgba(255, 255, 255, 0.9);
-  color: #ef4444;
+  color: rgba(240, 23, 23, 0.8);
 }
 
-/* ✅ СТИЛИ ДЛЯ ИЗОБРАЖЕНИЯ НОВОСТИ */
 .news-image-wrapper {
   margin-bottom: 12px;
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
-}
-
-.news-image {
-  width: 100%;
-  height: auto;
-  max-height: 400px;
-  object-fit: cover;
-  display: block;
 }
 
 .news-title {
@@ -1427,27 +1226,9 @@ footer {
   color: #1a1a1a;
 }
 
-.news-content {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #4b5563;
-  margin-bottom: 12px;
-  white-space: pre-wrap;
-}
-
-.news-meta {
-  font-size: 0.875rem;
-  color: #6b7280;
-  display: block;
-}
-
 .btn-add-news {
   white-space: nowrap;
 }
-
-/* ============================================
-   УВЕДОМЛЕНИЯ (TOAST)
-   ============================================ */
 
 .toast-container {
   position: fixed;
@@ -1479,7 +1260,7 @@ footer {
   transform: translateX(0);
 }
 
-.toast-error { background-color: #ef4444; }
+.toast-error { background-color: rgba(240, 23, 23, 0.8); }
 .toast-success { background-color: #10b981; }
 .toast-info { background-color: #3b82f6; }
 
@@ -1495,10 +1276,6 @@ footer {
 }
 
 .toast-close-btn:hover { opacity: 1; }
-
-/* ============================================
-   ПОИСК И ПАГИНАЦИЯ
-   ============================================ */
 
 .search-bar {
   display: flex;
@@ -1524,10 +1301,6 @@ footer {
   flex-wrap: wrap;
 }
 
-/* ============================================
-   ЗАГОЛОВКИ СЕКЦИЙ И КНОПКИ
-   ============================================ */
-
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -1536,39 +1309,15 @@ footer {
   padding: 3px 12px;
 }
 
-/* Контейнер для заголовка и кнопки управления */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px; /* Увеличенный отступ до списка новостей */
-}
-
-.btn-add-news {
-  white-space: nowrap; /* Чтобы текст не переносился */
-}
-
-/* ============================================
-   КАЛЕНДАРЬ
-   ============================================ */
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr); /* Строго 7 колонок */
-  border: 1px solid #e5e7eb;
-  background: white;
-}
-
 .calendar-cell {
-  min-height: 120px; /* Фиксированная минимальная высота */
+  min-height: 120px;
   border-right: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
   padding: 8px;
   position: relative;
-  overflow: hidden; /* Скрываем вылезающий контент */
+  overflow: hidden;
 }
 
-/* Убираем границы у последних элементов в строке/столбце */
 .calendar-cell:nth-child(7n) { border-right: none; }
 
 .calendar-day-number {
@@ -1578,31 +1327,9 @@ footer {
   font-size: 0.9rem;
 }
 
-/* Стиль для события матча внутри ячейки */
-.match-event {
-  background-color: #0160ce;
-  color: white;
-  padding: 4px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  margin-bottom: 4px;
-  cursor: pointer;
-  
-  /* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ДЛЯ ДЛИННЫХ НАЗВАНИЙ: */
-  white-space: nowrap; 
-  overflow: hidden;
-  text-overflow: ellipsis; /* Добавляет "..." если текст не влезает */
-  max-width: 100%;
-  display: block;
-}
-
 .match-event:hover {
   background-color: #0160ce;
 }
-
-/* ============================================
-   ПОЛЕ ПАРОЛЯ С ГЛАЗИКОМ
-   ============================================ */
 
 .password-input-wrapper {
   position: relative;
@@ -1610,7 +1337,7 @@ footer {
 }
 
 .password-input-wrapper input {
-  padding-right: 40px !important; /* Место под иконку */
+  padding-right: 40px !important;
   width: 100%;
 }
 
@@ -1620,7 +1347,7 @@ footer {
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #2d2d2d; /* Серый цвет иконки */
+  color: #2d2d2d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1630,10 +1357,6 @@ footer {
 .password-toggle-icon:hover {
   color: #4f4f4f;
 }
-
-/* ============================================
-   СТРАНИЦА ВХОДА
-   ============================================ */
 
 .signin-container {
   margin-top: 70px;
@@ -1653,65 +1376,17 @@ footer {
   border-radius: 8px;
 }
 
-/* ============================================
-   НОВОСТИ И УПРАВЛЕНИЕ
-   ============================================ */
-
-.news-card {
-  margin-bottom: 20px;
-  position: relative; /* Для позиционирования кнопок управления */
-}
-
-.news-actions {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  gap: 8px;
-  z-index: 10;
-}
-
-.btn-icon {
-  padding: 4px 8px !important;
-  font-size: 12px !important;
-  line-height: 1;
-}
-
 .btn-edit.glass-effect {
-  background: rgba(251, 192, 30, 0.8);
+  background: rgba(251, 192, 30, 0.65);
 }
 
 .btn-delete {
-  color: #ef4444 !important;
+  color: rgba(240, 23, 23, 0.65) !important;
 }
 
 .btn-delete.glass-effect {
-  background: rgba(240, 23, 23, 0.8);
+  background: rgba(240, 23, 23, 0.65);
 }
-
-.file-preview-container {
-  margin-top: 10px;
-}
-
-.file-preview {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.form-error {
-  color: #ef4444;
-  margin-bottom: 12px;
-  padding: 8px 12px;
-  background: #fff5f5;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-/* ============================================
-   АДМИНКА: ПОИСК И ТАБЛИЦА
-   ============================================ */
 
 .search-dropdown {
   position: absolute;
@@ -1769,7 +1444,7 @@ footer {
   display: inline-block;
 }
 
-.role-admin { background: #fee2e2; color: #dc2626; }
+.role-admin { background: #fee2e2; color: rgba(240, 23, 23, 0.8); }
 .role-editor { background: #dbeafe; color: #2563eb; }
 .role-user { background: #f3f4f6; color: #4b5563; }
 
@@ -1810,10 +1485,6 @@ footer {
   color: #065f46;
 }
 
-/* ============================================
-   СОГЛАСИЕ НА ПДн (ГАЛОЧКА)
-   ============================================ */
-
 .pd-consent-wrapper {
   display: flex;
   align-items: flex-start;
@@ -1843,31 +1514,23 @@ footer {
   color: #005bb5;
 }
 
-/* ============================================
-   ОШИБКИ ВАЛИДАЦИИ ФОРМЫ
-   ============================================ */
-
 .form-error-text {
-  color: #ef4444;
+  color: rgba(240, 23, 23, 0.8);
   font-size: 13px;
   margin-top: 4px;
   display: block;
 }
 
 .pd-consent-error {
-  color: #ef4444;
+  color: rgba(240, 23, 23, 0.8);
   font-size: 13px;
   margin-top: 8px;
-  display: none; /* Скрыто по умолчанию */
+  display: none;
 }
 
 .pd-consent-error.visible {
   display: block;
 }
-
-/* ============================================
-   ВИДЖЕТ ПОДДЕРЖКИ
-   ============================================ */
 
 .support-widget-btn {
   position: fixed;
@@ -1941,10 +1604,6 @@ footer {
   color: #1a1a1a;
 }
 
-/* ============================================
-   АДМИНКА: ПОДДЕРЖКА
-   ============================================ */
-
 .support-layout {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -1993,10 +1652,6 @@ footer {
   max-height: 300px;
   padding-right: 8px;
 }
-
-/* ============================================
-   ЭФФЕКТ LIQUID GLASS
-   ============================================ */
 
 .glass-effect {
   position: relative;
@@ -2083,146 +1738,8 @@ footer {
   background: #0160ce;
 }
 
-/* ============================================
-   ВИДЖЕТ ПОДДЕРЖКИ
-   ============================================ */
-
-.support-widget-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #0160ce;
-  color: white;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.4);
-  cursor: pointer;
-  font-size: 28px;
-  z-index: 9990;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
-
 .support-widget-btn:hover {
   transform: scale(1.05);
-}
-
-.support-widget-panel {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 400px;
-  max-height: 600px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 9991;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.support-header {
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.support-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-.support-message {
-  max-width: 80%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-}
-
-.support-message-user {
-  align-self: flex-end;
-  background: #0160ce;
-  color: white;
-}
-
-.support-message-admin {
-  align-self: flex-start;
-  background: #f3f4f6;
-  color: #1a1a1a;
-}
-
-/* ============================================
-   АДМИНКА: ПОДДЕРЖКА
-   ============================================ */
-
-.support-layout {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 16px;
-  min-height: 400px;
-}
-
-.support-ticket-list {
-  border-right: 1px solid #e5e7eb;
-  padding-right: 16px;
-  overflow-y: auto;
-  max-height: 500px;
-}
-
-.support-ticket-item {
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-}
-
-.support-ticket-item:hover {
-  background: #f9fafb;
-}
-
-.support-ticket-item.active {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-}
-
-.support-chat-area {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.support-messages-container {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-  max-height: 300px;
-  padding-right: 8px;
-}
-
-/* ============================================
-   ГЛОБАЛЬНАЯ РАСКЛАДКА И ФОН (ИСПРАВЛЕНО)
-   ============================================ */
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  line-height: 1.5;
-  color: #1a1a1a;
-  min-height: 100vh;
 }
 
 .app-layout {
@@ -2273,6 +1790,7 @@ body {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
+  color: rgba(243, 243, 243, 0.75);
   gap: 8px;
   flex: 1;
 }
@@ -2284,6 +1802,15 @@ body {
   align-items: center;
   padding: 5px 15px;
   border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-btn:hover {
+  color: #0160ce;
+  transform: translateX(4px);
+  text-decoration: none;
 }
 
 .sidebar-btn.btn-primary {
@@ -2300,7 +1827,7 @@ body {
 .sidebar-link {
   border-radius: 12px;
   text-decoration: none;
-  color: rgba(243, 243, 243, 0.75);
+  color: inherit;
   font-weight: 500;
   transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s,
               opacity 0.2s ease, padding 0.3s ease;
@@ -2330,27 +1857,43 @@ body {
 }
 
 .sidebar-link.active {
-  background: rgba(255, 255, 255, 0.8);
-  color: #0059c8;
+  color: #0160ce;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.admin-link {
-  color: #ef4444;
-}
-
-.admin-link:hover {
-  color: #dc2626;
+.sidebar-btn:hover .admin-link {
+  color: rgba(240, 23, 23, 0.8);
 }
 
 .sidebar-bottom {
+  color: rgba(243, 243, 243, 0.75);
   margin-top: 24px;
   padding-top: 20px;
 }
 
 .logout-btn {
-  color: #ef4444;
+  justify-content: flex-start;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 15px;
+  padding: 5px 15px;
+  color: rgba(240, 23, 23, 0.8);
+}
+
+.logout-btn:hover {
+  background: rgba(240, 23, 23, 0.65);
+  transform: translateX(4px);
+  color: rgba(243, 243, 243, 0.75);
+}
+
+.sidebar-btn:hover .logout-btn {
+  background: rgba(240, 23, 23, 0.65) !important;
+  color: rgba(243, 243, 243, 0.75);
+}
+
+.login-btn {
+  color: #0160ce;
   justify-content: flex-start;
   border: none;
   cursor: pointer;
@@ -2359,35 +1902,27 @@ body {
   padding: 5px 15px;
 }
 
-.logout-btn:hover {
-  color: #ef4444;
-}
-
-.login-btn {
-  color: #0059c8;
-  justify-content: flex-start;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  font-size: 15px;
-  padding: 12px 16px;
-}
-
 .login-btn:hover {
-  color: #0160ce;
+  color: rgba(243, 243, 243, 0.75);
+  transform: translateX(4px);
+  background: #0160ce95;
+}
+
+.sidebar-btn:hover .login-btn {
+  background: #0161ce95 !important;
+  color: rgba(243, 243, 243, 0.75);
 }
 
 .sidebar-link-text {
+  color: inherit;
   white-space: nowrap;
 }
 
-/* ============================================
-   ПРОФИЛЬ (Оставляем без изменений, он уже хорош)
-   ============================================ */
 .profile-page-container {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  margin: 0 auto;
   max-width: 900px;
 }
 
@@ -2471,21 +2006,6 @@ body {
   font-weight: 600;
   color: #111827;
 }
-
-@media (max-width: 768px) {
-  .profile-header-card {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-  .profile-avatar-section {
-    flex-direction: column;
-  }
-}
-
-/* ============================================
-   РЕДАКТИРОВАНИЕ ПРОФИЛЯ И КРОППЕР
-   ============================================ */
 
 .avatar-edit-wrapper {
   position: relative;
@@ -2599,7 +2119,6 @@ body {
   text-align: center;
 }
 
-/* Модальное окно полного фото */
 .full-photo-modal {
   position: fixed;
   top: 0;
@@ -2640,11 +2159,6 @@ body {
   opacity: 1;
 }
 
-/* Вспомогательные классы для форм редактирования */
-.edit-profile-container {
-  max-width: 600px;
-}
-
 .avatar-edit-section {
   text-align: center;
   margin-bottom: 24px;
@@ -2655,7 +2169,7 @@ body {
 }
 
 .input-error {
-  border-color: #ef4444 !important;
+  border-color: rgba(240, 23, 23, 0.8) !important;
   background: #fff5f5 !important;
 }
 
@@ -2663,10 +2177,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.text-center {
-  text-align: center;
 }
 
 label.text {

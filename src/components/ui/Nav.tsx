@@ -24,55 +24,55 @@ export default async function Nav() {
       <div className="sidebar-top">       
         <nav className="sidebar-nav">
           {/* Главная */}
-          <div className="sidebar-btn glass-effect">
+          <Link href="/" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/main-page.svg" alt="" className="svg"/>
-            <Link href="/" className="sidebar-link">Главная</Link>
-          </div>
+            <span className="sidebar-link">Главная</span>
+          </Link>
 
           {/* Команды */}
-          <div className="sidebar-btn glass-effect">
+          <Link href="/teams" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/teams.svg" alt="" className="svg"/>
-            <Link href="/teams" className="sidebar-link">Команды</Link>
-          </div>
+            <span className="sidebar-link">Команды</span>
+          </Link>
 
           {/* Профиль команды */}
           {showTeamProfile && (
-            <div className="sidebar-btn glass-effect">
+            <Link href="/teams/profile" className="sidebar-btn glass-effect">
               <img src="/uploads/svg/team-profile.svg" alt="" className="svg"/>
-              <Link href="/teams/profile" className="sidebar-link">Профиль команды</Link>
-            </div>
+              <span className="sidebar-link">Профиль команды</span>
+            </Link>
           )}
 
           {/* Чат */}
-          <div className="sidebar-btn glass-effect">
+          <Link href="/chat" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/chat.svg" alt="" className="svg"/>
-            <Link href="/chat" className="sidebar-link">Чат</Link>
-          </div>
+            <span className="sidebar-link">Чат</span>
+          </Link>
 
           {/* Профиль */}
-          <div className="sidebar-btn glass-effect">
+          <Link href="/profile" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/profile.svg" alt="" className="svg"/>
-            <Link href="/profile" className="sidebar-link">Профиль</Link>
-          </div>
+            <span  className="sidebar-link">Профиль</span>
+          </Link>
 
           {/* Настройки */}
-          <div className="sidebar-btn glass-effect">
+          <Link href="/settings" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/settings.svg" alt="" className="svg"/>
-            <Link href="/settings" className="sidebar-link">Настройки</Link>
-          </div>
+            <span className="sidebar-link">Настройки</span>
+          </Link>
 
           {/* Админка (только для ADMIN) */}
           {userRole === "ADMIN" && (
-            <div className="sidebar-btn glass-effect">
+            <Link href="/admin" className="sidebar-btn glass-effect">
               <img src="/uploads/svg/admin.svg" alt="" className="svg"/>
-              <Link href="/admin" className="sidebar-link admin-link">Админка</Link>
-            </div>
+              <span className="sidebar-link admin-link">Админка</span>
+            </Link>
           )}
 
-          <div className="sidebar-btn glass-effect">
+          <Link href="/support" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/info.svg" alt="" className="svg"/>
-            <Link href="/support" className="sidebar-link">Поддержка</Link>
-          </div>
+            <span className="sidebar-link">Поддержка</span>
+          </Link>
         </nav>
       </div>
 
