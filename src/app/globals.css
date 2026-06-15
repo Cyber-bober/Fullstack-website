@@ -123,7 +123,6 @@ input:focus, select:focus, textarea:focus {
 
 input[type="file"] {
   padding: 8px;
-  background: white;
 }
 
 input[type="date"] {
@@ -2176,12 +2175,8 @@ body {
   min-height: 100vh;
 }
 
-/* Сайдбар: фиксирован слева, полупрозрачный */
 .sidebar {
   width: 260px;
-  /* Убираем белый фон, оставляем только стекло */
-  background: rgba(255, 255, 255, 0.4); 
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -2190,7 +2185,6 @@ body {
   left: 0;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(20px); /* Усиливаем размытие для читаемости на фоне */
 }
 
 .sidebar-logo {
@@ -2215,20 +2209,20 @@ body {
   padding: 12px 16px;
   border-radius: 12px;
   text-decoration: none;
-  color: #1a1a1a;
+  color: rgba(243, 243, 243, 0.75);
   font-weight: 500;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.2); /* Легкая подложка для ссылок */
 }
 
 .sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.6);
-  color: #0059c8;
+  color: #0160ce;
   transform: translateX(4px);
+  text-decoration: none;
+  
 }
 
 .sidebar-link.active {

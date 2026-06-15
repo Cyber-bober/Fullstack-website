@@ -88,21 +88,19 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
 
   return (
     <div>
-      <h2 className="section-title">Текстовая трансляция</h2>
-
       {activeMatches.length === 0 ? (
         <p className="empty-text">Нет активных матчей для трансляции</p>
       ) : (
         <>
-          <div className="form-group" style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <div className="form-group" style={{ display: "flex" }}>
             <div style={{ flex: 1 }}>
-              <label>Выберите матч</label>
               <select
+                className="glass-effect"
                 value={selectedMatchId}
                 onChange={(e) => handleMatchSelect(e.target.value)}
                 style={{ width: "100%" }}
               >
-                <option value="">-- Выберите матч --</option>
+                <option value="">Выберите матч</option>
                 {activeMatches.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.homeTeam.name} vs {m.awayTeam.name} — {new Date(m.date).toLocaleString()}

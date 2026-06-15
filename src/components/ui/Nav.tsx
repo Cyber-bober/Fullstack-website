@@ -13,11 +13,11 @@ export default async function Nav() {
         <Link href="/" className="sidebar-logo">RTLive</Link>
         
         <nav className="sidebar-nav">
-          <Link href="/" className="sidebar-link">🏠 Главная</Link>
-          <Link href="/teams" className="sidebar-link">⚽ Команды</Link>
-          <Link href="/chat" className="sidebar-link">💬 Чат</Link>
-          <Link href="/profile" className="sidebar-link">👤 Профиль</Link>
-          <Link href="/settings" className="sidebar-link">⚙️ Настройки</Link>
+          <Link href="/" className="sidebar-link">Главная</Link>
+          <Link href="/teams" className="sidebar-link">Команды</Link>
+          <Link href="/chat" className="sidebar-link">Чат</Link>
+          <Link href="/profile" className="sidebar-link">Профиль</Link>
+          <Link href="/settings" className="sidebar-link">Настройки</Link>
           
           {userRole === "ADMIN" && (
             <Link href="/admin" className="sidebar-link admin-link">🛡️ Админка</Link>

@@ -111,7 +111,6 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
   return (
     <div>
       <div className="section-header">
-        <h2 className="section-title glass-effect">Новости</h2>
         {canEdit && (
           <button className="btn btn-primary btn-add-news glass-effect" onClick={() => { resetForm(); setShowForm(true); }}>
             {showForm ? "Отмена" : "Добавить новость"}
@@ -178,13 +177,6 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
                       {deletingId === post.id ? "..." : "🗑️"}
                     </button>
                   )}
-                </div>
-              )}
-
-              {/* ✅ ОТОБРАЖЕНИЕ КАРТИНКИ */}
-              {post.imageUrl && (
-                <div className="news-image-wrapper">
-                  <img src={post.imageUrl} alt={post.title} className="news-image" />
                 </div>
               )}
 
