@@ -1,62 +1,61 @@
 // src/lib/auth.ts
-
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
-      name: "credentials",
-      credentials: { 
-        username: { label: "Логин", type: "text" }, 
-        password: { label: "Пароль", type: "password" } 
+      name: "Credentials",
+      credentials: {
+        username: { label: "Логин", type: "text" },
+        password: { label: "Пароль", type: "password" }
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null;
         
-        const user = await prisma.user.findUnique({ 
-          where: { username: credentials.username } 
+        const user = await prisma.user.findUnique({
+          where: { username: credentials.username }
         });
-        
+
         if (!user || !user.passwordHash) return null;
-        
-        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!valid) return null;
-        
-        return { 
-          id: user.id, 
-          name: user.fullName, 
-          email: user.username,
-          role: user.role 
+
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isValid) return null;
+
+        // Возвращаем объект, который попадет в JWT токен
+        return {
+          id: user.id,
+          name: user.fullName,
+          role: user.role,
+          username: user.username, 
         };
-      },
-    }),
+      }
+    })
   ],
   callbacks: {
-    // УДАЛИ ВСЮ ЛОГИКУ GOOGLE ИЗ signIn
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
-        token.username = user.email ?? undefined;
+        token.role = user.role;
+        token.username = user.username; // Сохраняем username в токен
       }
       return token;
     },
-    async session({ session, token }: any) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.email = token.username ?? undefined;
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.username = token.username as string; // Передаем username в сессию
       }
       return session;
-    },
+    }
   },
-  pages: { 
+  pages: {
     signIn: "/auth/signin",
-    error: "/auth/error",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
 };

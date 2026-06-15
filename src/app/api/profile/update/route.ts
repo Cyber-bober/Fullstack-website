@@ -1,5 +1,4 @@
 // src/app/api/profile/update/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -7,43 +6,59 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
   }
 
-  const data = await req.json();
+  const body = await req.json();
   
-  // Проверяем уникальность username, если он изменился
-  if (data.username && data.username !== session.user.username) {
+  // Получаем текущий username из токена или из базы (на всякий случай)
+  let currentUsername = session.user.username;
+  if (!currentUsername) {
+    const dbUser = await prisma.user.findUnique({ 
+      where: { id: session.user.id }, 
+      select: { username: true } 
+    });
+    currentUsername = dbUser?.username;
+  }
+
+  // Проверяем уникальность только если ник реально изменился
+  if (body.username && body.username !== currentUsername) {
     const existing = await prisma.user.findUnique({
-      where: { username: data.username },
+      where: { username: body.username },
     });
     
     if (existing) {
       return NextResponse.json(
-        { error: "Этот username уже занят" }, 
+        { error: "Этот username уже занят другим пользователем" }, 
         { status: 400 }
       );
     }
   }
 
   try {
+    const updateData: any = {
+      fullName: body.fullName,
+      username: body.username,
+      city: body.city || null,
+      position: body.position || null,
+      contacts: body.contacts || null,
+      stats: body.stats || null,
+    };
+
+    if (body.birthDate) {
+      const date = new Date(body.birthDate);
+      if (!isNaN(date.getTime())) updateData.birthDate = date;
+    }
+
     await prisma.user.update({
       where: { id: session.user.id },
-      data: {
-        fullName: data.fullName,
-        username: data.username,
-        city: data.city || "",
-        position: data.position || "",
-        contacts: data.contacts || "",
-        stats: data.stats || "",
-        birthDate: data.birthDate ? new Date(data.birthDate) : null,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Ошибка обновления" }, { status: 500 });
+    console.error("Ошибка обновления:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
