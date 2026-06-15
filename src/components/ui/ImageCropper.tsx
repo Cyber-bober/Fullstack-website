@@ -103,7 +103,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
     <div 
       className="modal-overlay" 
       style={{ zIndex: 99999, background: 'rgba(0,0,0,0.85)', overflowY: 'auto', padding: '20px 0' }}
-      onKeyDown={(e) => { if (e.key === 'Enter') handleFinalSave(); }} // ✅ Обработка Enter
+      onKeyDown={(e) => { if (e.key === 'Enter') handleFinalSave(); }}
     >
       <div className="modal-content" style={{ maxWidth: '600px', width: '95%', margin: 'auto' }}>
         <h3>Настройка аватара</h3>

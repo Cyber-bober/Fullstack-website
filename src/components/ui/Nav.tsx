@@ -2,10 +2,20 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function Nav() {
   const session = await getServerSession(authOptions);
   const userRole = session?.user?.role || null;
+  
+  let userTeamId: string | null = null;
+  if (session?.user?.id) {
+    const userWithTeam = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { teamId: true }
+    });
+    userTeamId = userWithTeam?.teamId || null;
+  }
 
   return (
     <aside className="sidebar glass-effect">
@@ -21,6 +31,12 @@ export default async function Nav() {
             <img src="/uploads/svg/teams.svg" className="sidebar-svg"/>
             <Link href="/teams" className="sidebar-link">Команды</Link>
           </div>
+          {userTeamId && (
+            <div className="sidebar-btn glass-effect">
+              <img src="/uploads/svg/teams.svg" className="sidebar-svg"/>
+              <Link href="/team/profile" className="sidebar-link">Профиль команды</Link>
+            </div>
+          )}
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/chat.svg" className="sidebar-svg"/>
             <Link href="/chat" className="sidebar-link">Чат</Link>
@@ -46,7 +62,7 @@ export default async function Nav() {
         {session?.user ? (
           <form action="/api/auth/signout" method="post" style={{ width: '100%' }}>
             <button type="submit" className="sidebar-link logout-btn w-full">
-              🚪 Выйти
+              Выйти
             </button>
           </form>
         ) : (

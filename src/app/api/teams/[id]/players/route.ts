@@ -1,4 +1,4 @@
-//src/app/api/teams/[id]/players/route.ts
+// src/app/api/teams/[id]/players/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -32,7 +32,7 @@ export async function GET(
   return NextResponse.json(team.players);
 }
 
-// POST - добавить игрока в команду
+// POST - добавить или перевести игрока в команду
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -42,7 +42,7 @@ export async function POST(
     return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
   }
 
-  // Проверяем, что пользователь админ или капитан команды
+  // 1. Проверяем существование команды и права пользователя
   const team = await prisma.team.findUnique({
     where: { id: params.id },
     include: { captain: true },
@@ -56,32 +56,59 @@ export async function POST(
   const isAdmin = session.user.role === "ADMIN";
 
   if (!isCaptain && !isAdmin) {
-    return NextResponse.json({ error: "Только админ или капитан может добавлять игроков" }, { status: 403 });
+    return NextResponse.json({ 
+      error: "Только администратор или капитан команды может управлять составом" 
+    }, { status: 403 });
   }
 
   const { userId } = await req.json();
-
   if (!userId) {
-    return NextResponse.json({ error: "userId обязателен" }, { status: 400 });
+    return NextResponse.json({ error: "ID пользователя обязателен" }, { status: 400 });
   }
 
-  // Проверяем, не состоит ли уже в другой команде
-  const existingUser = await prisma.user.findUnique({
+  // 2. Получаем данные целевого пользователя
+  const targetUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { teamId: true },
+    select: { teamId: true, fullName: true, username: true },
   });
 
-  if (existingUser?.teamId) {
-    return NextResponse.json({ error: "Игрок уже состоит в другой команде" }, { status: 400 });
+  if (!targetUser) {
+    return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
   }
 
-  // Добавляем игрока в команду
+  // 3. Логика проверки в зависимости от роли
+  if (targetUser.teamId) {
+    // Игрок уже в какой-то команде
+    if (targetUser.teamId === params.id) {
+      // Игрок уже в ЭТОЙ команде
+      return NextResponse.json({ 
+        success: true, 
+        message: `${targetUser.fullName} уже состоит в этой команде` 
+      });
+    } 
+    
+    // Игрок в ДРУГОЙ команде
+    if (!isAdmin) {
+      // Капитан НЕ может забирать игроков из других команд
+      return NextResponse.json({ 
+        error: "Этот игрок уже состоит в другой команде. Только администратор может переводить игроков." 
+      }, { status: 400 });
+    }
+    
+    // Если ADMIN - разрешаем принудительный перевод
+    console.log(`[ADMIN] Принудительный перевод ${targetUser.username} из команды ${targetUser.teamId} в ${params.id}`);
+  }
+
+  // 4. Обновляем привязку к команде (создаем новую или перезаписываем старую)
   await prisma.user.update({
     where: { id: userId },
     data: { teamId: params.id },
   });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ 
+    success: true, 
+    message: `${targetUser.fullName} успешно добавлен в команду` 
+  });
 }
 
 // DELETE - удалить игрока из команды
