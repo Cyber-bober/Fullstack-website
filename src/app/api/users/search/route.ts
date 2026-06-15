@@ -1,3 +1,4 @@
+// src/app/api/users/search/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -15,24 +16,21 @@ export async function GET(req: NextRequest) {
   if (!query.trim()) {
     return NextResponse.json([]);
   }
-
-  // Поиск по fullName, username или id
+  
   const users = await prisma.user.findMany({
     where: {
       OR: [
         { fullName: { contains: query, mode: "insensitive" } },
         { username: { contains: query, mode: "insensitive" } },
-        { id: query }, // точное совпадение по ID
+        { id: query }, 
       ],
-      NOT: {
-        id: session.user.id, // исключить текущего пользователя
-      },
     },
     select: {
       id: true,
       fullName: true,
       username: true,
       photos: true,
+      teamId: true,
     },
     take: 10,
   });

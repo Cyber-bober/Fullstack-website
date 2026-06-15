@@ -1,5 +1,4 @@
 // src/app/teams/page.tsx
-
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -7,11 +6,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 
-type Team = { id: string; name: string; logoUrl?: string | null; captain?: { fullName: string } | null; _count?: { players: number }; };
+type Team = { 
+  id: string; 
+  name: string; 
+  logoUrl?: string | null; 
+  captain?: { fullName: string } | null; 
+  _count?: { players: number }; 
+};
 
 export default function TeamsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // ✅ ИСПРАВЛЕНИЕ: Добавлена проверка на null для searchParams
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   
   const [teamsData, setTeamsData] = useState<{ data: Team[]; meta: any } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +61,7 @@ export default function TeamsPage() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [liveTeamQuery]);
+  }, [liveTeamQuery, searchParams, router]);
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,10 +103,28 @@ export default function TeamsPage() {
         <div className="grid grid-cols-2 gap-4">
           {teamsData.data.map((team) => (
             <Link key={team.id} href={`/teams/${team.id}`} className="block" style={{ textDecoration: "none", color: "inherit" }}>
-              <Card>
-                <div className="font-bold text-lg">{team.name}</div>
-                <div className="text-gray">Игроков: {team._count?.players || 0}</div>
-                {team.captain && <div className="text-gray" style={{ fontSize: "12px", marginTop: "4px" }}>Капитан: {team.captain.fullName}</div>}
+              <Card style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
+                {/* ✅ ЛОГОТИП КОМАНДЫ */}
+                <div style={{ 
+                  width: '60px', height: '60px', borderRadius: '50%', 
+                  background: '#f3f4f6', flexShrink: 0, overflow: 'hidden',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  {team.logoUrl ? (
+                    <img src={team.logoUrl} alt={team.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#9ca3af' }}>
+                      {team.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="font-bold text-lg" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
+                  <div className="text-gray" style={{ fontSize: '13px' }}>Игроков: {team._count?.players || 0}</div>
+                  {team.captain && <div className="text-gray" style={{ fontSize: "12px", marginTop: "4px", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Капитан: {team.captain.fullName}</div>}
+                </div>
               </Card>
             </Link>
           ))}
