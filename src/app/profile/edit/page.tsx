@@ -97,7 +97,6 @@ export default function EditProfilePage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ✅ НОВАЯ ФУНКЦИЯ: Удаление фото
   const handleRemovePhoto = () => {
     setCurrentAvatar(null);
     setPendingAvatarFile(null);
@@ -242,7 +241,6 @@ export default function EditProfilePage() {
                   width: '24px', height: '24px', display: 'flex', alignItems: 'center', 
                   justifyContent: 'center', fontSize: '14px', border: '2px solid white', zIndex: 10
                 }}>
-                  {shouldDeleteAvatar ? "🗑️" : "!"}
                 </div>
               )}
             </div>
@@ -260,7 +258,7 @@ export default function EditProfilePage() {
                 {pendingAvatarFile ? "Новое фото выбрано." : shouldDeleteAvatar ? "Фото будет удалено." : "Нажми на фото, чтобы загрузить"}
               </p>
               
-              {/* ✅ КНОПКА УДАЛЕНИЯ */}
+              {/* КНОПКА УДАЛЕНИЯ */}
               {displayAvatar && !pendingAvatarFile && (
                 <button 
                   type="button"
@@ -268,7 +266,7 @@ export default function EditProfilePage() {
                   className="btn btn-secondary"
                   style={{ fontSize: '12px', padding: '4px 12px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
                 >
-                  🗑️ Удалить фото
+                  Удалить фото
                 </button>
               )}
             </div>

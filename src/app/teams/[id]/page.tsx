@@ -1,7 +1,6 @@
 // src/app/teams/[id]/page.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Toast from "@/components/ui/Toast";
 import ImageCropper from "@/components/ui/ImageCropper";
@@ -17,7 +16,6 @@ interface TeamData {
 }
 
 export default function TeamPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "error" | "success" } | null>(null);
@@ -106,9 +104,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
 
       if (pendingLogoFile) {
         const formData = new FormData();
-        // ✅ ИСПРАВЛЕНИЕ: API ждет поле 'file', а не 'logo'
         formData.append("file", pendingLogoFile); 
-        // ✅ ИСПРАВЛЕНИЕ: Обязательно указываем тип загрузки
         formData.append("type", "logo"); 
         
         const res = await fetch(`/api/teams/${params.id}/upload`, { 
@@ -224,9 +220,9 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             }}
           >
             <div className="avatar-large" style={{ width: '120px', height: '120px', margin: '0 auto', background: '#f3f4f6' }}>
-              {displayLogo ? <img src={displayLogo} alt="Team Logo" /> : "🛡️"}
+              {displayLogo ? <img src={displayLogo} alt="Team Logo" /> : "?"}
             </div>
-            {isCaptain && <div className="avatar-edit-overlay">📷 Изменить лого</div>}
+            {isCaptain && <div className="avatar-edit-overlay">Изменить лого</div>}
             
             {(pendingLogoFile || shouldDeleteLogo) && (
               <div style={{ 
@@ -236,7 +232,6 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', 
                 fontSize: '14px', border: '2px solid white', zIndex: 10
               }}>
-                {shouldDeleteLogo ? "🗑️" : "!"}
               </div>
             )}
           </div>
@@ -251,17 +246,17 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center', gap: '8px' }}>
               {pendingLogoFile && (
                 <button onClick={handleSaveLogo} disabled={saving} className="btn btn-primary">
-                  {saving ? "Сохранение..." : "💾 Сохранить лого"}
+                  {saving ? "Сохранение..." : "Сохранить лого"}
                 </button>
               )}
               {displayLogo && !pendingLogoFile && (
                 <button onClick={handleRemoveLogo} className="btn btn-secondary" style={{ background: '#fee2e2', color: '#dc2626' }}>
-                  🗑️ Удалить лого
+                  Удалить лого
                 </button>
               )}
               {shouldDeleteLogo && (
                  <button onClick={handleSaveLogo} disabled={saving} className="btn btn-primary">
-                  {saving ? "Удаление..." : "✅ Подтвердить удаление"}
+                  {saving ? "Удаление..." : "Подтвердить удаление"}
                 </button>
               )}
             </div>
