@@ -1,5 +1,4 @@
 // src/app/profile/page.tsx
-
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -31,49 +30,56 @@ export default function ProfilePage() {
   if (loading && !user) return <p className="empty-text">Загрузка...</p>;
 
   return (
-    <div className="container" style={{ maxWidth: "800px" }}>
+    <div className="profile-page-container">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* Карточка профиля */}
-      <Card style={{ textAlign: "center", padding: "32px" }}>
-        <div style={{ 
-          width: "100px", height: "100px", borderRadius: "50%", 
-          background: "#e5e7eb", margin: "0 auto 16px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "40px", color: "#9ca3af", border: "2px dashed #d1d5db"
-        }}>
-          {user?.photos?.[0] ? (
-            <img src={user.photos[0]} alt="Avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
-          ) : (
-            user?.fullName?.[0]?.toUpperCase() || "?"
-          )}
+      {/* Верхняя карточка: Аватар + Имя + Кнопка */}
+      <Card className="profile-header-card">
+        <div className="profile-avatar-section">
+          <div className="avatar-large">
+            {user?.photos?.[0] ? (
+              <img src={user.photos[0]} alt="Avatar" />
+            ) : (
+              user?.fullName?.[0]?.toUpperCase() || "?"
+            )}
+          </div>
+          <div className="profile-info">
+            <h1>{user?.fullName || "Пользователь"}</h1>
+            <p className="username">@{user?.username || "unknown"}</p>
+          </div>
         </div>
         
-        <h2 style={{ margin: "0 0 4px", fontSize: "24px" }}>{user?.fullName || "Пользователь"}</h2>
-        <p className="text-gray" style={{ marginBottom: "20px", fontSize: "16px" }}>
-          @{user?.username || "unknown"}
-        </p>
-        
-        {/* Только кнопка редактирования, настройки теперь в хедере */}
-        <Link href="/profile/edit" className="btn btn-primary">
-          Редактировать профиль
+        <Link href="/profile/edit" className="btn btn-secondary">
+          ✏️ Редактировать профиль
         </Link>
       </Card>
 
-      {/* Сетка с информацией */}
-      <div className="grid grid-cols-2 gap-4" style={{ marginTop: "24px" }}>
-        <Card>
-          <strong>Дата рождения:</strong> {user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : "—"}
-        </Card>
-        <Card>
-          <strong>Город:</strong> {user?.city || "—"}
-        </Card>
-        <Card>
-          <strong>Позиция:</strong> {user?.position || "—"}
-        </Card>
-        <Card>
-          <strong>Команда:</strong> {user?.team?.name || "—"}
-        </Card>
+      {/* Сетка с деталями профиля */}
+      <div className="profile-details-grid">
+        <div className="detail-item">
+          <span className="label">Дата рождения</span>
+          <span className="value">{user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : "—"}</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Город</span>
+          <span className="value">{user?.city || "—"}</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Позиция</span>
+          <span className="value">{user?.position || "—"}</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Команда</span>
+          <span className="value">{user?.team?.name || "—"}</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Рост</span>
+          <span className="value">{user?.height ? `${user.height} см` : "—"}</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Вес</span>
+          <span className="value">{user?.weight ? `${user.weight} кг` : "—"}</span>
+        </div>
       </div>
     </div>
   );

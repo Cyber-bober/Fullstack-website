@@ -1,12 +1,10 @@
 // src/app/layout.tsx
-
 import "@/app/globals.css";
 import Nav from "@/components/ui/Nav";
-import Footer from "@/components/ui/Footer";
 import Providers from "@/components/ui/Providers";
-import { Inter } from "next/font/google";
 import CookieBanner from "@/components/ui/CookieBanner";
 import SupportWidget from "@/components/ui/SupportWidget";
+import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,15 +16,19 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={inter.className}>
-        <Providers> {}
-          <Nav />
-          <main style={{ minHeight: "calc(100vh - 140px)" }}>
-            {children}
-          </main>
-          <Footer />
+        <Providers>
+          {/* Новая раскладка: Сайдбар слева, контент справа */}
+          <div className="app-layout">
+            <Nav />
+            
+            <main className="main-content">
+              {children}
+            </main>
+          </div>
+          
+          <CookieBanner />
+          <SupportWidget />
         </Providers>
-        <CookieBanner/>
-        <SupportWidget/>
       </body>
     </html>
   );

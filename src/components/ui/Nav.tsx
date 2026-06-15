@@ -1,5 +1,4 @@
-// src/components/Nav.tsx
-
+// src/components/ui/Nav.tsx
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,41 +8,38 @@ export default async function Nav() {
   const userRole = session?.user?.role || null;
 
   return (
-    <nav className="nav">
-      <div className="nav-inner glass-effect">
-        <div className="nav-left">
-          <Link href="/" className="nav-logo">RTLive</Link>
-          <div className="nav-links">
-            <Link href="/teams" className="nav-link">Команды</Link>
-            <Link href="/chat" className="nav-link">Чат</Link>
-          </div>
-        </div>
-
-        <div className="nav-right">
-          {session?.user ? (
-            <>
-              <Link href="/profile" className="nav-link">Профиль</Link>
-              
-              {/* Настройки доступны всем пользователям */}
-              <Link href="/settings" className="nav-link" title="Настройки аккаунта">
-                ⚙️
-              </Link>
-              
-              {userRole === "ADMIN" && (
-                <Link href="/admin" className="nav-link" style={{ color: "#ef4444" }}>Админка</Link>
-              )}
-              
-              <form action="/api/auth/signout" method="post" style={{ margin: 0 }}>
-                <button type="submit" className="btn btn-primary glass-effect" style={{ fontSize: "14px", padding: "6px 14px" }}>
-                  Выйти
-                </button>
-              </form>
-            </>
-          ) : (
-            <Link href="/auth/signin" className="btn btn-primary glass-effect" style={{ fontSize: "14px", padding: "6px 14px" }}>Войти</Link>
+    <aside className="sidebar glass-effect">
+      {/* Верхняя часть: Лого и Меню */}
+      <div className="sidebar-top">
+        <Link href="/" className="sidebar-logo">RTLive</Link>
+        
+        <nav className="sidebar-nav">
+          <Link href="/" className="sidebar-link">🏠 Главная</Link>
+          <Link href="/teams" className="sidebar-link">⚽ Команды</Link>
+          <Link href="/chat" className="sidebar-link">💬 Чат</Link>
+          <Link href="/profile" className="sidebar-link">👤 Профиль</Link>
+          <Link href="/settings" className="sidebar-link">⚙️ Настройки</Link>
+          
+          {userRole === "ADMIN" && (
+            <Link href="/admin" className="sidebar-link admin-link">🛡️ Админка</Link>
           )}
-        </div>
+        </nav>
       </div>
-    </nav>
+
+      {/* Нижняя часть: Авторизация */}
+      <div className="sidebar-bottom">
+        {session?.user ? (
+          <form action="/api/auth/signout" method="post" style={{ width: '100%' }}>
+            <button type="submit" className="sidebar-link logout-btn w-full">
+              🚪 Выйти
+            </button>
+          </form>
+        ) : (
+          <Link href="/auth/signin" className="btn btn-primary w-full">
+            Войти
+          </Link>
+        )}
+      </div>
+    </aside>
   );
 }
