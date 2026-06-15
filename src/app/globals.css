@@ -555,6 +555,8 @@ input[type="date"] {
 
 .calendar-grid {
   display: grid;
+  overflow-x: scroll;
+  overflow-y: scroll;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
   background: #e5e5e7;
@@ -572,7 +574,6 @@ input[type="date"] {
 }
 
 .calendar-day {
-  background: white;
   min-height: 80px;
   padding: 4px;
   border-radius: 4px;
@@ -583,7 +584,7 @@ input[type="date"] {
 }
 
 .calendar-day.empty {
-  background: #f9f9f9;
+  background: transparent;
 }
 
 .day-number {
@@ -641,6 +642,7 @@ input[type="date"] {
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 16px;
+  color: #0160ce;
 }
 
 .modal-content p {
@@ -1525,7 +1527,7 @@ input[type="date"] {
 
 /* Стиль для события матча внутри ячейки */
 .match-event {
-  background-color: #3b82f6;
+  background-color: #0160ce;
   color: white;
   padding: 4px 6px;
   border-radius: 4px;
@@ -1542,7 +1544,7 @@ input[type="date"] {
 }
 
 .match-event:hover {
-  background-color: #2563eb;
+  background-color: #0160ce;
 }
 
 /* ============================================
@@ -2023,6 +2025,10 @@ input[type="date"] {
 
 .calendar-day-header.glass-effect:hover { transform: none; }
 
+.match-event.glass-effect {
+  background: #0160ce;
+}
+
 /* ============================================
    ВИДЖЕТ ПОДДЕРЖКИ
    ============================================ */
@@ -2181,7 +2187,6 @@ body {
   flex-direction: column;
   padding: 24px;
   position: fixed;
-  height: 100%;
   left: 0;
   top: 0;
   z-index: 50;
@@ -2274,9 +2279,7 @@ body {
   background: rgba(254, 242, 242, 0.6) !important;
 }
 
-/* Обертка для контента: сдвинута вправо на ширину сайдбара */
 .main-wrapper {
-  margin-left: 260px;
   flex: 1;
   display: flex;
   flex-direction: column;

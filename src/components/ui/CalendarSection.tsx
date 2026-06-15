@@ -53,14 +53,14 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   };
 
   const days = [];
-  for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="calendar-day glass-effect empty"></div>);
+  for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
   for (let day = 1; day <= daysInMonth; day++) {
     const dayMatches = getMatchesForDay(day);
     days.push(
-      <div key={day} className="calendar-day">
+      <div key={day} className="calendar-day glass-effect">
         <span className="day-number">{day}</span>
         {dayMatches.map((m) => (
-          <div key={m.id} className="match-event" title={`${m.homeTeam.name} vs ${m.awayTeam.name}`} onClick={() => setSelectedMatch(m)}>
+          <div key={m.id} className="match-event glass-effect" title={`${m.homeTeam.name} vs ${m.awayTeam.name}`} onClick={() => setSelectedMatch(m)}>
             {m.homeTeam.name.split(' ').pop()} vs {m.awayTeam.name.split(' ').pop()}
           </div>
         ))}
@@ -88,7 +88,7 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
 
       {selectedMatch && (
         <div className="modal-overlay" onClick={() => setSelectedMatch(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-content glass-effect" onClick={e => e.stopPropagation()}>
             <h3>Детали матча</h3>
             <p><strong>{selectedMatch.homeTeam.name}</strong> vs <strong>{selectedMatch.awayTeam.name}</strong></p>
             <p>Дата: {new Date(selectedMatch.date).toLocaleString()}</p>
@@ -101,8 +101,8 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
               {/*  КНОПКА УДАЛЕНИЯ ДЛЯ АДМИНОВ */}
               {onDeleteMatch && (
                 <button 
-                  className="btn" 
-                  style={{ background: "#ef4444", color: "white" }}
+                  className="btn btn-secondary glass-effect" 
+                  style={{ color: 'white' }}
                   onClick={() => {
                     onDeleteMatch(selectedMatch.id);
                     setSelectedMatch(null);
@@ -112,7 +112,7 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
                   {deletingId === selectedMatch.id ? "Удаление..." : "Удалить"}
                 </button>
               )}
-              <button className="btn btn-primary" onClick={() => setSelectedMatch(null)}>Закрыть</button>
+              <button className="btn btn-primary glass-effect" onClick={() => setSelectedMatch(null)}>Закрыть</button>
             </div>
           </div>
         </div>

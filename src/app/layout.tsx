@@ -18,10 +18,7 @@ export default function RootLayout({
     <html lang="ru">
       <body className={inter.className}>
         <Providers>
-          {/* Сайдбар фиксирован слева поверх фона */}
           <Nav />
-          
-          {/* Контент и футер сдвинуты вправо */}
           <div className="main-wrapper">
             <main className="main-content">
               {children}
