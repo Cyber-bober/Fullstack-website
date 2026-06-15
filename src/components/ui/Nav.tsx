@@ -1,3 +1,4 @@
+// src/components/ui/Nav.tsx
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -22,44 +23,56 @@ export default async function Nav() {
     <aside className="sidebar">
       <div className="sidebar-top">       
         <nav className="sidebar-nav">
+          {/* Главная */}
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/main-page.svg" alt="" className="svg"/>
             <Link href="/" className="sidebar-link">Главная</Link>
           </div>
 
+          {/* Команды */}
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/teams.svg" alt="" className="svg"/>
             <Link href="/teams" className="sidebar-link">Команды</Link>
           </div>
 
+          {/* Профиль команды */}
           {showTeamProfile && (
             <div className="sidebar-btn glass-effect">
-              <img src="/uploads/svg/team-profile.svg" className="svg"/>
+              <img src="/uploads/svg/team-profile.svg" alt="" className="svg"/>
               <Link href="/teams/profile" className="sidebar-link">Профиль команды</Link>
             </div>
           )}
 
+          {/* Чат */}
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/chat.svg" alt="" className="svg"/>
             <Link href="/chat" className="sidebar-link">Чат</Link>
           </div>
 
+          {/* Профиль */}
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/profile.svg" alt="" className="svg"/>
             <Link href="/profile" className="sidebar-link">Профиль</Link>
           </div>
 
+          {/* Настройки */}
           <div className="sidebar-btn glass-effect">
             <img src="/uploads/svg/settings.svg" alt="" className="svg"/>
             <Link href="/settings" className="sidebar-link">Настройки</Link>
           </div>
 
+          {/* Админка (только для ADMIN) */}
           {userRole === "ADMIN" && (
             <div className="sidebar-btn glass-effect">
               <img src="/uploads/svg/admin.svg" alt="" className="svg"/>
               <Link href="/admin" className="sidebar-link admin-link">Админка</Link>
             </div>
           )}
+
+          <div className="sidebar-btn glass-effect">
+            <img src="/uploads/svg/info.svg" alt="" className="svg"/>
+            <Link href="/support" className="sidebar-link">Поддержка</Link>
+          </div>
         </nav>
       </div>
 
@@ -67,13 +80,13 @@ export default async function Nav() {
         {session?.user ? (
           <form action="/api/auth/signout" method="post" style={{ width: '100%' }}>
             <button type="submit" className="sidebar-link logout-btn w-full glass-effect"> 
-              <img src="/uploads/svg/login.svg" className="svg"/>
+              <img src="/uploads/svg/login.svg" alt="" className="svg"/>
               <span className="sidebar-link-text">Выйти</span>
             </button>
           </form>
         ) : (
           <Link href="/auth/signin" className="sidebar-link login-btn w-full glass-effect">
-            <img src="/uploads/svg/logout.svg" className="svg"/>
+            <img src="/uploads/svg/logout.svg" alt="" className="svg"/>
             <span className="sidebar-link-text">Войти</span>
           </Link>
         )}
