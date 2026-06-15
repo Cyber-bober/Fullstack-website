@@ -9,7 +9,6 @@ export default async function Nav() {
 
   return (
     <aside className="sidebar glass-effect">
-      {/* Верхняя часть: Лого и Меню */}
       <div className="sidebar-top">
         <Link href="/" className="sidebar-logo">RTLive</Link>
         
@@ -26,7 +25,6 @@ export default async function Nav() {
         </nav>
       </div>
 
-      {/* Нижняя часть: Авторизация */}
       <div className="sidebar-bottom">
         {session?.user ? (
           <form action="/api/auth/signout" method="post" style={{ width: '100%' }}>
@@ -35,7 +33,7 @@ export default async function Nav() {
             </button>
           </form>
         ) : (
-          <Link href="/auth/signin" className="btn btn-primary w-full">
+          <Link href="/auth/signin" className="btn btn-primary w-full glass-btn">
             Войти
           </Link>
         )}

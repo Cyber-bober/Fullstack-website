@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import "@/app/globals.css";
 import Nav from "@/components/ui/Nav";
+import Footer from "@/components/ui/Footer";
 import Providers from "@/components/ui/Providers";
 import CookieBanner from "@/components/ui/CookieBanner";
 import SupportWidget from "@/components/ui/SupportWidget";
@@ -17,13 +18,15 @@ export default function RootLayout({
     <html lang="ru">
       <body className={inter.className}>
         <Providers>
-          {/* Новая раскладка: Сайдбар слева, контент справа */}
-          <div className="app-layout">
-            <Nav />
-            
+          {/* Сайдбар фиксирован слева поверх фона */}
+          <Nav />
+          
+          {/* Контент и футер сдвинуты вправо */}
+          <div className="main-wrapper">
             <main className="main-content">
               {children}
             </main>
+            <Footer />
           </div>
           
           <CookieBanner />
