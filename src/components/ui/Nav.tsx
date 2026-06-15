@@ -13,14 +13,31 @@ export default async function Nav() {
         <Link href="/" className="sidebar-logo">RTLive</Link>
         
         <nav className="sidebar-nav">
-          <Link href="/" className="sidebar-link">Главная</Link>
-          <Link href="/teams" className="sidebar-link">Команды</Link>
-          <Link href="/chat" className="sidebar-link">Чат</Link>
-          <Link href="/profile" className="sidebar-link">Профиль</Link>
-          <Link href="/settings" className="sidebar-link">Настройки</Link>
-          
+          <div className="sidebar-btn glass-effect">
+            <img src="/uploads/svg/main-page.svg" className="sidebar-svg"/>
+            <Link href="/" className="sidebar-link">Главная</Link>
+          </div>
+          <div className="sidebar-btn glass-effect">
+            <img src="/uploads/svg/teams.svg" className="sidebar-svg"/>
+            <Link href="/teams" className="sidebar-link">Команды</Link>
+          </div>
+          <div className="sidebar-btn glass-effect">
+            <img src="/uploads/svg/chat.svg" className="sidebar-svg"/>
+            <Link href="/chat" className="sidebar-link">Чат</Link>
+          </div>
+          <div className="sidebar-btn glass-effect">
+            <img src="/uploads/svg/profile.svg" className="sidebar-svg"/>
+            <Link href="/profile" className="sidebar-link">Профиль</Link>
+          </div>
+          <div className="sidebar-btn glass-effect">
+            <img src="/uploads/svg/settings.svg" className="sidebar-svg"/>
+            <Link href="/settings" className="sidebar-link">Настройки</Link>
+          </div>
           {userRole === "ADMIN" && (
-            <Link href="/admin" className="sidebar-link admin-link">🛡️ Админка</Link>
+            <div className="sidebar-btn glass-effect">
+              <img src="/uploads/svg/admin.svg" className="sidebar-svg"/>
+              <Link href="/admin" className="sidebar-link admin-link">Админка</Link>
+            </div>
           )}
         </nav>
       </div>

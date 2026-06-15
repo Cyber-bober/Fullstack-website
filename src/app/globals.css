@@ -2181,10 +2181,11 @@ body {
   flex-direction: column;
   padding: 24px;
   position: fixed;
-  height: 100vh;
+  height: 100%;
   left: 0;
   top: 0;
   z-index: 50;
+  margin: 10px 0 30px 20px;
 }
 
 .sidebar-logo {
@@ -2203,6 +2204,20 @@ body {
   flex-direction: column;
   gap: 8px;
   flex: 1;
+}
+
+.sidebar-btn {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.sidebar-svg {
+  width: 25px;
+  height: 25px;
 }
 
 .sidebar-link {
@@ -2236,7 +2251,6 @@ body {
   color: #ef4444;
 }
 .admin-link:hover {
-  background: rgba(254, 242, 242, 0.8);
   color: #dc2626;
 }
 
