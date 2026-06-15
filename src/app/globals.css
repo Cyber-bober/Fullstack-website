@@ -1267,6 +1267,131 @@ input[type="date"] {
 }
 
 /* ============================================
+   НОВОСТИ
+   ============================================ */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.form-title {
+  margin-bottom: 16px;
+  color: #0160ce;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.file-input {
+  padding: 8px 0;
+  background: transparent;
+  width: 100%;
+}
+
+.file-preview-container {
+  margin-top: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 400px;
+}
+
+.file-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.news-card {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.news-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+}
+
+.btn-edit {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0160ce;
+}
+
+.btn-delete {
+  background: rgba(255, 255, 255, 0.9);
+  color: #ef4444;
+}
+
+/* ✅ СТИЛИ ДЛЯ ИЗОБРАЖЕНИЯ НОВОСТИ */
+.news-image-wrapper {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.news-image {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+.news-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.news-content {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #4b5563;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.news-meta {
+  font-size: 0.875rem;
+  color: #6b7280;
+  display: block;
+}
+
+.btn-add-news {
+  white-space: nowrap;
+}
+
+/* ============================================
    УВЕДОМЛЕНИЯ (TOAST)
    ============================================ */
 

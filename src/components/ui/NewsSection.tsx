@@ -62,7 +62,6 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       if (res.ok) {
         const updatedPost = await res.json();
         
-        // ИСПРАВЛЕНИЕ: Сначала формируем новый массив, потом передаем его в setNews
         let updatedList: NewsPost[];
         if (isEditing) {
           updatedList = localNews.map(p => p.id === editId ? updatedPost : p);
@@ -71,7 +70,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
         }
 
         setLocalNews(updatedList);
-        setNews(updatedList); // Передаем готовый массив, а не функцию
+        setNews(updatedList);
         
         resetForm();
       } else {
@@ -93,7 +92,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       if (res.ok) {
         const updated = localNews.filter(p => p.id !== id);
         setLocalNews(updated);
-        setNews(updated); // Передаем готовый массив
+        setNews(updated);
       } else {
         alert("Не удалось удалить");
       }
@@ -123,18 +122,32 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
       {showForm && (
         <Card className="form-card glass-effect">
           {error && <div className="form-error">{error}</div>}
-          <h3 style={{ marginBottom: "16px", color: '#0160ce' }}>{isEditing ? "Редактирование новости" : "Новая новость"}</h3>
+          <h3 className="form-title">{isEditing ? "Редактирование новости" : "Новая новость"}</h3>
           <form onSubmit={handleSubmit}>
-            <div className="form-group"><label style={{ color: 'black' }}>Заголовок</label><input type="text" className="glass-effect" value={title} onChange={e => setTitle(e.target.value)} required /></div>
-            <div className="form-group"><label style={{ color: 'black' }}>Содержание</label><textarea className="glass-effect" value={content} onChange={e => setContent(e.target.value)} required rows={4} /></div>
             <div className="form-group">
-              <label style={{ color: 'black' }}>Изображение {isEditing && "(оставьте пустым, чтобы не менять)"}</label>
-              <input type="file" accept="image/*" onChange={handleFileChange} style={{ padding: "8px 0", background: 'transparent' }} />
-              {preview && <div className="file-preview-container"><img src={preview} alt="Preview" className="file-preview" /></div>}
+              <label>Заголовок</label>
+              <input type="text" className="glass-effect" value={title} onChange={e => setTitle(e.target.value)} required />
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button type="submit" className="btn btn-primary glass-effect" disabled={loading}>{loading ? "Сохранение..." : "Сохранить"}</button>
-              <button type="button" className="btn btn-secondary glass-effect" onClick={resetForm}>Отмена</button>
+            <div className="form-group">
+              <label>Содержание</label>
+              <textarea className="glass-effect" value={content} onChange={e => setContent(e.target.value)} required rows={4} />
+            </div>
+            <div className="form-group">
+              <label>Изображение {isEditing && "(оставьте пустым, чтобы не менять)"}</label>
+              <input type="file" accept="image/*" onChange={handleFileChange} className="file-input" />
+              {preview && (
+                <div className="file-preview-container">
+                  <img src={preview} alt="Preview" className="file-preview" />
+                </div>
+              )}
+            </div>
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary glass-effect" disabled={loading}>
+                {loading ? "Сохранение..." : "Сохранить"}
+              </button>
+              <button type="button" className="btn btn-secondary glass-effect" onClick={resetForm}>
+                Отмена
+              </button>
             </div>
           </form>
         </Card>
@@ -152,18 +165,34 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
             <Card key={post.id} className="news-card glass-effect">
               {canEditThis && (
                 <div className="news-actions">
-                  <button onClick={() => openEditModal(post)} className="btn btn-icon btn-edit glass-effect" title="Редактировать">✏️</button>
+                  <button onClick={() => openEditModal(post)} className="btn btn-icon btn-edit glass-effect" title="Редактировать">
+                    ✏️
+                  </button>
                   {canDelete && (
-                    <button onClick={() => handleDelete(post.id)} disabled={deletingId === post.id} className="btn btn-icon btn-delete glass-effect" title="Удалить">
+                    <button 
+                      onClick={() => handleDelete(post.id)} 
+                      disabled={deletingId === post.id} 
+                      className="btn btn-icon btn-delete glass-effect" 
+                      title="Удалить"
+                    >
                       {deletingId === post.id ? "..." : "🗑️"}
                     </button>
                   )}
                 </div>
               )}
 
+              {/* ✅ ОТОБРАЖЕНИЕ КАРТИНКИ */}
+              {post.imageUrl && (
+                <div className="news-image-wrapper">
+                  <img src={post.imageUrl} alt={post.title} className="news-image" />
+                </div>
+              )}
+
               <h3 className="news-title">{post.title}</h3>
               <p className="news-content">{post.content}</p>
-              <span className="news-meta">Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}</span>
+              <span className="news-meta">
+                Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}
+              </span>
             </Card>
           );
         })
