@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -14,7 +14,24 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("photo") as File;
     
-    if (!file) return NextResponse.json({ error: "Файл не выбран" }, { status: 400 });
+    if (!file || file.size === 0) {
+      return NextResponse.json({ error: "Файл не выбран или пуст" }, { status: 400 });
+    }
+
+    const currentUser = await prisma.user.findUnique({ 
+      where: { id: session.user.id },
+      select: { photos: true }
+    });
+    
+    if (currentUser?.photos && currentUser.photos.length > 0) {
+      const oldPhotoPath = currentUser.photos[0];
+      try {
+        const fullPath = path.join(process.cwd(), "public", oldPhotoPath);
+        await unlink(fullPath);
+      } catch (err) {
+        console.warn("Не удалось удалить старое фото:", err);
+      }
+    }
 
     const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
     await mkdir(uploadDir, { recursive: true });
@@ -25,7 +42,6 @@ export async function POST(req: NextRequest) {
 
     const photoUrl = `/uploads/avatars/${fileName}`;
 
-    // Обновляем массив photos у пользователя (оставляем только 1 главное фото)
     await prisma.user.update({
       where: { id: session.user.id },
       data: { photos: [photoUrl] },

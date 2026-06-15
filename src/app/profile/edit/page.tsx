@@ -18,10 +18,16 @@ export default function EditProfilePage() {
   const [consentError, setConsentError] = useState(false);
   const [authError, setAuthError] = useState(false);
 
-  // Состояния для фото
+  // Текущее фото из БД
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
+  
+  // Фото, которое пользователь выбрал и обрезал (еще не сохранено в БД)
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
+  
+  // Состояние для окна кроппера
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -61,62 +67,35 @@ export default function EditProfilePage() {
       });
   }, []);
 
-  // ✅ ТОЛЬКО ЧТЕНИЕ ФАЙЛА И ПОКАЗ КРОППЕРА. НИКАКОЙ ЗАГРУЗКИ!
+  // Выбор файла -> открытие кроппера
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
-      if (file.size > 5 * 1024 * 1024) {
-        setToast({ message: "Файл слишком большой (макс 5MB)", type: "error" });
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        // Сначала устанавливаем источник, потом показываем модалку
-        setTempImageSrc(reader.result as string);
-        // Небольшая задержка для гарантии рендеринга Base64 перед открытием
-        setTimeout(() => setShowCropper(true), 50);
-      };
-      reader.onerror = () => {
-        setToast({ message: "Ошибка чтения файла", type: "error" });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // ✅ ЗАГРУЗКА ПРОИСХОДИТ ТОЛЬКО ЗДЕСЬ, ПОСЛЕ ОБРЕЗКИ
-  const handleCropComplete = async (croppedFile: File) => {
-    setShowCropper(false); // Сразу скрываем кроппер
-    setSaving(true);
+    const file = e.target.files?.[0];
+    if (!file) return;
     
-    try {
-      const formData = new FormData();
-      formData.append("photo", croppedFile);
-      
-      const res = await fetch("/api/profile/upload-photo", { 
-        method: "POST", 
-        body: formData 
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setCurrentAvatar(data.url);
-        setToast({ message: "Аватар обновлен!", type: "success" });
-      } else {
-        const err = await res.json();
-        setToast({ message: err.error || "Ошибка загрузки фото", type: "error" });
-      }
-    } catch {
-      setToast({ message: "Ошибка сети при загрузке фото", type: "error" });
-    } finally {
-      setSaving(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      setTempImageSrc(null); // Очищаем память
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({ message: "Файл слишком большой (макс 5MB)", type: "error" });
+      e.target.value = "";
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = () => setCropImageSrc(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
+  // Обрезка завершена -> сохраняем файл локально (не отправляем на сервер!)
+  const handleCropComplete = async (croppedFile: File) => {
+    setPendingAvatarFile(croppedFile);
+    
+    // Создаем превью для отображения в форме
+    const previewUrl = URL.createObjectURL(croppedFile);
+    setPendingAvatarPreview(previewUrl);
+    
+    setCropImageSrc(null); // Закрываем кроппер
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Финальное сохранение ВСЕХ данных (текст + фото)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setConsentError(false);
@@ -129,27 +108,56 @@ export default function EditProfilePage() {
 
     setSaving(true);
     try {
-      const res = await fetch("/api/profile/update", {
+      let finalAvatarUrl = currentAvatar;
+
+      // ✅ ЕСЛИ ЕСТЬ НОВОЕ ФОТО - ЗАГРУЖАЕМ ЕГО ПРЯМО ЗДЕСЬ
+      if (pendingAvatarFile) {
+        const photoFormData = new FormData();
+        photoFormData.append("photo", pendingAvatarFile);
+        
+        const uploadRes = await fetch("/api/profile/upload-photo", { 
+          method: "POST", 
+          body: photoFormData 
+        });
+        
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          finalAvatarUrl = uploadData.url;
+        } else {
+          const err = await uploadRes.json();
+          throw new Error(err.error || "Ошибка загрузки фото");
+        }
+      }
+
+      // Обновляем текстовые данные профиля
+      const updateRes = await fetch("/api/profile/update", {
         method: "POST", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const updateData = await updateRes.json();
 
-      if (res.ok) {
+      if (updateRes.ok) {
+        // Если аватар изменился, обновляем текущее состояние
+        if (finalAvatarUrl !== currentAvatar) {
+          setCurrentAvatar(finalAvatarUrl);
+          setPendingAvatarFile(null);
+          setPendingAvatarPreview(null);
+        }
+        
         setToast({ message: "Профиль успешно обновлен!", type: "success" });
         setTimeout(() => router.push("/profile"), 800);
       } else {
-        if (data.error && String(data.error).toLowerCase().includes("username")) {
-          setUsernameError(data.error);
+        if (updateData.error && String(updateData.error).toLowerCase().includes("username")) {
+          setUsernameError(updateData.error);
         } else {
-          setToast({ message: data.error || "Ошибка сохранения данных", type: "error" });
+          setToast({ message: updateData.error || "Ошибка сохранения данных", type: "error" });
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setToast({ message: "Ошибка сети", type: "error" });
+      setToast({ message: err.message || "Ошибка сети", type: "error" });
     } finally {
       setSaving(false);
     }
@@ -169,14 +177,20 @@ export default function EditProfilePage() {
 
   if (loading) return <p className="empty-text" style={{ marginTop: '40px' }}>Загрузка...</p>;
 
+  // Определяем, какое фото показывать: новое (превью) или старое (из БД)
+  const displayAvatar = pendingAvatarPreview || currentAvatar;
+
   return (
     <>
-      {/* ✅ КРОППЕР ВЫНЕСЕН ВНЕ ОСНОВНОГО КОНТЕЙНЕРА */}
-      {showCropper && tempImageSrc && (
+      {/* Окно кроппера */}
+      {cropImageSrc && (
         <ImageCropper 
-          imageSrc={tempImageSrc} 
+          imageSrc={cropImageSrc} 
           onCropComplete={handleCropComplete} 
-          onCancel={() => { setShowCropper(false); setTempImageSrc(null); }} 
+          onCancel={() => {
+            setCropImageSrc(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }} 
         />
       )}
 
@@ -187,14 +201,36 @@ export default function EditProfilePage() {
           <h1 className="home-title text-center">Редактирование профиля</h1>
 
           <div className="avatar-edit-section">
-            <div className="avatar-edit-wrapper" onClick={() => fileInputRef.current?.click()}>
+            <div 
+              className="avatar-edit-wrapper" 
+              onClick={() => !saving && fileInputRef.current?.click()}
+              style={{ opacity: saving ? 0.5 : 1, pointerEvents: saving ? 'none' : 'auto' }}
+            >
               <div className="avatar-large">
-                {currentAvatar ? <img src={currentAvatar} alt="Avatar" /> : formData.fullName?.[0]?.toUpperCase() || "?"}
+                {displayAvatar ? <img src={displayAvatar} alt="Avatar" /> : formData.fullName?.[0]?.toUpperCase() || "?"}
               </div>
               <div className="avatar-edit-overlay">📷 Изменить</div>
+              
+              {/* Индикатор того, что фото изменено, но не сохранено */}
+              {pendingAvatarFile && (
+                <div style={{ 
+                  position: 'absolute', top: '-8px', right: '-8px', 
+                  background: '#f59e0b', color: 'white', borderRadius: '50%', 
+                  width: '24px', height: '24px', display: 'flex', alignItems: 'center', 
+                  justifyContent: 'center', fontSize: '14px', border: '2px solid white' 
+                }}>!</div>
+              )}
             </div>
-            <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden-input" />
-            <p className="avatar-upload-hint">Нажми на фото, чтобы загрузить новое</p>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileSelect} 
+              accept="image/*" 
+              className="hidden-input" 
+            />
+            <p className="avatar-upload-hint">
+              {pendingAvatarFile ? "Фото выбрано. Нажмите 'Сохранить изменения' внизу." : "Нажми на фото, чтобы загрузить новое"}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="edit-form">

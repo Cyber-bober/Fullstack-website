@@ -1,6 +1,6 @@
 // src/components/ui/ImageCropper.tsx
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import type { Point, Area } from "react-easy-crop";
 
@@ -14,12 +14,26 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [pixelCrop, setPixelCrop] = useState<Area | null>(null);
+  
+  // ✅ ДОБАВЛЕНО: Состояние для хранения размеров изображения
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+
+  // Получаем реальные размеры картинки при загрузке
+  useEffect(() => {
+    const img = new Image();
+    img.src = imageSrc;
+    img.onload = () => {
+      setImageSize({ width: img.width, height: img.height });
+    };
+  }, [imageSrc]);
 
   const getCroppedImg = async (imageSrc: string, pixelCrop: Area, rotation: number) => {
     const image = await createImage(imageSrc);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
 
     const maxSize = Math.max(image.width, image.height);
     const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
@@ -42,11 +56,12 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
       Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
     );
 
-    return new Promise<File>((resolve) => {
+    return new Promise<File | null>((resolve) => {
       canvas.toBlob((blob) => {
         if (blob) {
-          const file = new File([blob], "avatar-cropped.png", { type: "image/png" });
-          resolve(file);
+          resolve(new File([blob], "avatar-cropped.png", { type: "image/png" }));
+        } else {
+          resolve(null);
         }
       }, "image/png");
     });
@@ -57,33 +72,50 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
       const image = new Image();
       image.addEventListener("load", () => resolve(image));
       image.addEventListener("error", (error) => reject(error));
+      image.setAttribute("crossOrigin", "anonymous");
       image.src = url;
     });
 
-  const handleCropComplete = useCallback(
-    async (_croppedArea: Area, croppedAreaPixels: Area) => {
-      try {
-        const croppedFile = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
-        if (croppedFile) onCropComplete(croppedFile);
-      } catch (e) {
-        console.error(e);
+  const onCropCompleteHandler = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    setPixelCrop(croppedAreaPixels);
+  }, []);
+
+  const handleFinalSave = useCallback(async () => {
+    if (!pixelCrop || isProcessing) return;
+    setIsProcessing(true);
+    
+    try {
+      const croppedFile = await getCroppedImg(imageSrc, pixelCrop, rotation);
+      if (croppedFile) {
+        onCropComplete(croppedFile);
       }
-    },
-    [imageSrc, rotation, onCropComplete]
-  );
+    } catch (e) {
+      console.error("Ошибка обрезки:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [imageSrc, rotation, pixelCrop, onCropComplete, isProcessing]);
 
   return (
-    // ✅ ИСПОЛЬЗУЕМ КЛАСС .modal-overlay ИЗ ТВОЕГО CSS (z-index: 1000)
-    // Но добавляем inline-style для гарантии перекрытия всего контента
-    <div className="modal-overlay" style={{ zIndex: 99999, background: 'rgba(0,0,0,0.85)' }}>
-      <div className="modal-content" style={{ maxWidth: '600px', width: '95%' }}>
+    // ✅ ИСПРАВЛЕНИЕ 1: Добавлен overflow-y-auto и max-h-screen, чтобы окно можно было прокрутить
+    <div className="modal-overlay" style={{ 
+      zIndex: 99999, 
+      background: 'rgba(0,0,0,0.85)',
+      overflowY: 'auto',
+      padding: '20px 0'
+    }}>
+      <div className="modal-content" style={{ 
+        maxWidth: '600px', 
+        width: '95%',
+        margin: 'auto' // Центрирование по вертикали при прокрутке
+      }}>
         <h3>Настройка аватара</h3>
         
-        {/* ✅ ЖЕСТКИЕ СТИЛИ ДЛЯ КОНТЕЙНЕРА КРОПА */}
+        {/* ✅ ИСПРАВЛЕНИЕ 2: Уменьшена высота до 300px, чтобы влезало на экраны ноутбуков */}
         <div style={{ 
           position: 'relative', 
           width: '100%', 
-          height: '400px', // Фиксированная высота обязательна!
+          height: '300px', 
           background: '#f3f4f6',
           borderRadius: '8px',
           overflow: 'hidden',
@@ -100,11 +132,20 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
-            onCropComplete={handleCropComplete}
+            onCropComplete={onCropCompleteHandler}
+            // ✅ ИСПРАВЛЕНИЕ 3: initialCroppedAreaPercentages помогает центрировать портретные фото
+            {...(imageSize && {
+              initialCroppedAreaPercentages: {
+                width: 100,
+                height: 100,
+                x: 0,
+                y: 0
+              }
+            })}
           />
         </div>
 
-        <div className="form-group" style={{ marginBottom: '20px' }}>
+        <div className="form-group" style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>
             Масштаб: {Math.round(zoom * 100)}%
           </label>
@@ -115,7 +156,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           />
         </div>
 
-        <div className="form-group" style={{ marginBottom: '20px' }}>
+        <div className="form-group" style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>
             Поворот: {rotation}°
           </label>
@@ -127,12 +168,13 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
         </div>
 
         <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-          <button className="btn btn-secondary" onClick={onCancel}>Отмена</button>
+          <button className="btn btn-secondary" onClick={onCancel} disabled={isProcessing}>Отмена</button>
           <button 
             className="btn btn-primary" 
-            onClick={() => handleCropComplete({ x: 0, y: 0, width: 100, height: 100 }, { x: 0, y: 0, width: 100, height: 100 })}
+            onClick={handleFinalSave} 
+            disabled={isProcessing || !pixelCrop}
           >
-            Сохранить
+            {isProcessing ? "Обработка..." : "Сохранить"}
           </button>
         </div>
       </div>
