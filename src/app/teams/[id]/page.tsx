@@ -7,12 +7,20 @@ import ImageCropper from "@/components/ui/ImageCropper";
 import AddPlayerForm from "@/components/ui/AddPlayerForm";
 import PlayerCard from "@/components/ui/PlayerCard";
 
+interface TeamStats {
+  description?: string;
+  foundedYear?: string;
+  stadium?: string;
+  city?: string;
+}
+
 interface TeamData {
   id: string;
   name: string;
   logoUrl?: string | null;
   captainId?: string | null;
   players: any[];
+  stats?: string | null; // JSON-строка из БД
 }
 
 export default function TeamPage({ params }: { params: { id: string } }) {
@@ -25,6 +33,9 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   
+  // Вкладки
+  const [activeTab, setActiveTab] = useState<"roster" | "stats">("roster");
+  
   // Состояния для логотипа
   const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
   const [pendingLogoPreview, setPendingLogoPreview] = useState<string | null>(null);
@@ -33,6 +44,14 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Состояние для редактирования статистики
+  const [statsForm, setStatsForm] = useState<TeamStats>({
+    description: "",
+    foundedYear: "",
+    stadium: "",
+    city: ""
+  });
 
   useEffect(() => {
     loadTeamData();
@@ -56,6 +75,19 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         }));
         setTeam(data);
         setIsCaptain(data.captainId === session.user.id || session.user.role === "ADMIN");
+        
+        // ✅ Парсим JSON из поля stats
+        let parsedStats: TeamStats = {};
+        try {
+          if (data.stats) parsedStats = JSON.parse(data.stats);
+        } catch {}
+        
+        setStatsForm({
+          description: parsedStats.description || "",
+          foundedYear: parsedStats.foundedYear || "",
+          stadium: parsedStats.stadium || "",
+          city: parsedStats.city || ""
+        });
       } else {
         setToast({ message: "Команда не найдена", type: "error" });
       }
@@ -64,6 +96,37 @@ export default function TeamPage({ params }: { params: { id: string } }) {
       setToast({ message: "Ошибка загрузки данных", type: "error" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // --- ЛОГИКА СТАТИСТИКИ ---
+  const handleSaveStats = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (userRole !== "ADMIN") return;
+    
+    setSaving(true);
+    try {
+      // ✅ Упаковываем данные в JSON-строку
+      const statsJson = JSON.stringify(statsForm);
+      
+      const res = await fetch(`/api/teams/${params.id}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stats: statsJson }),
+      });
+
+      if (res.ok) {
+        setToast({ message: "Статистика обновлена!", type: "success" });
+        // Обновляем локальные данные
+        setTeam(prev => prev ? { ...prev, stats: statsJson } : null);
+      } else {
+        const err = await res.json();
+        setToast({ message: err.error || "Ошибка сохранения", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Ошибка сети", type: "error" });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -192,6 +255,11 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   if (!team) return <div className="container"><p className="empty-text">Команда не найдена</p></div>;
 
   const displayLogo = pendingLogoPreview || team.logoUrl;
+  const isAdmin = userRole === "ADMIN";
+
+  // Парсим статистику для отображения
+  let displayStats: TeamStats = {};
+  try { if (team.stats) displayStats = JSON.parse(team.stats); } catch {}
 
   return (
     <>
@@ -232,6 +300,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', 
                 fontSize: '14px', border: '2px solid white', zIndex: 10
               }}>
+                {shouldDeleteLogo ? "🗑️" : "!"}
               </div>
             )}
           </div>
@@ -263,35 +332,155 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           )}
         </Card>
 
-        {/* Управление составом */}
-        {isCaptain && (
-          <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={() => setShowAddPlayer(!showAddPlayer)} className="btn btn-primary">
-              {showAddPlayer ? "Скрыть поиск" : "+ Добавить игрока"}
-            </button>
-          </div>
+        {/* Вкладки навигации */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
+          <button 
+            onClick={() => setActiveTab("roster")}
+            className={`btn ${activeTab === "roster" ? "btn-primary" : "btn-secondary"}`}
+            style={{ background: activeTab === "roster" ? undefined : 'transparent', border: activeTab === "roster" ? 'none' : '1px solid #e5e7eb' }}
+          >
+            Состав
+          </button>
+          <button 
+            onClick={() => setActiveTab("stats")}
+            className={`btn ${activeTab === "stats" ? "btn-primary" : "btn-secondary"}`}
+            style={{ background: activeTab === "stats" ? undefined : 'transparent', border: activeTab === "stats" ? 'none' : '1px solid #e5e7eb' }}
+          >
+            Статистика
+          </button>
+        </div>
+
+        {/* Содержимое вкладки "Состав" */}
+        {activeTab === "roster" && (
+          <>
+            {(isCaptain || isAdmin) && (
+              <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowAddPlayer(!showAddPlayer)} className="btn btn-primary">
+                  {showAddPlayer ? "Скрыть поиск" : "+ Добавить игрока"}
+                </button>
+              </div>
+            )}
+
+            {showAddPlayer && (isCaptain || isAdmin) && (
+              <Card style={{ marginBottom: '24px' }}>
+                <AddPlayerForm onAddPlayer={handleAddPlayer} addingPlayer={false} teamId={team.id} />
+              </Card>
+            )}
+
+            <h2 className="section-title">Состав команды</h2>
+            <div className="team-players">
+              {team.players.map((player) => (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  canManage={isCaptain || isAdmin}
+                  isAdmin={isAdmin}
+                  onSetCaptain={handleSetCaptain}
+                  onRemovePlayer={handleRemovePlayer}
+                />
+              ))}
+            </div>
+          </>
         )}
 
-        {showAddPlayer && isCaptain && (
-          <Card style={{ marginBottom: '24px' }}>
-            <AddPlayerForm onAddPlayer={handleAddPlayer} addingPlayer={false} teamId={team.id} />
+        {/* Содержимое вкладки "Статистика" */}
+        {activeTab === "stats" && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 className="section-title" style={{ margin: 0 }}>Информация о команде</h2>
+              {isAdmin && (
+                <span style={{ fontSize: '12px', background: '#fee2e2', color: '#dc2626', padding: '4px 8px', borderRadius: '8px' }}>
+                  Режим редактирования (Админ)
+                </span>
+              )}
+            </div>
+
+            {isAdmin ? (
+              // ✅ ФОРМА РЕДАКТИРОВАНИЯ ДЛЯ АДМИНА
+              <form onSubmit={handleSaveStats} className="edit-form">
+                <div className="form-group">
+                  <label>Описание команды</label>
+                  <textarea 
+                    value={statsForm.description} 
+                    onChange={(e) => setStatsForm({...statsForm, description: e.target.value})}
+                    rows={4}
+                    placeholder="Краткая история или описание..."
+                  />
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label>Год основания</label>
+                    <input 
+                      type="number" 
+                      value={statsForm.foundedYear} 
+                      onChange={(e) => setStatsForm({...statsForm, foundedYear: e.target.value})}
+                      placeholder="Например: 2010"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Город</label>
+                    <input 
+                      type="text" 
+                      value={statsForm.city} 
+                      onChange={(e) => setStatsForm({...statsForm, city: e.target.value})}
+                      placeholder="Город базирования"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Стадион / Место проведения игр</label>
+                  <input 
+                    type="text" 
+                    value={statsForm.stadium} 
+                    onChange={(e) => setStatsForm({...statsForm, stadium: e.target.value})}
+                    placeholder="Название стадиона"
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary w-full" disabled={saving}>
+                  {saving ? "Сохранение..." : "Сохранить изменения"}
+                </button>
+              </form>
+            ) : (
+              // ✅ ПРОСМОТР ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {displayStats.description && (
+                  <div>
+                    <h3 style={{ fontSize: '14px', color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Описание</h3>
+                    <p style={{ lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{displayStats.description}</p>
+                  </div>
+                )}
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+                  {displayStats.foundedYear && (
+                    <div>
+                      <h3 style={{ fontSize: '14px', color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Год основания</h3>
+                      <p style={{ fontSize: '18px', fontWeight: 600 }}>{displayStats.foundedYear}</p>
+                    </div>
+                  )}
+                  {displayStats.city && (
+                    <div>
+                      <h3 style={{ fontSize: '14px', color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Город</h3>
+                      <p style={{ fontSize: '18px', fontWeight: 600 }}>{displayStats.city}</p>
+                    </div>
+                  )}
+                  {displayStats.stadium && (
+                    <div>
+                      <h3 style={{ fontSize: '14px', color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Стадион</h3>
+                      <p style={{ fontSize: '18px', fontWeight: 600 }}>{displayStats.stadium}</p>
+                    </div>
+                  )}
+                </div>
+
+                {!displayStats.description && !displayStats.foundedYear && !displayStats.city && !displayStats.stadium && (
+                  <p className="empty-text">Информация о команде пока не заполнена.</p>
+                )}
+              </div>
+            )}
           </Card>
         )}
-
-        {/* Список игроков */}
-        <h2 className="section-title">Состав команды</h2>
-        <div className="team-players">
-          {team.players.map((player) => (
-            <PlayerCard
-              key={player.id}
-              player={player}
-              canManage={isCaptain || false}
-              isAdmin={userRole === "ADMIN"}
-              onSetCaptain={handleSetCaptain}
-              onRemovePlayer={handleRemovePlayer}
-            />
-          ))}
-        </div>
       </div>
     </>
   );
