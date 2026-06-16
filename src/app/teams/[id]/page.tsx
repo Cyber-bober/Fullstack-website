@@ -343,8 +343,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           </button>
           <button 
             onClick={() => setActiveTab("stats")}
-            className={`btn ${activeTab === "stats" ? "btn-primary" : "btn-secondary"}`}
-            style={{ background: activeTab === "stats" ? undefined : 'transparent', border: activeTab === "stats" ? 'none' : '1px solid #e5e7eb' }}
+            className={`btn glass-effect ${activeTab === "stats" ? "btn-primary" : ""}`}
           >
             Статистика
           </button>
@@ -355,8 +354,8 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           <>
             {(isCaptain || isAdmin) && (
               <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button onClick={() => setShowAddPlayer(!showAddPlayer)} className="btn btn-primary">
-                  {showAddPlayer ? "Скрыть поиск" : "+ Добавить игрока"}
+                <button onClick={() => setShowAddPlayer(!showAddPlayer)} className="btn btn-primary glass-effect">
+                  {showAddPlayer ? "Скрыть поиск" : "Добавить игрока"}
                 </button>
               </div>
             )}

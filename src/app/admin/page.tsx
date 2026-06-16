@@ -119,7 +119,7 @@ export default function AdminPage() {
       </div>
 
       {activeTab === "roles" && (
-        <Card className="glass-effect">
+        <Card className="glass-effect roles">
           <h2 className="section-title">Поиск и назначение ролей</h2>
           <div className="form-group" style={{ position: "relative" }}>
             <label className="text">Поиск пользователя</label>
@@ -127,7 +127,7 @@ export default function AdminPage() {
             {searchLoading && <small className="text-gray">Поиск...</small>}
             
             {liveSearchResults.length > 0 && (
-              <ul className="search-dropdown">
+              <ul className="glass-effect search-dropdown">
                 {liveSearchResults.map(u => (
                   <li key={u.id} className="search-dropdown-item" onClick={() => { setFoundUser(u); setLiveSearchResults([]); setLiveSearchQuery(""); }}>
                     <strong>{u.fullName}</strong> <span className="text-gray">@{u.username}</span>
@@ -138,12 +138,12 @@ export default function AdminPage() {
           </div>
           
           {foundUser && (
-            <div style={{ padding: "16px", background: "#f9fafb", borderRadius: "8px", marginTop: "16px" }}>
+            <div className="glass-effect" style={{ padding: "16px", marginTop: "16px" }}>
               <p><strong>{foundUser.fullName}</strong> (@{foundUser.username})</p>
               <p>Текущая роль: {foundUser.role}</p>
               <div className="flex gap-2 mt-3">
-                <button onClick={() => handleUpdateRole("EDITOR")} disabled={updatingRole || foundUser.role === "EDITOR"} className="btn" style={{ background: "#3b82f6", color: "white" }}>Сделать редактором</button>
-                <button onClick={() => handleUpdateRole("USER")} disabled={updatingRole || foundUser.role === "USER"} className="btn" style={{ background: "#6b7280", color: "white" }}>Снять права</button>
+                <button onClick={() => handleUpdateRole("EDITOR")} disabled={updatingRole || foundUser.role === "EDITOR"} className="btn btn-primary glass-effect">Сделать редактором</button>
+                <button onClick={() => handleUpdateRole("USER")} disabled={updatingRole || foundUser.role === "USER"} className="btn btn-additional glass-effect">Снять права</button>
               </div>
             </div>
           )}
@@ -172,8 +172,8 @@ export default function AdminPage() {
                 <code className="temp-password-value">
                   {tempPasswordVisible ? tempPassword : "••••••••••"}
                 </code>
-                <button onClick={() => setTempPasswordVisible(!tempPasswordVisible)} className="btn" title="Показать/скрыть">{tempPasswordVisible ? "🙈" : "👁️"}</button>
-                <button onClick={() => copyToClipboard(tempPassword)} className="btn" title="Копировать">📋</button>
+                <button onClick={() => setTempPasswordVisible(!tempPasswordVisible)} className="btn" title="Показать/скрыть">{tempPasswordVisible ? <img src="/uploads/svg/eye-off.svg" className="svg"/> : <img src="/uploads/svg/eye-on.svg" className="svg"/>}</button>
+                <button onClick={() => copyToClipboard(tempPassword)} className="btn" title="Копировать"><img src="/uploads/svg/copy.svg" className="svg"/></button>
               </div>
               <p className="temp-password-hint">Сообщите этот пароль пользователю.</p>
               <button onClick={() => { setTempPassword(null); setTempPasswordVisible(false); }} className="btn" style={{ marginTop: "8px", fontSize: "12px" }}>Закрыть</button>
@@ -202,7 +202,7 @@ export default function AdminPage() {
                           <button 
                             onClick={() => handleResetPassword(user.id)} 
                             disabled={resettingId === user.id} 
-                            className="btn btn-reset-pass"
+                            className="btn btn-reset-pass glass-effect"
                           >
                             {resettingId === user.id ? "Сброс..." : "Сбросить пароль"}
                           </button>

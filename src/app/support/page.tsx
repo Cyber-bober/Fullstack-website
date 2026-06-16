@@ -147,7 +147,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="container" style={{ maxWidth: '1200px', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+    <div className="container support">
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
       
       <h1 className="home-title" style={{ marginBottom: '20px' }}>Центр поддержки</h1>

@@ -82,7 +82,7 @@ export default function TeamsPage() {
       </div>
 
       <div className="section-header">
-        {userRole === "ADMIN" && <button className="btn btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "Создать команду"}</button>}
+        {userRole === "ADMIN" && <button className="btn btn-primary glass-effect" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "Создать команду"}</button>}
       </div>
 
       {showCreateForm && (

@@ -215,7 +215,7 @@ export default function EditProfilePage() {
         />
       )}
 
-      <div className="container edit-profile-container">
+      <div className="container edit-profile-container glass-effect">
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
         <Card>
@@ -286,26 +286,26 @@ export default function EditProfilePage() {
                 minLength={3} 
                 maxLength={30} 
                 pattern="[a-zA-Z0-9_]+" 
-                className={usernameError ? "input-error" : ""} 
+                className={usernameError ? "input-error glass-effect" : "glass-effect"}
               />
               {usernameError && <p className="form-error-text">{usernameError}</p>}
               {!usernameError && <small className="text-gray">Только латиница, цифры и _</small>}
             </div>
 
-            <div className="form-group"><label>Полное имя</label><input type="text" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} /></div>
-            <div className="form-group"><label>Город</label><input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} /></div>
+            <div className="form-group"><label>Полное имя</label><input type="text" className="glass-effect" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} /></div>
+            <div className="form-group"><label>Город</label><input type="text" className="glass-effect" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} /></div>
 
             <div className="form-group">
               <label>Позиция</label>
-              <select value={formData.position || ""} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
+              <select value={formData.position || ""} className="glass-effect" onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
                 <option value="">Не выбрано</option>
                 {POSITIONS.map(pos => <option key={pos} value={pos}>{pos}</option>)}
               </select>
             </div>
 
-            <div className="form-group"><label>Дата рождения</label><input type="date" value={formData.birthDate} onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })} /></div>
-            <div className="form-group"><label>Контакты</label><textarea value={formData.contacts} onChange={(e) => setFormData({ ...formData, contacts: e.target.value })} rows={3} /></div>
-            <div className="form-group"><label>Статистика</label><textarea value={formData.stats} onChange={(e) => setFormData({ ...formData, stats: e.target.value })} rows={3} /></div>
+            <div className="form-group"><label>Дата рождения</label><input type="date" className="glass-effect" value={formData.birthDate} onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })} /></div>
+            <div className="form-group"><label>Контакты</label><textarea className="glass-effect" value={formData.contacts} onChange={(e) => setFormData({ ...formData, contacts: e.target.value })} rows={3} /></div>
+            <div className="form-group"><label>Статистика</label><textarea className="glass-effect" value={formData.stats} onChange={(e) => setFormData({ ...formData, stats: e.target.value })} rows={3} /></div>
 
             <div className="pd-consent-wrapper">
               <input 
@@ -324,7 +324,7 @@ export default function EditProfilePage() {
             </div>
             {consentError && <span className="pd-consent-error visible">Необходимо подтвердить согласие</span>}
 
-            <button type="submit" className="btn btn-primary w-full" disabled={saving}>
+            <button type="submit" className="btn btn-primary glass-effect w-full" disabled={saving}>
               {saving ? "Сохранение..." : "Сохранить изменения"}
             </button>
           </form>
