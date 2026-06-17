@@ -77,7 +77,7 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+          <button type="submit" className="btn btn-primary glass-effect w-full" disabled={loading}>
             {loading ? "Вход..." : "Войти"}
           </button>
         </form>

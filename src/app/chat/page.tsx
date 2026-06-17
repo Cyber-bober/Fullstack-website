@@ -245,7 +245,7 @@ export default function ChatPage() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                 />
-                <button type="submit" className="btn btn-primary chat-send-btn" disabled={!newMessage.trim()}><img src="/uploads/svg/send.svg" className="svg"/></button>
+                <button type="submit" className="btn btn-primary glass-effect chat-send-btn" disabled={!newMessage.trim()}><img src="/uploads/svg/send.svg" className="svg"/></button>
               </form>
             </>
           ) : (

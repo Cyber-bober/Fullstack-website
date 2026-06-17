@@ -149,36 +149,34 @@ export default function SupportPage() {
   return (
     <div className="container support">
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-      
-      <h1 className="home-title" style={{ marginBottom: '20px' }}>Центр поддержки</h1>
 
       {/* Основной контейнер с двумя колонками */}
-      <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px', flex: 1, minHeight: 0 }}>
+      <div className="support-main">
         
         {/* ЛЕВАЯ КОЛОНКА: Список тикетов */}
-        <Card style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Card className="support-left">
+          <div className="support-left-header glass-effect">
             <h3 style={{ margin: 0 }}>Мои обращения</h3>
             {/* Кнопка создания тикета скрыта для админов */}
             {userRole !== 'ADMIN' && (
-              <button onClick={() => setIsNewTicketMode(!isNewTicketMode)} className="btn btn-primary" style={{ fontSize: '12px', padding: '4px 8px' }}>
-                {isNewTicketMode ? "Назад" : "+ Новое"}
+              <button onClick={() => setIsNewTicketMode(!isNewTicketMode)} className="btn btn-primary glass-effect" style={{ padding: '4px 8px' }}>
+                {isNewTicketMode ? "Назад" : "Новое"}
               </button>
             )}
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
+          <div className="glass-effect support-ticket-list">
             {isNewTicketMode ? (
               <form onSubmit={handleCreateTicket} style={{ padding: '16px' }}>
                 <div className="form-group">
                   <label>Тема</label>
-                  <input value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} required minLength={5} maxLength={100} />
+                  <input className="glass-effect" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} required minLength={5} maxLength={100} />
                 </div>
                 <div className="form-group">
                   <label>Описание</label>
-                  <textarea value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} required minLength={10} rows={4} />
+                  <textarea className="glass-effect" value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} required minLength={10} rows={4} />
                 </div>
-                <button type="submit" className="btn btn-primary w-full" disabled={sending}>Создать</button>
+                <button type="submit" className="btn btn-primary glass-effect w-full" disabled={sending}>Создать</button>
               </form>
             ) : (
               tickets.length > 0 ? (
@@ -188,19 +186,18 @@ export default function SupportPage() {
                     <div 
                       key={t.id} 
                       onClick={() => { setActiveTicket(t); loadMessages(t.id); }} 
-                      className={`support-ticket-item ${activeTicket?.id === t.id ? 'active' : ''}`}
-                      style={{ padding: '16px', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', background: activeTicket?.id === t.id ? '#f0f9ff' : 'transparent' }}
+                      className={`support-ticket-item glas-effect ${activeTicket?.id === t.id ? 'active' : ''}`}
+                      style={{ padding: '16px', cursor: 'pointer', background: activeTicket?.id === t.id ? '' : 'transparent' }}
                     >
                       <div style={{ fontWeight: 600, marginBottom: '4px' }}>{t.subject}</div>
-                      <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div className="support-text">
                         {t.messages && t.messages[0] ? t.messages[0].text?.substring(0, 40) + '...' : 'Нет сообщений'}
                       </div>
-                      <div style={{ fontSize: "11px", color: "#9ca3af", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div className="support-ticket-item-bottom">
                         <span>{new Date(t.updatedAt).toLocaleDateString()}</span>
-                        <span style={{ 
+                        <span className="support-ticket-item-status" style={{ 
                           background: statusStyle.bg, 
-                          color: statusStyle.text, 
-                          padding: '2px 8px', borderRadius: '12px', fontWeight: 500 
+                          color: statusStyle.text,  
                         }}>
                           {statusStyle.label}
                         </span>
@@ -216,14 +213,14 @@ export default function SupportPage() {
         </Card>
 
         {/* ПРАВАЯ КОЛОНКА: Чат */}
-        <Card style={{ display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', height: '100%' }}>
+        <Card className="support-right">
           {activeTicket ? (
             <>
               {/* Шапка чата */}
-              <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="support-chat-header glass-effect">
                 <div>
                   <strong style={{ fontSize: '18px' }}>{activeTicket.subject}</strong>
-                  <span style={{ marginLeft: "12px", fontSize: "12px", padding: "4px 10px", borderRadius: "12px", ...getStatusColor(activeTicket.status) }}>
+                  <span className="glass-effect" style={{ marginLeft: "12px", fontSize: "12px", padding: "4px 10px", borderRadius: "12px", ...getStatusColor(activeTicket.status) }}>
                     {getStatusColor(activeTicket.status).label}
                   </span>
                 </div>
@@ -232,12 +229,12 @@ export default function SupportPage() {
                 {userRole === 'ADMIN' && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {activeTicket.status === 'OPEN' && (
-                      <button onClick={() => handleChangeStatus('IN_PROGRESS')} className="btn btn-secondary" style={{ fontSize: '12px', padding: '4px 12px' }}>
+                      <button onClick={() => handleChangeStatus('IN_PROGRESS')} className="btn btn-ticket glass-effect" style={{ fontSize: '12px', padding: '4px 12px' }}>
                         Взять в работу
                       </button>
                     )}
                     {activeTicket.status !== 'CLOSED' && (
-                      <button onClick={() => handleChangeStatus('CLOSED')} className="btn btn-danger" style={{ fontSize: '12px', padding: '4px 12px' }}>
+                      <button onClick={() => handleChangeStatus('CLOSED')} className="btn btn-secondary glass-effect" style={{ fontSize: '12px', padding: '4px 12px' }}>
                         Закрыть тикет
                       </button>
                     )}
@@ -246,31 +243,18 @@ export default function SupportPage() {
               </div>
               
               {/* Область сообщений с независимой прокруткой */}
-              <div style={{ 
-                flex: 1, 
-                padding: '20px', 
-                overflowY: 'auto', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '12px', 
-                background: '#fff',
-                minHeight: 0 
-              }}>
+              <div className="support-chat-main glass-effect">
                 {Array.isArray(activeTicket.messages) && activeTicket.messages.map((msg: any, idx: number) => {
                   // Твои сообщения справа (синие), чужие слева (серые)
                   const isMe = msg.senderId === currentUserId;
                   
                   return (
-                    <div key={msg.id || idx} style={{ 
+                    <div key={msg.id || idx} className="support-chat-message" style={{ 
                       alignSelf: isMe ? 'flex-end' : 'flex-start',
-                      maxWidth: '70%',
-                      padding: '12px 16px',
-                      borderRadius: '16px',
                       background: isMe ? '#0160ce' : '#f3f4f6',
                       color: isMe ? 'white' : '#1a1a1a',
                       borderBottomRightRadius: isMe ? '4px' : '16px',
                       borderBottomLeftRadius: isMe ? '16px' : '4px',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                     }}>
                       <p style={{ margin: "0 0 4px", fontSize: "14px", lineHeight: '1.4', wordBreak: 'break-word' }}>
                         {msg.text || msg.content}
@@ -292,20 +276,20 @@ export default function SupportPage() {
               </div>
 
               {/* Форма отправки */}
-              <form onSubmit={handleSendReply} style={{ padding: '16px', borderTop: '1px solid #e5e7eb', display: "flex", gap: "12px", background: '#f9fafb' }}>
+              <form onSubmit={handleSendReply} style={{ display: "flex", gap: "12px" }}>
                 <input 
+                  className="glass-effect"
                   value={replyText} onChange={e => setReplyText(e.target.value)}
                   placeholder="Написать сообщение..." required
-                  style={{ flex: 1, padding: "12px 16px", borderRadius: "24px", border: "1px solid #e5e7eb", outline: 'none', fontSize: '14px' }}
+                  style={{ flex: 1, padding: "12px 16px", fontSize: '14px' }}
                 />
-                <button type="submit" className="btn btn-primary" style={{ borderRadius: '24px', padding: '0 24px', fontWeight: 600 }} disabled={sending}>
+                <button type="submit" className="btn btn-primary glass-effect" style={{ padding: '0 24px', fontWeight: 600 }} disabled={sending}>
                   {sending ? "..." : "Отправить"}
                 </button>
               </form>
             </>
           ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '12px' }}>
-              <span style={{ fontSize: '64px' }}>💬</span>
+            <div className="support-placeholder">
               <p style={{ fontSize: '18px', fontWeight: 500 }}>Выберите обращение слева</p>
             </div>
           )}

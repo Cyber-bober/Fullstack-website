@@ -29,7 +29,7 @@ export default function Toast({ message, type = "error", onClose }: ToastProps) 
   if (!message) return null;
 
   return (
-    <div className={`toast toast-${type} ${visible ? "visible" : ""}`}>
+    <div className={`toast glass-effect toast-${type} ${visible ? "visible" : ""}`}>
       <span>{message}</span>
       <button className="toast-close-btn" onClick={() => { setVisible(false); setTimeout(onClose, 300); }}>
         ×
