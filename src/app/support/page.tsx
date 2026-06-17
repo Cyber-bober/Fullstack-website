@@ -10,7 +10,7 @@ export default function SupportPage() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null); // ✅ Роль пользователя
   
   const [formData, setFormData] = useState({ subject: "", text: "" });
   const [replyText, setReplyText] = useState("");
@@ -27,7 +27,7 @@ export default function SupportPage() {
         if (sessionRes.ok) {
           const session = await sessionRes.json();
           setCurrentUserId(session?.user?.id);
-          setUserRole(session?.user?.role);
+          setUserRole(session?.user?.role); // ✅ Сохраняем роль для проверки прав
         }
       } catch {}
       loadTickets();
@@ -228,6 +228,7 @@ export default function SupportPage() {
                   </span>
                 </div>
                 
+                {/* ✅ УПРАВЛЕНИЕ СТАТУСОМ (ТОЛЬКО ДЛЯ АДМИНОВ) */}
                 {userRole === 'ADMIN' && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {activeTicket.status === 'OPEN' && (
@@ -256,6 +257,7 @@ export default function SupportPage() {
                 minHeight: 0 
               }}>
                 {Array.isArray(activeTicket.messages) && activeTicket.messages.map((msg: any, idx: number) => {
+                  // Твои сообщения справа (синие), чужие слева (серые)
                   const isMe = msg.senderId === currentUserId;
                   
                   return (

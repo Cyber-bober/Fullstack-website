@@ -9,10 +9,14 @@ interface Props {
   deletingId?: string | null;
 }
 
-const formatTime = (dateString: string) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "SCHEDULED": return "Запланирован";
+    case "LIVE": return "Идет сейчас";
+    case "FINISHED": return "Завершен";
+    case "CANCELLED": return "Отменен";
+    default: return status;
+  }
 };
 
 export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
@@ -55,13 +59,8 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
       <div key={day} className="calendar-day glass-effect">
         <span className="day-number">{day}</span>
         {dayMatches.map((m) => (
-          <div 
-            key={m.id} 
-            className="match-event glass-effect" 
-            title={`${m.homeTeam.name} vs ${m.awayTeam.name} (${formatTime(m.date)})`} 
-            onClick={() => setSelectedMatch(m)}
-          >
-            {formatTime(m.date)}
+          <div key={m.id} className="match-event glass-effect" title={`${m.homeTeam.name} vs ${m.awayTeam.name}`} onClick={() => setSelectedMatch(m)}>
+            {m.homeTeam.name.split(' ').pop()} vs {m.awayTeam.name.split(' ').pop()}
           </div>
         ))}
       </div>
@@ -90,13 +89,15 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
         <div className="modal-overlay" onClick={() => setSelectedMatch(null)}>
           <div className="modal-content glass-effect" onClick={e => e.stopPropagation()}>
             <h3>Детали матча</h3>
-            <p style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
-              {selectedMatch.homeTeam.name} vs {selectedMatch.awayTeam.name}
-            </p>
-            <p><strong>Дата:</strong> {new Date(selectedMatch.date).toLocaleString()}</p>
-            {selectedMatch.venue && <p><strong>Место:</strong> {selectedMatch.venue}</p>}
-                        
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: '24px' }}>
+            <p><strong>{selectedMatch.homeTeam.name}</strong> vs <strong>{selectedMatch.awayTeam.name}</strong></p>
+            <p>Дата: {new Date(selectedMatch.date).toLocaleString()}</p>
+            {selectedMatch.venue && <p>Место: {selectedMatch.venue}</p>}
+            
+            {/* СТАТУС */}
+            <p style={{ marginBottom: 16 }}>Статус: {getStatusText(selectedMatch.status)}</p>
+            
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              {/*  КНОПКА УДАЛЕНИЯ ДЛЯ АДМИНОВ */}
               {onDeleteMatch && (
                 <button 
                   className="btn btn-secondary glass-effect" 

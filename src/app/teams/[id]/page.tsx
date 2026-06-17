@@ -20,7 +20,7 @@ interface TeamData {
   logoUrl?: string | null;
   captainId?: string | null;
   players: any[];
-  stats?: string | null;
+  stats?: string | null; // JSON-строка из БД
 }
 
 export default function TeamPage({ params }: { params: { id: string } }) {
@@ -76,6 +76,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         setTeam(data);
         setIsCaptain(data.captainId === session.user.id || session.user.role === "ADMIN");
         
+        // ✅ Парсим JSON из поля stats
         let parsedStats: TeamStats = {};
         try {
           if (data.stats) parsedStats = JSON.parse(data.stats);
@@ -105,6 +106,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     
     setSaving(true);
     try {
+      // ✅ Упаковываем данные в JSON-строку
       const statsJson = JSON.stringify(statsForm);
       
       const res = await fetch(`/api/teams/${params.id}/update`, {
@@ -115,6 +117,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
 
       if (res.ok) {
         setToast({ message: "Статистика обновлена!", type: "success" });
+        // Обновляем локальные данные
         setTeam(prev => prev ? { ...prev, stats: statsJson } : null);
       } else {
         const err = await res.json();
@@ -392,6 +395,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             </div>
 
             {isAdmin ? (
+              // ✅ ФОРМА РЕДАКТИРОВАНИЯ ДЛЯ АДМИНА
               <form onSubmit={handleSaveStats} className="edit-form">
                 <div className="form-group">
                   <label>Описание команды</label>
@@ -439,6 +443,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 </button>
               </form>
             ) : (
+              // ✅ ПРОСМОТР ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {displayStats.description && (
                   <div>

@@ -25,7 +25,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: visible !important;
 }
 
 .main-wrapper {
@@ -33,12 +32,14 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow: visible !important;
 }
 
 .main-content {
-  position: relative;
-  z-index: 0;
+  flex: 1;
+  padding: 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 a {
@@ -563,11 +564,10 @@ input[type="date"] {
 
 .match-event {
   background: #0160ce;
-  color: rgba(255, 255, 255, 0.978);
+  color: rgba(243, 243, 243, 0.75);
   padding: 4px 6px;
   border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
   cursor: pointer;
   margin-bottom: 2px;
   white-space: nowrap;
@@ -576,7 +576,6 @@ input[type="date"] {
   max-width: 100%;
   display: block;
   transition: background 0.2s;
-  text-align: center;
 }
 
 .match-event:hover {
@@ -1798,147 +1797,178 @@ footer {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  position: relative;
-  z-index: 1;
-  overflow: visible !important;
 }
 
-
-
-/* === САЙДБАР === */
-.sidebar-niagara {
-  position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
-  display: flex; flex-direction: column; padding: 20px 12px;
-  overflow: visible !important; background: transparent !important;
-  box-shadow: none !important; border: none !important;
-  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: auto;
+.sidebar {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 12px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  margin: 10px 0 30px 20px;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* === НАВИГАЦИЯ — перекрывающиеся кнопки === */
-.sidebar-nav-overlap {
-  display: flex; flex-direction: column; gap: 0; flex: 1;
-  align-items: flex-start; justify-content: center;
-  position: relative; overflow: visible !important;
-  width: 100%; padding: 20px 0;
+.sidebar:hover {
+  width: 260px;
+  padding: 24px;
 }
 
-/* === АКТИВНЫЙ ФОН — скользит за кнопками, тянется вправо === */
-.sidebar-active-bg {
-  position: absolute; left: 0;
-  border-radius: 16px; pointer-events: none;
+.sidebar::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
   opacity: 0;
-  background: rgba(176, 176, 176, 0.45);
-  backdrop-filter: blur(35px) saturate(200%);
-  -webkit-backdrop-filter: blur(35px) saturate(200%);
-  border: 1px solid rgba(176, 176, 176, 0.5);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(146,146,146,0.6);
-  will-change: top, height, width, opacity;
-}
-
-/* === КНОПКИ — перекрывают друг друга === */
-.sidebar-btn-overlap {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  width: 64px; height: 56px; border-radius: 16px; cursor: pointer;
-  color: rgba(255,255,255,0.9); text-decoration: none; flex-shrink: 0;
-  background: rgba(176, 176, 176, 0.35);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(176, 176, 176, 0.4);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(146,146,146,0.5);
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), margin 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s, width 0.4s, padding 0.4s, border-radius 0.3s;
-  margin: -4px 0; padding: 0 16px;
-  will-change: transform;
-}
-
-/* Перекрытие — кнопки ближе */
-.sidebar-btn-overlap + .sidebar-btn-overlap {
-  margin-top: -8px;
-}
-
-/* Активная */
-.sidebar-btn-overlap.active {
-  background: rgba(1, 96, 206, 0.25);
-  border-color: rgba(1, 96, 206, 0.4);
-}
-/* Danger */
-.sidebar-btn-overlap.danger {
-  background: rgba(239, 68, 68, 0.25);
-  border-color: rgba(239, 68, 68, 0.4);
-}
-/* Ховер */
-.sidebar-btn-overlap:hover {
-  background: rgba(176, 176, 176, 0.55);
-  border-color: rgba(176, 176, 176, 0.7);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(146,146,146,0.6);
-}
-
-/* === ИКОНКИ === */
-.svg-overlap {
-  width: 22px; height: 22px; flex-shrink: 0;
-  object-fit: contain;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), filter 0.3s;
-  will-change: transform;
-}
-
-/* === ТЕКСТ === */
-.sidebar-link-overlap {
-  opacity: 0; white-space: nowrap;
-  font-weight: 500; font-size: 14px; color: rgba(255,255,255,0.9);
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  transform: translateX(-8px); margin-left: 12px;
-  flex-shrink: 0;
-}
-.sidebar-niagara:hover .sidebar-link-overlap {
-  opacity: 1; transform: translateX(0); pointer-events: auto;
+  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
-/* === РАСШИРЕНИЕ === */
-.sidebar-niagara:hover .sidebar-btn-overlap {
+.sidebar:hover::before {
+  opacity: 1;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  color: rgba(243, 243, 243, 0.75);
+  gap: 8px;
+  flex: 1;
+}
+
+.sidebar-btn {
+  display: flex;
+  flex-direction: row;
   justify-content: flex-start;
+  align-items: center;
+  padding: 5px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-btn:hover {
+  color: #0160ce;
+  transform: translateX(4px);
+  text-decoration: none;
+}
+
+.sidebar-btn.btn-primary {
+  background: transparent;
+}
+
+.svg {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.sidebar-link {
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+  transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s,
+              opacity 0.2s ease, padding 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  white-space: nowrap;
+  opacity: 0;
+  padding-left: 0;
+  padding-right: 0;
+  pointer-events: none;
+}
+
+.sidebar:hover .sidebar-link {
+  opacity: 1;
+  padding-left: 16px;
+  padding-right: 16px;
+  pointer-events: auto;
+  transition-delay: 0.1s;
+}
+
+.sidebar-link:hover {
+  color: #0160ce;
+  transform: translateX(4px);
+  text-decoration: none;
+}
+
+.sidebar-link.active {
+  color: #0160ce;
+  font-weight: 600;
+}
+
+.sidebar-btn:hover .admin-link {
+  color: rgba(240, 23, 23, 0.8);
+}
+
+.sidebar-bottom {
+  color: rgba(243, 243, 243, 0.75);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+
+.logout-btn {
+  justify-content: flex-start;
+  border: none;
+  cursor: pointer;
   width: 100%;
+  font-size: 15px;
+  padding: 5px 15px;
+  color: rgba(240, 23, 23, 0.8);
 }
 
-/* === НИЗ === */
-.sidebar-bottom-overlap {
-  margin-top: auto; padding-top: 16px;
-  display: flex; flex-direction: column; gap: 0;
-  align-items: flex-start; width: 100%; position: relative;
+.logout-btn:hover {
+  background: rgba(240, 23, 23, 0.65);
+  transform: translateX(4px);
+  color: rgba(243, 243, 243, 0.75);
 }
 
-.logout-btn-overlap, .login-btn-overlap {
-  justify-content: center; cursor: pointer;
-  width: 64px; height: 56px; font-size: 14px;
-  padding: 0 16px; border-radius: 16px;
-  background: rgba(176, 176, 176, 0.35);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(176, 176, 176, 0.4);
-}
-.logout-btn-overlap { color: rgba(239,68,68,0.7); }
-.logout-btn-overlap:hover { color: #fca5a5; background: rgba(239,68,68,0.3); }
-.login-btn-overlap { color: rgba(96,165,250,0.7); }
-.login-btn-overlap:hover { color: #60a5fa; background: rgba(96,165,250,0.3); }
-
-/* === ТУЛТИП === */
-.sidebar-btn-overlap::after {
-  content: attr(data-tooltip); position: absolute;
-  left: 72px; top: 50%; transform: translateY(-50%) scale(0.85);
-  background: rgba(0,0,0,0.85); color: white;
-  padding: 6px 14px; border-radius: 10px;
-  font-size: 13px; font-weight: 500; white-space: nowrap;
-  opacity: 0; pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); z-index: 200;
-}
-.sidebar-niagara:not(:hover) .sidebar-btn-overlap:hover::after {
-  opacity: 1; transform: translateY(-50%) scale(1); left: 70px;
+.sidebar-btn:hover .logout-btn {
+  background: rgba(240, 23, 23, 0.65) !important;
+  color: rgba(243, 243, 243, 0.75);
 }
 
-/* === МАСШТАБ иконок === */
-.sidebar-btn-overlap[style*="transform: scale(1.6)"] .svg-overlap { transform: scale(1.35); width: 30px; height: 30px; filter: brightness(1.4) drop-shadow(0 2px 12px rgba(1,96,206,0.5)); }
-.sidebar-btn-overlap[style*="transform: scale(1.3)"] .svg-overlap { transform: scale(1.2); width: 26px; height: 26px; }
-.sidebar-btn-overlap[style*="transform: scale(1.1)"] .svg-overlap { transform: scale(1.08); width: 24px; height: 24px; }
+.login-btn {
+  color: #0160ce;
+  justify-content: flex-start;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 15px;
+  padding: 5px 15px;
+}
+
+.login-btn:hover {
+  color: rgba(243, 243, 243, 0.75);
+  transform: translateX(4px);
+  background: #0160ce95;
+}
+
+.sidebar-btn:hover .login-btn {
+  background: #0161ce95 !important;
+  color: rgba(243, 243, 243, 0.75);
+}
+
+.sidebar-link-text {
+  color: inherit;
+  white-space: nowrap;
+}
 
 .profile-page-container {
   display: flex;
