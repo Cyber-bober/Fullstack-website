@@ -300,7 +300,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', 
                 fontSize: '14px', border: '2px solid white', zIndex: 10
               }}>
-                {shouldDeleteLogo ? "🗑️" : "!"}
+                {shouldDeleteLogo ? <img src="/uploads/svg/delete.svg"/> : "!"}
               </div>
             )}
           </div>
