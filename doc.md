@@ -94,26 +94,38 @@ ip addr show | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | cut -d/ -f1
 ```
 ДЛЯ ВТОРОГО РАЗРАБОТЧИКА
 # забрать последние изменения
+```bash
 git checkout develop
 git pull origin develop
-
+```
 # Работает над задачей
+
+```bash
 git add .
 git commit -m "feat: календарь матчей"
+```
 
+```bash
 # Отправить в develop
 git push origin develop
+```
 
+```bash
 # В случае ошибок
 git pull --rebase origin develop
+```
 
+```bash
 # Только ОДИН разработчик делает релиз
 git checkout main
 git pull origin main
 git merge develop
 git push origin main
+```
 
+```bash
 # Вернуться в develop
 git checkout develop
 git merge main   # чтобы develop знал о релизе
 git push origin develop
+```
