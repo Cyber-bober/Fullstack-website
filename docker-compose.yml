@@ -2,7 +2,6 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: football-postgres
-    restart: always
     environment:
       POSTGRES_USER: football
       POSTGRES_PASSWORD: football_pass
@@ -13,32 +12,26 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U football -d football_db"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: football-app
-    restart: always
     ports:
       - "3000:3000"
-      - "5555:5555"
     environment:
-      DATABASE_URL: "postgresql://football:football_pass@postgres:5432/football_db?schema=public"
-      NEXTAUTH_SECRET: "my-super-secret-key-1234567890"
-      NEXTAUTH_URL: "http://localhost:3000"
-      NODE_ENV: "development"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
+      - DATABASE_URL=postgresql://football:football_pass@postgres:5432/football_db?schema=public
+      - NEXTAUTH_SECRET=3ZYE0pW+MVrzZRWY07LjBU/Cgbejik6/X61aAs/NTlY=
+      - NEXTAUTH_URL=http://localhost:3000
     depends_on:
       postgres:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && npm run dev"
+    restart: unless-stopped
 
 volumes:
   postgres_data:

@@ -1,6 +1,6 @@
 // src/components/ui/CalendarSection.tsx
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Match } from "@/types/CalendarSection";
 
 interface Props {
@@ -19,11 +19,90 @@ const getStatusText = (status: string) => {
   }
 };
 
+// ✅ Форматирование времени в 24-часовом формате
+const formatTime = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+// ✅ Форматирование даты и времени
+const formatDateTime = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString('ru-RU', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
+
+const CustomSelect = ({ 
+  value, 
+  onChange, 
+  options, 
+  width 
+}: { 
+  value: number | string; 
+  onChange: (val: any) => void; 
+  options: { value: any; label: string }[];
+  width?: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const selectedOption = options.find(opt => opt.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="custom-select" ref={containerRef} style={{ width: width || '140px' }}>
+      <div 
+        className="custom-select-trigger glass-effect"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{selectedOption?.label}</span>
+        <span className={`arrow ${isOpen ? 'open' : ''}`}>▼</span>
+      </div>
+      
+      {isOpen && (
+        <div className="custom-select-dropdown glass-effect">
+          {options.map((option) => (
+            <div
+              key={option.value}
+              className={`custom-select-option ${option.value === value ? 'selected' : ''}`}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [selectedDayMatches, setSelectedDayMatches] = useState<Match[] | null>(null);
 
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   
@@ -55,14 +134,62 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
   for (let day = 1; day <= daysInMonth; day++) {
     const dayMatches = getMatchesForDay(day);
+    const maxVisibleMatches = 4;
+    const visibleMatches = dayMatches.slice(0, maxVisibleMatches);
+    const hasMoreMatches = dayMatches.length > maxVisibleMatches;
+
     days.push(
-      <div key={day} className="calendar-day glass-effect">
+      <div key={day} className="calendar-day glass-effect" onClick={() => {
+        if (dayMatches.length > 0) setSelectedDayMatches(dayMatches);
+      }}>
         <span className="day-number">{day}</span>
-        {dayMatches.map((m) => (
-          <div key={m.id} className="match-event glass-effect" title={`${m.homeTeam.name} vs ${m.awayTeam.name}`} onClick={() => setSelectedMatch(m)}>
-            {m.homeTeam.name.split(' ').pop()} vs {m.awayTeam.name.split(' ').pop()}
+        
+        {dayMatches.length > 0 ? (
+          <div className="matches-container">
+            {dayMatches.length <= 3 ? (
+              dayMatches.map((m) => (
+                <div 
+                  key={m.id} 
+                  className="match-event glass-effect" 
+                  title={`${m.homeTeam.name} vs ${m.awayTeam.name}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMatch(m);
+                  }}
+                >
+                  {formatTime(m.date)}
+                </div>
+              ))
+            ) : (
+              <div className="matches-grid">
+                {visibleMatches.map((m) => (
+                  <div 
+                    key={m.id} 
+                    className="match-dot glass-effect" 
+                    title={`${m.homeTeam.name} vs ${m.awayTeam.name} — ${formatTime(m.date)}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedMatch(m);
+                    }}
+                  >
+                    {formatTime(m.date)}
+                  </div>
+                ))}
+                {hasMoreMatches && (
+                  <div 
+                    className="match-more"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDayMatches(dayMatches);
+                    }}
+                  >
+                    +{dayMatches.length - maxVisibleMatches}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        ))}
+        ) : null}
       </div>
     );
   }
@@ -72,12 +199,18 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   return (
     <div>
       <div className="calendar-header">
-        <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))} className="btn calendar-btn glass-effect" style={{ minWidth: "140px" }}>
-          {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
-        </select>
-        <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} className="btn calendar-btn glass-effect" style={{ minWidth: "100px" }}>
-          {years.map(y => <option key={y} value={y}>{y}</option>)}
-        </select>
+        <CustomSelect
+          value={selectedMonth}
+          onChange={setSelectedMonth}
+          options={monthNames.map((m, i) => ({ value: i, label: m }))}
+          width="140px"
+        />
+        <CustomSelect
+          value={selectedYear}
+          onChange={setSelectedYear}
+          options={years.map(y => ({ value: y, label: String(y) }))}
+          width="100px"
+        />
       </div>
 
       <div className="calendar-grid glass-effect">
@@ -90,14 +223,11 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
           <div className="modal-content glass-effect" onClick={e => e.stopPropagation()}>
             <h3>Детали матча</h3>
             <p><strong>{selectedMatch.homeTeam.name}</strong> vs <strong>{selectedMatch.awayTeam.name}</strong></p>
-            <p>Дата: {new Date(selectedMatch.date).toLocaleString()}</p>
+            {/* ✅ ИСПРАВЛЕНО: 24-часовой формат */}
+            <p>Дата: {formatDateTime(selectedMatch.date)}</p>
             {selectedMatch.venue && <p>Место: {selectedMatch.venue}</p>}
             
-            {/* СТАТУС */}
-            <p style={{ marginBottom: 16 }}>Статус: {getStatusText(selectedMatch.status)}</p>
-            
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              {/*  КНОПКА УДАЛЕНИЯ ДЛЯ АДМИНОВ */}
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
               {onDeleteMatch && (
                 <button 
                   className="btn btn-secondary glass-effect" 
@@ -113,6 +243,35 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
               )}
               <button className="btn btn-primary glass-effect" onClick={() => setSelectedMatch(null)}>Закрыть</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedDayMatches && (
+        <div className="modal-overlay" onClick={() => setSelectedDayMatches(null)}>
+          <div className="modal-content glass-effect" onClick={e => e.stopPropagation()}>
+            {/* ✅ ИСПРАВЛЕНО: Правильная дата из первого матча */}
+            <h3>Матчи {selectedDayMatches.length > 0 ? new Date(selectedDayMatches[0].date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : ''}</h3>
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {selectedDayMatches.map((m) => (
+                <div 
+                  key={m.id} 
+                  className="match-list-item"
+                  onClick={() => {
+                    setSelectedDayMatches(null);
+                    setSelectedMatch(m);
+                  }}
+                >
+                  <div className="match-list-time">{formatTime(m.date)}</div>
+                  <div className="match-list-teams">
+                    <strong>{m.homeTeam.name}</strong> vs <strong>{m.awayTeam.name}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="btn btn-primary glass-effect w-full" onClick={() => setSelectedDayMatches(null)} style={{ marginTop: 16 }}>
+              Закрыть
+            </button>
           </div>
         </div>
       )}

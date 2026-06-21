@@ -1,93 +1,54 @@
-// src/app/auth/signin/page.tsx
 "use client";
-import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Card from "@/components/ui/Card";
+import Link from "next/link";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const errorParam = searchParams.get("error");
-  
+  const errorParam = searchParams?.get("error") || "";
+  const callbackUrl = searchParams?.get("callbackUrl") || "/";
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(errorParam === "CredentialsSignin" ? "Неверный логин или пароль" : "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const result = await signIn("credentials", {
-        username, password, redirect: false,
-      });
-
-      if (result?.error) {
-        setError("Неверный логин или пароль");
-      } else {
-        router.push("/profile");
-        router.refresh();
-      }
-    } catch {
-      setError("Ошибка сети");
-    } finally {
-      setLoading(false);
-    }
+    const result = await signIn("credentials", { username, password, redirect: false });
+    if (result?.error) setError("Неверный логин или пароль");
+    else router.push(callbackUrl);
   };
 
   return (
-    <div className="container signin-container">
-      <Card className="glass-effect">
-        <h1 className="home-title text-center">Вход</h1>
-
-        {(error || errorParam) && (
-          <div className="error-message">
-            {error || `Ошибка авторизации: ${errorParam}`}
-          </div>
-        )}
-
+    <div className="signin-container container">
+      <div className="glass-effect" style={{ padding: "32px" }}>
+        <h1 style={{ marginTop: 0 }}>Вход</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
-            <label>Имя пользователя</label>
-            <div className="glass-effect"><input type="text" className="glass-input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ivan_petrov" required /></div>
+            <label>Логин</label>
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
           </div>
-
           <div className="form-group">
             <label>Пароль</label>
-            <div className="password-input-wrapper glass-effect">
-              <input 
-                type={showPassword ? "text" : "password"} 
-                className="glass-input"
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="123456"
-                required 
-              />
-              <span className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? (
-                  <img src="/uploads/svg/eye-off.svg" className="svg"/>
-                ) : (
-                  <img src="/uploads/svg/eye-on.svg" className="svg"/>
-                )}
-              </span>
-            </div>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
-
-          <button type="submit" className="btn btn-primary glass-effect w-full" disabled={loading}>
-            {loading ? "Вход..." : "Войти"}
-          </button>
+          {error && <p className="error-message">{error}</p>}
+          <button type="submit" className="btn btn-primary w-full">Войти</button>
         </form>
-
-        <div style={{ marginTop: "16px", textAlign: "center" }}>
-          <p className="text-gray" style={{ fontSize: "14px" }}>
-            Нет аккаунта? <a href="/auth/register" style={{ color: "#0070f3", textDecoration: "none" }}>Зарегистрироваться</a>
-          </p>
-        </div>
-      </Card>
+        <p className="text-center mt-4">
+          Нет аккаунта? <Link href="/auth/register">Зарегистрироваться</Link>
+        </p>
+      </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="container"><p>Загрузка...</p></div>}>
+      <SignInForm />
+    </Suspense>
   );
 }

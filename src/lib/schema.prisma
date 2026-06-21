@@ -8,46 +8,46 @@ datasource db {
 }
 
 model User {
-  id                String           @id @default(uuid())
-  username          String           @unique
+  id                String    @id @default(uuid())
+  username          String    @unique
   passwordHash      String
   fullName          String
   birthDate         DateTime?
   city              String?
-  role              String           @default("USER")
+  role              String    @default("USER")
   position          String?
   photos            String[]
   contacts          String?
   stats             String?
   teamId            String?
   privacyAcceptedAt DateTime?
-  
-  team              Team?            @relation(fields: [teamId], references: [id])
-  captainOf         Team?            @relation("TeamCaptain")
-  newsPosts         NewsPost[]
-  sentMessages      ChatMessage[]    @relation("Sender")
-  recvMessages      ChatMessage[]    @relation("Receiver")
-  roleRequests      RoleRequest[]
-  
-  // ДОБАВЛЕНО: Связь с тикетами поддержки
-  supportTickets    SupportTicket[]
-  supportMessages   SupportMessage[]
-  
-  createdAt         DateTime         @default(now())
+
+  team         Team?         @relation(fields: [teamId], references: [id])
+  captainOf    Team?         @relation("TeamCaptain")
+  newsPosts    NewsPost[]
+  sentMessages ChatMessage[] @relation("Sender")
+  recvMessages ChatMessage[] @relation("Receiver")
+  roleRequests RoleRequest[]
+
+  supportTickets  SupportTicket[]
+  supportMessages SupportMessage[]
+
+  createdAt DateTime @default(now())
 }
 
 model Team {
-  id        String    @id @default(uuid())
-  name      String
-  logoUrl   String?
-  photos    String[]
-  captainId String?   @unique
-  captain   User?     @relation("TeamCaptain", fields: [captainId], references: [id])
-  stats     String?
-  players   User[]
-  homeMatches Match[] @relation("HomeTeam")
-  awayMatches Match[] @relation("AwayTeam")
-  createdAt DateTime  @default(now())
+  id          String   @id @default(uuid())
+  name        String
+  logoUrl     String?
+  photos      String[]
+  captainId   String?  @unique
+  captain     User?    @relation("TeamCaptain", fields: [captainId], references: [id])
+  stats       String?
+  rating      Int      @default(1500)
+  players     User[]
+  homeMatches Match[]  @relation("HomeTeam")
+  awayMatches Match[]  @relation("AwayTeam")
+  createdAt   DateTime @default(now())
 }
 
 model Match {
@@ -85,6 +85,7 @@ model ChatMessage {
   text       String
   fileUrl    String?
   isRead     Boolean  @default(false)
+  isPinned   Boolean  @default(false)
   sender     User     @relation("Sender", fields: [senderId], references: [id])
   receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
   createdAt  DateTime @default(now())
@@ -99,8 +100,6 @@ model RoleRequest {
   createdAt     DateTime @default(now())
 }
 
-// УДАЛЕНА СТАРАЯ МОДЕЛЬ SupportMessage (была здесь)
-
 model MatchEvent {
   id        String   @id @default(uuid())
   matchId   String
@@ -111,24 +110,24 @@ model MatchEvent {
 }
 
 model SupportTicket {
-  id        String           @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
-  user      User             @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   subject   String
-  status    String           @default("OPEN")
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  
-  messages  SupportMessage[]
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages SupportMessage[]
 }
 
 model SupportMessage {
-  id        String          @id @default(uuid())
+  id        String        @id @default(uuid())
   ticketId  String
-  ticket    SupportTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   senderId  String
-  sender    User            @relation(fields: [senderId], references: [id])
+  sender    User          @relation(fields: [senderId], references: [id])
   text      String
-  isAdmin   Boolean         @default(false)
-  createdAt DateTime        @default(now())
+  isAdmin   Boolean       @default(false)
+  createdAt DateTime      @default(now())
 }

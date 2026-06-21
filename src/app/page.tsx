@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { NewsSection } from "@/components/ui/NewsSection";
 import { LiveSection } from "@/components/ui/LiveSection";
 import { CalendarSection } from "@/components/ui/CalendarSection";
-import Pagination from "@/components/ui/Pagination";
 import Toast from "@/components/ui/Toast";
 import { NewsPost, Match } from "@/types/page";
 
@@ -22,7 +21,6 @@ export default function HomePage() {
   const [liveNewsQuery, setLiveNewsQuery] = useState(searchParams.get("q") || "");
   const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
 
-  // Состояния для модального окна матча
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [teams, setTeams] = useState<any[]>([]);
   const [matchForm, setMatchForm] = useState({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
@@ -37,20 +35,9 @@ export default function HomePage() {
           fetch("/api/matches"),
           fetch("/api/teams?limit=100")
         ]);
-        
-        if (sessionRes.ok) { 
-          const s = await sessionRes.json(); 
-          setUserRole(s?.user?.role || null); 
-          setCurrentUserId(s?.user?.id || null); 
-        }
-        if (matchesRes.ok) { 
-          const d = await matchesRes.json(); 
-          setMatches(Array.isArray(d) ? d : []); 
-        }
-        if (teamsRes.ok) {
-          const t = await teamsRes.json();
-          setTeams(t.data || []);
-        }
+        if (sessionRes.ok) { const s = await sessionRes.json(); setUserRole(s?.user?.role || null); setCurrentUserId(s?.user?.id || null); }
+        if (matchesRes.ok) { const d = await matchesRes.json(); setMatches(Array.isArray(d) ? d : []); }
+        if (teamsRes.ok) { const t = await teamsRes.json(); setTeams(t.data || []); }
       } catch (err) { console.error("Ошибка загрузки:", err); }
     };
     loadData();
@@ -61,7 +48,6 @@ export default function HomePage() {
     const page = searchParams.get("page") || "1";
     const q = searchParams.get("q") || "";
     setLiveNewsQuery(q);
-
     fetch(`/api/news?page=${page}&limit=10&q=${encodeURIComponent(q)}`)
       .then(res => { if (!res.ok) throw new Error("Ошибка сервера"); return res.json(); })
       .then(data => setNewsData(data))
@@ -87,40 +73,43 @@ export default function HomePage() {
 
   const handleDeleteMatch = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить этот матч?")) return;
-    
     setDeletingMatchId(id);
     try {
       const res = await fetch(`/api/matches?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setToast({ msg: "Матч успешно удален!", type: "success" });
-        // Обновляем список матчей
         const mRes = await fetch("/api/matches");
         if (mRes.ok) setMatches(await mRes.json());
       } else {
         const err = await res.json();
         setToast({ msg: err.error || "Ошибка удаления", type: "error" });
       }
-    } catch {
-      setToast({ msg: "Ошибка сети", type: "error" });
-    } finally {
-      setDeletingMatchId(null);
-    }
+    } catch { setToast({ msg: "Ошибка сети", type: "error" }); }
+    finally { setDeletingMatchId(null); }
   };
 
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (matchForm.homeTeamId === matchForm.awayTeamId) {
-      setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" });
-      return;
+    if (matchForm.homeTeamId === matchForm.awayTeamId) { 
+      setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" }); 
+      return; 
     }
-
     setCreatingMatch(true);
     try {
-      const res = await fetch("/api/matches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(matchForm),
+      const dateStr = matchForm.date;
+      const [datePart, timePart] = dateStr.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      const res = await fetch("/api/matches", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({
+          ...matchForm,
+          date: localDate.toISOString()
+        })
       });
       if (res.ok) {
         setToast({ msg: "Матч успешно создан!", type: "success" });
@@ -128,32 +117,76 @@ export default function HomePage() {
         const mRes = await fetch("/api/matches");
         if (mRes.ok) setMatches(await mRes.json());
         setMatchForm({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
-      } else {
-        const err = await res.json();
-        setToast({ msg: err.error || "Ошибка создания", type: "error" });
+      } else { 
+        const err = await res.json(); 
+        setToast({ msg: err.error || "Ошибка создания", type: "error" }); 
       }
-    } catch {
-      setToast({ msg: "Ошибка сети", type: "error" });
-    } finally {
-      setCreatingMatch(false);
+    } catch { 
+      setToast({ msg: "Ошибка сети", type: "error" }); 
+    } finally { 
+      setCreatingMatch(false); 
     }
   };
 
   const canManageMatches = userRole === "ADMIN" || userRole === "EDITOR";
   const isAdmin = userRole === "ADMIN";
 
+  const renderPagination = () => {
+    if (!newsData?.meta) return null;
+    const { page, totalPages } = newsData.meta;
+    if (totalPages <= 1) return null;
+
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push("...");
+      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.push(i);
+      if (page < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 24, flexWrap: "wrap" }}>
+        <button className="btn glass-btn" disabled={page === 1} onClick={() => router.push(`?page=${page - 1}&q=${liveNewsQuery}`)}>
+          ← Назад
+        </button>
+        {pages.map((p, i) =>
+          p === "..." ? <span key={`dots-${i}`} style={{ padding: "0 4px" }}>…</span> :
+          <button key={p} className={`btn ${p === page ? "btn-primary" : "glass-btn"}`} style={{ minWidth: 36 }} onClick={() => router.push(`?page=${p}&q=${liveNewsQuery}`)}>{p}</button>
+        )}
+        <button className="btn glass-btn" disabled={page === totalPages} onClick={() => router.push(`?page=${page + 1}&q=${liveNewsQuery}`)}>
+          Вперёд →
+        </button>
+      </div>
+    );
+  };
+
+  // Вспомогательные функции для работы с временем
+  const getHours = () => {
+    if (!matchForm.date) return '10';
+    const timePart = matchForm.date.split('T')[1] || '10:00';
+    return timePart.split(':')[0];
+  };
+
+  const getMinutes = () => {
+    if (!matchForm.date) return '00';
+    const timePart = matchForm.date.split('T')[1] || '10:00';
+    return timePart.split(':')[1] || '00';
+  };
+
+  const getDatePart = () => {
+    return matchForm.date ? matchForm.date.split('T')[0] : new Date().toISOString().split('T')[0];
+  };
+
   return (
     <div className="container">
       {toast && <div className="toast-container"><Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} /></div>}
       
-      {/* Верхняя панель управления */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
-        {canManageMatches && (
-          <button className="btn btn-primary glass-effect" onClick={() => setShowMatchModal(true)}>
-            Добавить матч
-          </button>
-        )}
+        {canManageMatches && <button className="btn btn-primary glass-effect" onClick={() => setShowMatchModal(true)}>Добавить матч</button>}
       </div>
 
       <div className="tabs">
@@ -167,20 +200,14 @@ export default function HomePage() {
           <div className="search-bar glass-effect">
             <input type="text" className="search-input" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} />
           </div>
-          <NewsSection 
-            news={newsData?.data || []} 
-            setNews={handleUpdateNews} 
-            userRole={userRole} 
-            currentUserId={currentUserId ?? undefined} 
-          />
-          {newsData?.meta && <Pagination currentPage={newsData.meta.page} totalPages={newsData.meta.totalPages} />}
+          <NewsSection news={newsData?.data || []} setNews={handleUpdateNews} userRole={userRole} currentUserId={currentUserId ?? undefined} />
+          {renderPagination()}
         </>
       )}
       
       {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
       {activeTab === "calendar" && <CalendarSection matches={matches} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
 
-      {/* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МАТЧА */}
       {showMatchModal && (
         <div className="modal-overlay" onClick={() => setShowMatchModal(false)}>
           <div className="modal-content glass-effect" onClick={e => e.stopPropagation()} style={{ maxWidth: "500px" }}>
@@ -196,30 +223,69 @@ export default function HomePage() {
                 </div>
                 <div className="form-group">
                   <label style={{ color: 'black' }}>Гости</label>
-                  <select 
-                    className="glass-effect"
-                    value={matchForm.awayTeamId} 
-                    onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} 
-                    required
-                    // ✅ ОТКЛЮЧАЕМ ОПЦИЮ, ЕСЛИ ОНА ВЫБРАНА В ПОЛЕ ХОЗЯЕВ
-                  >
+                  <select className="glass-effect" value={matchForm.awayTeamId} onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} required>
                     <option value="">Выберите...</option>
-                    {teams.map(t => (
-                      <option 
-                        key={t.id} 
-                        value={t.id} 
-                        disabled={t.id === matchForm.homeTeamId}
-                      >
-                        {t.name} {t.id === matchForm.homeTeamId ? "(уже выбраны)" : ""}
-                      </option>
-                    ))}
+                    {teams.map(t => <option key={t.id} value={t.id} disabled={t.id === matchForm.homeTeamId}>{t.name}{t.id === matchForm.homeTeamId ? " (уже выбраны)" : ""}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="form-group mb-4">
-                <label style={{ color: 'black' }}>Дата и время</label>
-                <input className="glass-effect" type="datetime-local" value={matchForm.date} onChange={e => setMatchForm({...matchForm, date: e.target.value})} required />
+              
+              {/* ✅ РАЗДЕЛЬНЫЕ ПОЛЯ ДАТЫ И ВРЕМЕНИ (SELECT ДЛЯ ЧАСОВ И МИНУТ) */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="form-group">
+                  <label style={{ color: 'black' }}>Дата</label>
+                  <input 
+                    className="glass-effect" 
+                    type="date" 
+                    value={getDatePart()} 
+                    onChange={e => {
+                      const hours = getHours();
+                      const minutes = getMinutes();
+                      setMatchForm({...matchForm, date: `${e.target.value}T${hours}:${minutes}`});
+                    }} 
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label style={{ color: 'black' }}>Время (24ч)</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select 
+                      className="glass-effect" 
+                      value={getHours()}
+                      onChange={e => {
+                        const date = getDatePart();
+                        const minutes = getMinutes();
+                        setMatchForm({...matchForm, date: `${date}T${e.target.value}:${minutes}`});
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      {Array.from({length: 24}, (_, i) => (
+                        <option key={i} value={i.toString().padStart(2, '0')}>
+                          {i.toString().padStart(2, '0')}
+                        </option>
+                      ))}
+                    </select>
+                    <span style={{ alignSelf: 'center', color: 'black', fontWeight: 'bold' }}>:</span>
+                    <select 
+                      className="glass-effect" 
+                      value={getMinutes()}
+                      onChange={e => {
+                        const date = getDatePart();
+                        const hours = getHours();
+                        setMatchForm({...matchForm, date: `${date}T${hours}:${e.target.value}`});
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      {Array.from({length: 60}, (_, i) => (
+                        <option key={i} value={i.toString().padStart(2, '0')}>
+                          {i.toString().padStart(2, '0')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
+              
               <div className="form-group mb-4">
                 <label style={{ color: 'black' }}>Стадион</label>
                 <input className="glass-effect" type="text" value={matchForm.venue} onChange={e => setMatchForm({...matchForm, venue: e.target.value})} placeholder="Название стадиона" />

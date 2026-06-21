@@ -1,74 +1,85 @@
-// src/components/ui/Nav.tsx
+"use client";
+
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { useSession, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 
-export default async function Nav() {
-  const session = await getServerSession(authOptions);
-  const userRole = session?.user?.role || null;
-  
-  let userTeamId: string | null = null;
-  if (session?.user?.id) {
-    const userWithTeam = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { teamId: true }
-    });
-    userTeamId = userWithTeam?.teamId || null;
-  }
+interface UserData {
+  id: string;
+  role: string;
+  username: string;
+  teamId: string | null;
+}
 
+export default function Nav() {
+  const { data: session, status } = useSession();
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch("/api/profile/me")
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            setUserData({
+              id: data.id,
+              role: data.role || session.user.role || "USER",
+              username: data.username || session.user.username || "",
+              teamId: data.teamId || null
+            });
+          }
+        })
+        .catch(err => console.error("Ошибка загрузки профиля:", err));
+    } else {
+      setUserData(null);
+    }
+  }, [session]);
+
+  const userRole = userData?.role || session?.user?.role || null;
+  const userTeamId = userData?.teamId || null;
   const showTeamProfile = !!userTeamId || userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN";
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" });
+  };
 
   return (
     <aside className="sidebar">
       <div className="sidebar-top">       
         <nav className="sidebar-nav">
-          {/* Главная */}
           <Link href="/" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/main-page.svg" alt="" className="svg"/>
             <span className="sidebar-link">Главная</span>
           </Link>
-
-          {/* Команды */}
           <Link href="/teams" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/teams.svg" alt="" className="svg"/>
             <span className="sidebar-link">Команды</span>
           </Link>
-
-          {/* Профиль команды */}
           {showTeamProfile && (
             <Link href="/teams/profile" className="sidebar-btn glass-effect">
               <img src="/uploads/svg/team-profile.svg" alt="" className="svg"/>
               <span className="sidebar-link">Профиль команды</span>
             </Link>
           )}
-
-          {/* Чат */}
           <Link href="/chat" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/chat.svg" alt="" className="svg"/>
             <span className="sidebar-link">Чат</span>
           </Link>
-
-          {/* Профиль */}
           <Link href="/profile" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/profile.svg" alt="" className="svg"/>
-            <span  className="sidebar-link">Профиль</span>
+            <span className="sidebar-link">Профиль</span>
           </Link>
-
-          {/* Настройки */}
           <Link href="/settings" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/settings.svg" alt="" className="svg"/>
             <span className="sidebar-link">Настройки</span>
           </Link>
-
-          {/* Админка (только для ADMIN) */}
-          {userRole === "ADMIN" && (
+          {isAdmin && (
             <Link href="/admin" className="sidebar-btn glass-effect">
               <img src="/uploads/svg/admin.svg" alt="" className="svg"/>
               <span className="sidebar-link admin-link">Админка</span>
             </Link>
           )}
-
           <Link href="/support" className="sidebar-btn glass-effect">
             <img src="/uploads/svg/info.svg" alt="" className="svg"/>
             <span className="sidebar-link">Поддержка</span>
@@ -77,16 +88,18 @@ export default async function Nav() {
       </div>
 
       <div className="sidebar-bottom">
-        {session?.user ? (
-          <form action="/api/auth/signout" method="post" style={{ width: '100%' }}>
-            <button type="submit" className="sidebar-link logout-btn w-full glass-effect"> 
-              <img src="/uploads/svg/login.svg" alt="" className="svg"/>
-              <span className="sidebar-link-text">Выйти</span>
-            </button>
-          </form>
+        {status === "loading" ? (
+          <div className="sidebar-link w-full glass-effect">
+            <span className="sidebar-link-text">Загрузка...</span>
+          </div>
+        ) : session?.user ? (
+          <button onClick={handleSignOut} className="sidebar-link logout-btn w-full glass-effect"> 
+            <img src="/uploads/svg/logout.svg" alt="" className="svg"/>
+            <span className="sidebar-link-text">Выйти</span>
+          </button>
         ) : (
           <Link href="/auth/signin" className="sidebar-link login-btn w-full glass-effect">
-            <img src="/uploads/svg/logout.svg" alt="" className="svg"/>
+            <img src="/uploads/svg/login.svg" alt="" className="svg"/>
             <span className="sidebar-link-text">Войти</span>
           </Link>
         )}

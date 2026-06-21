@@ -17,8 +17,6 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  
-  // Безопасная проверка роли
   const role = session?.user?.role;
   if (!session?.user || (role !== "ADMIN" && role !== "EDITOR")) {
     return NextResponse.json({ error: "Только редактор или админ" }, { status: 403 });
@@ -35,9 +33,8 @@ export async function POST(req: NextRequest) {
       data: { 
         homeTeamId, 
         awayTeamId, 
-        date: new Date(date), 
+        date: new Date(date),
         venue,
-        status: "SCHEDULED" // Явно задаем статус по умолчанию
       } 
     });
     return NextResponse.json(match, { status: 201 });

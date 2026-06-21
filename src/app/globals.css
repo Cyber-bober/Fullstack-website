@@ -2364,3 +2364,1999 @@ label.text {
     visibility: hidden;
   }
 }
+
+/* Custom Select Styles */
+.custom-select {
+  position: relative;
+  font-size: 14px;
+}
+
+.custom-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.custom-select-trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-select-trigger .arrow {
+  font-size: 10px;
+  transition: transform 0.3s ease;
+  opacity: 0.7;
+}
+
+.custom-select-trigger .arrow.open {
+  transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(30, 30, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.custom-select-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.custom-select-option:last-child {
+  border-bottom: none;
+}
+
+.custom-select-option:hover {
+  background: rgba(1, 96, 206, 0.3);
+  color: white;
+}
+
+.custom-select-option.selected {
+  background: rgba(1, 96, 206, 0.5);
+  color: white;
+  font-weight: 600;
+}
+
+/* Matches Grid для большого количества матчей */
+.matches-container {
+  margin-top: 4px;
+}
+
+.matches-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.match-event {
+  background: #0160ce;
+  color: rgba(243, 243, 243, 0.75);
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+  transition: background 0.2s;
+  text-align: center;
+  font-weight: 600;
+}
+
+.match-event:hover {
+  background: #0059c8;
+}
+
+.match-dot {
+  background: #0160ce;
+  color: white;
+  padding: 3px 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.match-dot:hover {
+  background: #0059c8;
+  transform: scale(1.1);
+}
+
+.match-more {
+  background: rgba(1, 96, 206, 0.6);
+  color: white;
+  padding: 3px 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  grid-column: span 2;
+}
+
+.match-more:hover {
+  background: rgba(1, 96, 206, 0.8);
+}
+
+/* Match List Item для модального окна */
+.match-list-item {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.match-list-item:hover {
+  background: rgba(1, 96, 206, 0.2);
+}
+
+.match-list-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0160ce;
+  margin-bottom: 4px;
+}
+
+.match-list-teams {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.calendar-day {
+  cursor: pointer;
+}
+
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Match Select для LiveSection */
+.custom-match-select {
+  position: relative;
+  width: 100%;
+  font-size: 14px;
+}
+
+.custom-match-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-height: 48px;
+}
+
+.custom-match-select-trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-match-select-trigger .arrow {
+  font-size: 10px;
+  transition: transform 0.3s ease;
+  opacity: 0.7;
+  margin-left: 12px;
+}
+
+.custom-match-select-trigger .arrow.open {
+  transform: rotate(180deg);
+}
+
+.custom-match-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 400px;
+  overflow-y: auto;
+  background: rgba(30, 30, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.custom-match-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.custom-match-option:last-child {
+  border-bottom: none;
+}
+
+.custom-match-option:hover {
+  background: rgba(1, 96, 206, 0.3);
+  color: white;
+}
+
+.custom-match-option.selected {
+  background: rgba(1, 96, 206, 0.5);
+  color: white;
+  font-weight: 600;
+}
+
+.match-option-teams {
+  margin-bottom: 4px;
+}
+
+.match-option-date {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Scrollbar для dropdown */
+.custom-match-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-match-dropdown::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.custom-match-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.custom-match-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Стили для событий трансляции */
+.events-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.event-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.event-minute {
+  background: rgba(1, 96, 206, 0.3);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 40px;
+  text-align: center;
+  border: 1px solid rgba(1, 96, 206, 0.4);
+}
+
+.event-text {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.event-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+/* Input fields styling */
+input.glass-effect,
+select.glass-effect,
+textarea.glass-effect {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+input.glass-effect:focus,
+select.glass-effect:focus,
+textarea.glass-effect:focus {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  outline: none;
+}
+
+input.glass-effect::placeholder,
+textarea.glass-effect::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Form card styling */
+.form-card.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+/* Buttons */
+.btn.glass-effect {
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn.glass-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary.glass-effect {
+  background: rgba(1, 96, 206, 0.6);
+}
+
+.btn-primary.glass-effect:hover {
+  background: rgba(1, 96, 206, 0.8);
+}
+
+.btn-danger.glass-effect {
+  background: rgba(239, 68, 68, 0.6);
+}
+
+.btn-danger.glass-effect:hover {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+/* Labels */
+label {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Teams Table Styles */
+.teams-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Отступ между строчками */
+  padding: 8px;
+}
+
+.teams-table-header {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px 100px;
+  gap: 16px;
+  padding: 12px 20px;
+  margin-bottom: 8px;
+  /* background: rgba(1, 96, 206, 0.15); Убрал фон у заголовка для чистоты */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.teams-table-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px 100px;
+  gap: 16px;
+  padding: 16px 20px;
+  
+  /* ✅ ИСПРАВЛЕНИЕ: Обводка и фон */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Тонкая белая обводка */
+  backdrop-filter: blur(10px);
+  
+  border-radius: 12px; /* Скругление углов */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  align-items: center;
+}
+
+.teams-table-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3); /* Обводка ярче при наведении */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.table-col {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.table-col.position {
+  font-weight: 700;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  justify-content: center;
+}
+
+/* Медали для топ-3 */
+.medal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.medal-1 {
+  background: linear-gradient(135deg, #fbbf24, #d97706); /* Золото */
+  color: white;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.medal-2 {
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8); /* Серебро */
+  color: #1e293b;
+  box-shadow: 0 0 10px rgba(226, 232, 240, 0.4);
+}
+
+.medal-3 {
+  background: linear-gradient(135deg, #fdba74, #b45309); /* Бронза */
+  color: white;
+  box-shadow: 0 0 10px rgba(253, 186, 116, 0.4);
+}
+
+.table-col.team {
+  gap: 12px;
+  font-weight: 600;
+}
+
+.team-logo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-col.players,
+.table-col.rating {
+  justify-content: center;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums; /* Чтобы цифры не прыгали */
+}
+
+.table-col.rating {
+  color: #60a5fa; /* Светло-голубой для рейтинга */
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .teams-table-header,
+  .teams-table-row {
+    grid-template-columns: 50px 1fr 70px; /* Скрываем рейтинг на мобилках или переносим */
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .table-col.rating {
+    display: none; 
+  }
+  
+  .team-logo-small {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Rating Tab Styles */
+.rating-formula {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rating-formula code {
+  background: rgba(1, 96, 206, 0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.match-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.match-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.match-card.selected {
+  background: rgba(1, 96, 206, 0.3);
+  border: 2px solid #0160ce;
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+.match-team {
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-score {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0160ce;
+  background: rgba(1, 96, 206, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.checkmark {
+  background: #0160ce;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.match-date {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.no-matches {
+  padding: 30px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.range-slider {
+  width: 100%;
+  margin: 12px 0;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #0160ce;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #0160ce;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+.rating-preview {
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background: rgba(1, 96, 206, 0.15);
+  border: 1px solid rgba(1, 96, 206, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.rating-preview h3 {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+  color: #60a5fa;
+}
+
+.preview-content {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.preview-team {
+  text-align: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.team-name {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-rating-old {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.team-rating-new {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.team-rating-new.positive {
+  color: #10b981;
+}
+
+.team-rating-new.negative {
+  color: #ef4444;
+}
+
+.preview-score {
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0.5;
+  white-space: nowrap;
+}
+
+/* Scrollbar для списка матчей */
+.matches-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.matches-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.matches-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.matches-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .match-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  
+  .match-team {
+    text-align: center;
+  }
+  
+  .match-score {
+    align-self: center;
+    order: -1;
+  }
+  
+  .preview-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .preview-score {
+    text-align: center;
+    order: -1;
+  }
+}
+
+.teams-rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.team-rating-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  min-height: 64px;
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.team-logo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.team-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(1, 96, 206, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.team-name-text {
+  font-weight: 600;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.rating-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.rating-input-group label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.rating-input {
+  width: 100px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.rating-input.changed {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.rating-input:focus {
+  outline: none;
+  border-color: #0160ce;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.rating-changed {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.no-teams {
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Scrollbar */
+.teams-rating-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.teams-rating-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.teams-rating-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.teams-rating-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .team-rating-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .team-info {
+    width: 100%;
+  }
+  
+  .rating-input-group {
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .rating-input {
+    width: 100%;
+  }
+}
+
+.rating-formula {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rating-formula code {
+  background: rgba(1, 96, 206, 0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+  font-family: monospace;
+}
+
+.teams-rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.team-rating-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  min-height: 64px;
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.team-logo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.team-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(1, 96, 206, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.team-name-text {
+  font-weight: 600;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.rating-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.rating-input-group label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.rating-input {
+  width: 100px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.rating-input.changed {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.rating-input:focus {
+  outline: none;
+  border-color: #0160ce;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.rating-changed {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.no-teams {
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.teams-rating-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.teams-rating-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.teams-rating-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+/* 24-часовой формат для datetime-local */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+/* Принудительный 24-часовой формат для time input */
+input[type="time"] {
+  font-family: inherit;
+}
+
+/* Скрываем AM/PM для WebKit браузеров (Chrome, Safari, Edge) */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* Для Firefox используем текстовое поле */
+@-moz-document url-prefix() {
+  input[type="time"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+}
+
+/* Скрываем AM/PM индикатор */
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+  display: none;
+}
+
+input[type="time"]::-webkit-datetime-edit-hour-field {
+  padding-right: 0;
+}
+
+/* ============================================
+   SUPPORT PAGE
+   ============================================ */
+
+.container.support {
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: calc(100vh - 80px); /* Высота экрана минус header/footer */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Основной layout поддержки - как у чата */
+.support-main {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  flex: 1;
+  padding: 16px;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0; /* Важно для flex/grid */
+}
+
+/* Левая колонка поддержки */
+.support-left {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.support-left-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* Список тикетов - прокручивается внутри */
+.support-ticket-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  min-height: 0;
+}
+
+.support-ticket-item {
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.support-ticket-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.support-ticket-item.active {
+  background: rgba(1, 96, 206, 0.3);
+  border-color: rgba(1, 96, 206, 0.5);
+}
+
+.support-ticket-item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.support-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Правая колонка поддержки */
+.support-right {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+/* Заголовок чата тикета */
+.support-chat-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* Основная область сообщений - прокручивается */
+.support-chat-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0; /* Важно для flex */
+}
+
+/* Плейсхолдер когда тикет не выбран */
+.support-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+}
+
+/* Форма ответа внизу */
+.support-right form {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* Кнопки тикетов */
+.btn-ticket {
+  background: rgba(1, 96, 206, 0.3);
+  color: white;
+  border: 1px solid rgba(1, 96, 206, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ticket:hover {
+  background: rgba(1, 96, 206, 0.5);
+}
+
+/* Скроллбар для поддержки */
+.support-ticket-list::-webkit-scrollbar,
+.support-chat-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.support-ticket-list::-webkit-scrollbar-track,
+.support-chat-main::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.support-ticket-list::-webkit-scrollbar-thumb,
+.support-chat-main::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.support-ticket-list::-webkit-scrollbar-thumb:hover,
+.support-chat-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .support-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .support-left {
+    max-height: 40vh;
+  }
+  
+  .container.support {
+    height: auto;
+    min-height: calc(100vh - 80px);
+  }
+}
+
+/* ============================================
+   RATING CONTROL
+   ============================================ */
+
+.rating-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.rating-value-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.rating-input {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.rating-input.changed {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.rating-input:focus {
+  outline: none;
+  border-color: #0160ce;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.rating-input::-webkit-outer-spin-button,
+.rating-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.rating-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.rating-changed-badge {
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* Большие кнопки + и − */
+.rating-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 26px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  user-select: none;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rating-btn-minus {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.rating-btn-minus:hover {
+  background: rgba(239, 68, 68, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.rating-btn-plus {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.rating-btn-plus:hover {
+  background: rgba(16, 185, 129, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.rating-btn:active {
+  transform: scale(0.95);
+}
+
+/* Элемент команды */
+.team-rating-item {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s;
+}
+
+.team-rating-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.team-logo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.team-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(1, 96, 206, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.team-name-text {
+  font-weight: 600;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: white;
+}
+
+.teams-rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.teams-rating-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.teams-rating-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.teams-rating-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.teams-rating-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.no-teams {
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .team-rating-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .team-info {
+    justify-content: center;
+  }
+  
+  .rating-control {
+    justify-content: center;
+  }
+  
+  .rating-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+}
+
+/* ============================================
+   TEAM PROFILE PAGE
+   ============================================ */
+
+.team-profile-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.team-header-card {
+  padding: 32px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.team-header-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.team-avatar-section {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.team-avatar-section .avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-avatar-section .avatar-large:hover {
+  transform: scale(1.05);
+}
+
+.team-avatar-section .avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-avatar-section .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.avatar-edit-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.team-avatar-section .avatar-large:hover .avatar-edit-overlay {
+  opacity: 1;
+}
+
+.avatar-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f59e0b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.team-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-profile-page .team-name {
+  font-size: 32px !important;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.team-players-count {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.team-logo-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.team-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.tab-btn.active {
+  background: #0160ce;
+  color: white;
+  border-color: #0160ce;
+}
+
+.team-actions {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.team-players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* Stats Section */
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-badge {
+  font-size: 12px;
+  background: rgba(239, 68, 68, 0.3);
+  color: #fee2e2;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.stats-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stats-display {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stat-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 16px;
+  color: white;
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.stats-grid-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* Form elements */
+.form-group label {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-group input,
+.form-group textarea {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Buttons */
+.btn-danger {
+  background: rgba(239, 68, 68, 0.6) !important;
+  color: white !important;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.8) !important;
+}
+
+.teams-table .team-name,
+.teams-table-row .team-name {
+  font-size: 15px !important;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .team-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .team-profile-page .team-name {
+    font-size: 24px !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .team-players {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   IMAGE CROPPER - АДАПТИВНЫЙ ДИЗАЙН
+   ============================================ */
+
+.image-cropper-modal {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Стилизация range slider */
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0160ce;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #0071e0;
+}
+
+.range-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0160ce;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .image-cropper-modal {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  
+  .cropper-container {
+    height: 40vh !important;
+    min-height: 280px;
+    border-radius: 12px;
+  }
+  
+  .control-group {
+    margin-bottom: 16px;
+  }
+  
+  button {
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 10px 8px !important;
+  }
+  
+  .image-cropper-modal {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+  
+  .cropper-container {
+    height: 35vh !important;
+    min-height: 250px;
+  }
+  
+  button {
+    flex: 1 1 100% !important;
+    margin-bottom: 8px;
+  }
+}
+
+/* Для больших экранов */
+@media (min-width: 1200px) {
+  .image-cropper-modal {
+    max-width: 900px;
+    padding: 32px;
+  }
+  
+  .cropper-container {
+    height: 55vh !important;
+    max-height: 600px;
+  }
+}

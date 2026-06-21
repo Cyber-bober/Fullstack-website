@@ -12,6 +12,8 @@ type Team = {
   logoUrl?: string | null; 
   captain?: { fullName: string } | null; 
   _count?: { players: number }; 
+  rating?: number;
+  globalIndex?: number;
 };
 
 export default function TeamsPage() {
@@ -39,7 +41,10 @@ export default function TeamsPage() {
           fetch("/api/auth/session"),
         ]);
 
-        if (teamsRes.ok) setTeamsData(await teamsRes.json());
+        if (teamsRes.ok) {
+          const data = await teamsRes.json();
+          setTeamsData(data);
+        }
         else setTeamsData({ data: [], meta: {} });
 
         if (sessionRes.ok) { const s = await sessionRes.json(); setUserRole(s?.user?.role || null); }
@@ -48,7 +53,6 @@ export default function TeamsPage() {
     loadData();
   }, [searchParams]);
 
-  // Живой поиск команд
   useEffect(() => {
     const timer = setTimeout(() => {
       const currentQ = searchParams.get("q") || "";
@@ -77,18 +81,19 @@ export default function TeamsPage() {
 
   return (
     <div className="container">
-      <div className="search-bar glass-effect">
-        <input type="text" placeholder="Поиск команд (введите и подождите)..." value={liveTeamQuery} onChange={(e) => setLiveTeamQuery(e.target.value)} className="search-input" />
+      <div className="section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <h1 className="home-title" style={{ margin: 0 }}>Команды</h1>
+        {userRole === "ADMIN" && <button className="btn btn-primary glass-effect" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "Создать команду"}</button>}
       </div>
 
-      <div className="section-header">
-        {userRole === "ADMIN" && <button className="btn btn-primary glass-effect" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "Создать команду"}</button>}
+      <div className="search-bar glass-effect" style={{ marginBottom: "24px" }}>
+        <input type="text" placeholder="Поиск команд..." value={liveTeamQuery} onChange={(e) => setLiveTeamQuery(e.target.value)} className="search-input" />
       </div>
 
       {showCreateForm && (
         <Card className="form-card glass-effect" style={{ marginBottom: "24px" }}>
           <form onSubmit={handleCreateTeam}>
-            <div className="form-group"><label style={{ color: '#000000' }}>Название команды</label><input type="text" className="glass-effect" value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)} placeholder="Введите название команды" required /></div>
+            <div className="form-group"><label style={{ color: '#ffffff' }}>Название команды</label><input type="text" className="glass-effect" value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)} placeholder="Введите название команды" required /></div>
             <button type="submit" className="btn btn-primary glass-effect" disabled={creating}>{creating ? "Создание..." : "Создать"}</button>
           </form>
         </Card>
@@ -97,29 +102,51 @@ export default function TeamsPage() {
       {!teamsData?.data || teamsData.data.length === 0 ? (
         <p className="empty-text">Команды не найдены</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {teamsData.data.map((team) => (
-            <Link key={team.id} href={`/teams/${team.id}`} className="block" style={{ textDecoration: "none", color: "inherit" }}>
-              <Card className="glass-effect team-card">
-                <div className="team-logo">
-                  {team.logoUrl ? (
-                    <img src={team.logoUrl} alt={team.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#9ca3af' }}>
-                      {team.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+        <Card className="glass-effect" style={{ padding: 0, overflow: "hidden", background: 'transparent', border: 'none', boxShadow: 'none' }}>
+          <div className="teams-table">
+            <div className="teams-table-header">
+              <div className="table-col position">№</div>
+              <div className="table-col team">Команда</div>
+              <div className="table-col players">Игроков</div>
+              <div className="table-col rating">Рейтинг</div>
+            </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="font-bold text-lg" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
-                  <div className="text-gray" style={{ fontSize: '13px' }}>Игроков: {team._count?.players || 0}</div>
-                  {team.captain && <div className="text-gray captain">Капитан: {team.captain.fullName}</div>}
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
+            {teamsData.data.map((team) => {
+              const position = team.globalIndex || 0;
+
+              return (
+                <Link 
+                  key={team.id} 
+                  href={`/teams/${team.id}`}
+                  className="teams-table-row glass-effect"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <div className="table-col position">
+                    {position <= 3 ? (
+                      <span className={`medal medal-${position}`}>{position}</span>
+                    ) : (
+                      position
+                    )}
+                  </div>
+                  <div className="table-col team">
+                    <div className="team-logo-small">
+                      {team.logoUrl ? (
+                        <img src={team.logoUrl} alt={team.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#9ca3af' }}>
+                          {team.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="team-name">{team.name}</span>
+                  </div>
+                  <div className="table-col players">{team._count?.players || 0}</div>
+                  <div className="table-col rating">{team.rating || 0}</div>
+                </Link>
+              );
+            })}
+          </div>
+        </Card>
       )}
 
       {teamsData?.meta && <Pagination currentPage={teamsData.meta.page} totalPages={teamsData.meta.totalPages} />}

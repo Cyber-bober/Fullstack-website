@@ -1,5 +1,4 @@
-//src/app/api/teams/[id]/captain/route.ts
-
+// src/app/api/teams/[id]/captain/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -15,30 +14,17 @@ export async function POST(
   }
 
   const { userId } = await req.json();
+  if (!userId) return NextResponse.json({ error: "userId обязателен" }, { status: 400 });
 
-  if (!userId) {
-    return NextResponse.json({ error: "userId обязателен" }, { status: 400 });
-  }
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { teamId: true } });
+  if (!user) return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+  if (user.teamId !== params.id) return NextResponse.json({ error: "Пользователь не состоит в этой команде" }, { status: 400 });
 
-  // Проверяем, что пользователь существует и состоит в команде
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { teamId: true },
-  });
+  // Сбросить капитана во всех командах, где он уже назначен
+  await prisma.team.updateMany({ where: { captainId: userId }, data: { captainId: null } });
 
-  if (!user) {
-    return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
-  }
-
-  if (user.teamId !== params.id) {
-    return NextResponse.json({ error: "Пользователь не состоит в этой команде" }, { status: 400 });
-  }
-
-  // Назначаем капитана
-  await prisma.team.update({
-    where: { id: params.id },
-    data: { captainId: userId },
-  });
+  // Назначить нового капитана
+  await prisma.team.update({ where: { id: params.id }, data: { captainId: userId } });
 
   return NextResponse.json({ success: true });
 }

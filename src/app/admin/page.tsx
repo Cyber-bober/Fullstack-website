@@ -1,37 +1,44 @@
 // src/app/admin/page.tsx
-
 "use client";
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Toast from "@/components/ui/Toast";
 
 type User = { id: string; username: string; fullName: string; role: string; createdAt: string };
+type Team = { id: string; name: string; logoUrl?: string | null; rating?: number };
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"roles" | "users">("users");
+  const [activeTab, setActiveTab] = useState<"roles" | "users" | "rating">("users");
   const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
   
-  // Живой поиск для ролей
   const [liveSearchQuery, setLiveSearchQuery] = useState("");
   const [liveSearchResults, setLiveSearchResults] = useState<User[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [foundUser, setFoundUser] = useState<User | null>(null);
   const [updatingRole, setUpdatingRole] = useState(false);
 
-  // Поиск для таблицы пользователей
   const [userTableSearch, setUserTableSearch] = useState("");
-
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [tempPasswordVisible, setTempPasswordVisible] = useState(false);
 
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [editedRatings, setEditedRatings] = useState<{[key: string]: number}>({});
+  const [savingRatings, setSavingRatings] = useState(false);
+  const [teamSearchQuery, setTeamSearchQuery] = useState("");
+
   useEffect(() => {
     loadUsers();
   }, []);
 
-  // Debounce для поиска ролей
+  useEffect(() => {
+    if (activeTab === "rating") {
+      loadTeams();
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (liveSearchQuery.trim().length >= 2) {
@@ -66,6 +73,19 @@ export default function AdminPage() {
     } catch (err) { console.error(err); } finally { setLoadingUsers(false); }
   };
 
+  const loadTeams = async () => {
+    try {
+      const res = await fetch("/api/teams?limit=100");
+      if (res.ok) {
+        const data = await res.json();
+        const teamsList = Array.isArray(data) ? data : (data.data || []);
+        setTeams(teamsList);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleUpdateRole = async (newRole: string) => {
     if (!foundUser) return;
     setUpdatingRole(true);
@@ -94,6 +114,42 @@ export default function AdminPage() {
     } catch { setToast({ msg: "Ошибка сети", type: "error" }); } finally { setResettingId(null); }
   };
 
+  const updateTeamRating = (teamId: string, rating: number) => {
+    setEditedRatings(prev => ({
+      ...prev,
+      [teamId]: rating
+    }));
+  };
+
+  const saveAllRatings = async () => {
+    if (Object.keys(editedRatings).length === 0) {
+      setToast({ msg: "Измените хотя бы один рейтинг", type: "error" });
+      return;
+    }
+
+    setSavingRatings(true);
+    try {
+      const res = await fetch("/api/admin/update-team-ratings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ratings: editedRatings })
+      });
+
+      if (res.ok) {
+        setToast({ msg: "Рейтинги обновлены!", type: "success" });
+        setEditedRatings({});
+        loadTeams();
+      } else {
+        const err = await res.json();
+        setToast({ msg: err.error || "Ошибка сохранения", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Ошибка сети", type: "error" });
+    } finally {
+      setSavingRatings(false);
+    }
+  };
+
   const getRoleClass = (role: string) => {
     switch(role) {
       case "ADMIN": return "role-badge role-admin";
@@ -102,10 +158,13 @@ export default function AdminPage() {
     }
   };
 
-  // Фильтрация пользователей для таблицы
   const filteredUsers = users.filter(u => 
     u.username.toLowerCase().includes(userTableSearch.toLowerCase()) || 
     u.fullName.toLowerCase().includes(userTableSearch.toLowerCase())
+  );
+
+  const filteredTeams = teams.filter(t => 
+    t.name.toLowerCase().includes(teamSearchQuery.toLowerCase())
   );
 
   return (
@@ -116,6 +175,7 @@ export default function AdminPage() {
       <div className="tabs">
         <button className={`tab glass-btn ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>Роли</button>
         <button className={`tab glass-btn ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>Пользователи</button>
+        <button className={`tab glass-btn ${activeTab === "rating" ? "active" : ""}`} onClick={() => setActiveTab("rating")}>Рейтинг команд</button>
       </div>
 
       {activeTab === "roles" && (
@@ -172,8 +232,8 @@ export default function AdminPage() {
                 <code className="temp-password-value">
                   {tempPasswordVisible ? tempPassword : "••••••••••"}
                 </code>
-                <button onClick={() => setTempPasswordVisible(!tempPasswordVisible)} className="btn" title="Показать/скрыть">{tempPasswordVisible ? <img src="/uploads/svg/eye-off.svg" className="svg"/> : <img src="/uploads/svg/eye-on.svg" className="svg"/>}</button>
-                <button onClick={() => copyToClipboard(tempPassword)} className="btn" title="Копировать"><img src="/uploads/svg/copy.svg" className="svg"/></button>
+                <button onClick={() => setTempPasswordVisible(!tempPasswordVisible)} className="btn" title="Показать/скрыть">{tempPasswordVisible ? "🙈" : "👁️"}</button>
+                <button onClick={() => copyToClipboard(tempPassword)} className="btn" title="Копировать">📋</button>
               </div>
               <p className="temp-password-hint">Сообщите этот пароль пользователю.</p>
               <button onClick={() => { setTempPassword(null); setTempPasswordVisible(false); }} className="btn" style={{ marginTop: "8px", fontSize: "12px" }}>Закрыть</button>
@@ -220,6 +280,100 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+        </Card>
+      )}
+
+      {activeTab === "rating" && (
+        <Card className="glass-effect">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+            <h2 className="section-title" style={{ margin: 0 }}>Рейтинг команд</h2>
+            <button 
+              className="btn btn-primary glass-effect" 
+              onClick={saveAllRatings}
+              disabled={savingRatings || Object.keys(editedRatings).length === 0}
+              style={{ minWidth: "200px", padding: "10px 20px" }}
+            >
+              {savingRatings ? "Сохранение..." : `Сохранить (${Object.keys(editedRatings).length})`}
+            </button>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: "20px" }}>
+            <label>Поиск команды</label>
+            <input 
+              type="text" 
+              placeholder="Введите название команды..." 
+              value={teamSearchQuery} 
+              onChange={e => setTeamSearchQuery(e.target.value)} 
+              className="search-input glass-effect" 
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Управление рейтингом команд</label>
+            <div className="teams-rating-list">
+              {filteredTeams.length === 0 ? (
+                <div className="no-teams">
+                  {teams.length === 0 ? "Команды не найдены" : "Команды не найдены по запросу"}
+                </div>
+              ) : (
+                filteredTeams.map(team => {
+                  const currentRating = editedRatings[team.id] ?? (team.rating || 1500);
+                  const isChanged = editedRatings[team.id] !== undefined;
+                  
+                  return (
+                    <div key={team.id} className="team-rating-item glass-effect">
+                      <div className="team-info">
+                        {team.logoUrl ? (
+                          <img src={team.logoUrl} alt={team.name} className="team-logo-small" />
+                        ) : (
+                          <div className="team-logo-placeholder">
+                            {team.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="team-name-text">{team.name}</span>
+                      </div>
+                      
+                      <div className="rating-control">
+                        {/* Кнопка МИНУС */}
+                        <button 
+                          type="button"
+                          className="rating-btn rating-btn-minus"
+                          onClick={() => updateTeamRating(team.id, currentRating - 1)}
+                          title="Уменьшить на 1"
+                        >
+                          −
+                        </button>
+                        
+                        {/* Поле ввода и бейдж "Изменено" */}
+                        <div className="rating-value-wrapper">
+                          <input 
+                            type="number"
+                            value={currentRating}
+                            onChange={(e) => updateTeamRating(team.id, Number(e.target.value))}
+                            className={`rating-input glass-effect ${isChanged ? 'changed' : ''}`}
+                            placeholder="1500"
+                          />
+                          {isChanged && (
+                            <span className="rating-changed-badge">Изменено</span>
+                          )}
+                        </div>
+                        
+                        {/* Кнопка ПЛЮС */}
+                        <button 
+                          type="button"
+                          className="rating-btn rating-btn-plus"
+                          onClick={() => updateTeamRating(team.id, currentRating + 1)}
+                          title="Увеличить на 1"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </Card>
       )}
     </div>
