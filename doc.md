@@ -103,3 +103,17 @@ git commit -m "feat: календарь матчей"
 
 # Отправить в develop
 git push origin develop
+
+# В случае ошибок
+git pull --rebase origin develop
+
+# Только ОДИН разработчик делает релиз
+git checkout main
+git pull origin main
+git merge develop
+git push origin main
+
+# Вернуться в develop
+git checkout develop
+git merge main   # чтобы develop знал о релизе
+git push origin develop
