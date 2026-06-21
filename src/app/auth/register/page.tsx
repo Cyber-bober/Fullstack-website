@@ -128,7 +128,7 @@ export default function RegisterPage() {
             </span>
           )}
 
-          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+          <button type="submit" className="btn glass-effect btn-primary w-full" disabled={loading}>
             {loading ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>

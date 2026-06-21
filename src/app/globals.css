@@ -115,6 +115,10 @@ input[type="date"] {
   margin: 0 auto;
 }
 
+.footer .container {
+  margin: 15px auto;
+}
+
 .container.support {
   padding: 0;
   max-height: 560px;
@@ -2030,8 +2034,6 @@ label.text {
 
 .support-ticket-list::-webkit-scrollbar { display: none; }
 
-/* ===== АДАПТИВНОСТЬ ===== */
-
 @media(width >= 1280px) {
   .chat-page {
     margin: 0 20px;
@@ -2056,18 +2058,60 @@ label.text {
   }
 }
 
-@media(width >= 768px) {
+@media(width < 768px) {
+  .main-content {
+    padding: 5px;
+  }
 
+  .tabs {
+    gap: 4px;
+  }
+
+  .tab {
+    padding: 1px 6px;
+    max-width: 130px;
+  }
+
+  .tab.active {
+    padding: 1px 6px;
+  }
+
+  .calendar-header {
+    gap: 20px;
+  }
+
+  .footer {
+    margin: auto 5px 5px 5px;
+  }
+
+  .profile-header-card {
+    padding: 3px 6px;
+  }
 }
 
-@media (pointer: fine) {
-  /* Ссылки */
+@media(width < 700px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .gap-4 {
+    gap: 0;
+  }
+}
+
+@media(width < 600px) {
+  .profile-header-card {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+@media(pointer: fine) {
   a:hover {
     text-decoration: underline;
     color: #0059c8;
   }
 
-  /* Кнопки */
   .btn:hover {
     text-decoration: none;
   }
@@ -2124,7 +2168,6 @@ label.text {
     border-color: #0160ce;
   }
 
-  /* Glass-эффекты */
   .glass-effect:hover {
     transform: translateY(-2px);
     box-shadow:
@@ -2148,7 +2191,6 @@ label.text {
     border-radius: 22px;
   }
 
-  /* Профиль */
   .profile-photo:hover {
     border-color: #0160ce;
     transform: scale(1.05);
@@ -2179,13 +2221,11 @@ label.text {
     box-shadow: 0 0 0 4px rgba(1, 96, 206, 0.3);
   }
 
-  /* Вкладки */
   .tab:hover {
     color: inherit;
     background-color: rgba(243, 243, 243, 0.75);
   }
 
-  /* Календарь */
   .calendar-day.glass-effect:hover {
     transform: none;
   }
@@ -2202,7 +2242,6 @@ label.text {
     background-color: #0160ce;
   }
 
-  /* Команды и игроки */
   .team-player-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -2213,7 +2252,6 @@ label.text {
     transform: translateY(-2px);
   }
 
-  /* Навигация */
   .nav-logo:hover {
     color: #1d4ed8;
     text-decoration: none;
@@ -2224,12 +2262,10 @@ label.text {
     text-decoration: none;
   }
 
-  /* Чат */
   .conversation-item:hover {
     background: rgba(255, 255, 255, 0.3);
   }
 
-  /* Новости */
   .delete-news-btn:hover:not(:disabled) {
     opacity: 1;
   }
@@ -2242,12 +2278,10 @@ label.text {
     background-color: #f9fafb65;
   }
 
-  /* Тосты */
   .toast-close-btn:hover {
     opacity: 1;
   }
 
-  /* Поддержка */
   .support-ticket-item:hover {
     background: #f9fafb;
   }
@@ -2264,7 +2298,6 @@ label.text {
     opacity: 1;
   }
 
-  /* Сайдбар */
   .sidebar:hover {
     width: 260px;
     padding: 24px;
@@ -2322,5 +2355,12 @@ label.text {
 
   .support-widget-btn:hover {
     transform: scale(1.05);
+  }
+}
+
+/* временно */
+@media(pointer: coarse) {
+  .sidebar {
+    visibility: hidden;
   }
 }

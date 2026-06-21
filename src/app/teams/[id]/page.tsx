@@ -336,8 +336,8 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
           <button 
             onClick={() => setActiveTab("roster")}
-            className={`btn ${activeTab === "roster" ? "btn-primary" : "btn-secondary"}`}
-            style={{ background: activeTab === "roster" ? undefined : 'transparent', border: activeTab === "roster" ? 'none' : '1px solid #e5e7eb' }}
+            className={`btn glass-effect ${activeTab === "roster" ? "btn-primary" : ""}`}
+            style={{ background: activeTab === "roster" ? undefined : ''}}
           >
             Состав
           </button>
@@ -400,6 +400,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 <div className="form-group">
                   <label>Описание команды</label>
                   <textarea 
+                    className="glass-effect"
                     value={statsForm.description} 
                     onChange={(e) => setStatsForm({...statsForm, description: e.target.value})}
                     rows={4}
@@ -411,6 +412,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   <div className="form-group">
                     <label>Год основания</label>
                     <input 
+                      className="glass-effect"
                       type="number" 
                       value={statsForm.foundedYear} 
                       onChange={(e) => setStatsForm({...statsForm, foundedYear: e.target.value})}
@@ -420,6 +422,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   <div className="form-group">
                     <label>Город</label>
                     <input 
+                      className="glass-effect"
                       type="text" 
                       value={statsForm.city} 
                       onChange={(e) => setStatsForm({...statsForm, city: e.target.value})}
@@ -431,6 +434,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 <div className="form-group">
                   <label>Стадион / Место проведения игр</label>
                   <input 
+                    className="glass-effect"
                     type="text" 
                     value={statsForm.stadium} 
                     onChange={(e) => setStatsForm({...statsForm, stadium: e.target.value})}
@@ -438,7 +442,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   />
                 </div>
 
-                <button type="submit" className="btn btn-primary w-full" disabled={saving}>
+                <button type="submit" className="btn btn-primary glass-effect w-full" disabled={saving}>
                   {saving ? "Сохранение..." : "Сохранить изменения"}
                 </button>
               </form>
