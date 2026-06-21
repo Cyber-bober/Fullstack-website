@@ -92,3 +92,14 @@ docker-compose exec app npx tsx scripts/seed.ts
 ```bash
 ip addr show | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | cut -d/ -f1 | head -1
 ```
+ДЛЯ ВТОРОГО РАЗРАБОТЧИКА
+# забрать последние изменения
+git checkout develop
+git pull origin develop
+
+# Работает над задачей
+git add .
+git commit -m "feat: календарь матчей"
+
+# Отправить в develop
+git push origin develop
