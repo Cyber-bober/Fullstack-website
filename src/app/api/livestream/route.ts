@@ -10,6 +10,8 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
+    console.log("GET /api/livestream - найдена трансляция:", stream ? stream.id : "нет");
+
     if (!stream) {
       return NextResponse.json({
         isActive: false,
@@ -22,20 +24,27 @@ export async function GET() {
 
     return NextResponse.json(stream);
   } catch (error) {
+    console.error("GET /api/livestream error:", error);
     return NextResponse.json({ error: "Ошибка загрузки" }, { status: 500 });
   }
 }
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Нет доступа" }, { status: 403 });
-  }
-
-  const body = await req.json();
-  const { title, vkVideoUrl, vkGroupUrl, tgGroupUrl, isActive } = body;
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+    
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Нет доступа" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    console.log("PATCH /api/livestream - данные:", body);
+
+    const { title, vkVideoUrl, vkGroupUrl, tgGroupUrl, isActive } = body;
+
     await prisma.liveStream.updateMany({
       where: { isActive: true },
       data: { isActive: false },
@@ -51,8 +60,10 @@ export async function PATCH(req: Request) {
       },
     });
 
+    console.log("Создана трансляция:", stream.id);
     return NextResponse.json(stream);
   } catch (error) {
+    console.error("PATCH /api/livestream error:", error);
     return NextResponse.json({ error: "Ошибка сохранения" }, { status: 500 });
   }
 }

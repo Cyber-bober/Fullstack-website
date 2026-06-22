@@ -1,4 +1,3 @@
-// src/components/ui/NewsSection.tsx
 "use client";
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
@@ -40,7 +39,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
     setContent(post.content);
     setPreview(post.imageUrl || null);
     setFile(null);
-    setShowForm(true);
+    setShowForm(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,24 +103,44 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
   };
 
   const resetForm = () => {
-    setTitle(""); setContent(""); setFile(null); setPreview(null); 
-    setShowForm(false); setIsEditing(false); setEditId(null);
+    setTitle(""); 
+    setContent(""); 
+    setFile(null); 
+    setPreview(null); 
+    setShowForm(false); 
+    setIsEditing(false); 
+    setEditId(null);
   };
 
   return (
     <div>
       <div className="section-header">
         {canEdit && (
-          <button className="btn btn-primary btn-add-news glass-effect" onClick={() => { resetForm(); setShowForm(true); }}>
+          <button 
+            className="btn btn-primary btn-add-news glass-effect" 
+            onClick={() => { 
+              if (showForm) {
+                resetForm();
+              } else {
+                setIsEditing(false);
+                setEditId(null);
+                setTitle("");
+                setContent("");
+                setFile(null);
+                setPreview(null);
+                setShowForm(true);
+              }
+            }}
+          >
             {showForm ? "Отмена" : "Добавить новость"}
           </button>
         )}
       </div>
 
-      {showForm && (
+      {showForm && !isEditing && (
         <Card className="form-card glass-effect">
           {error && <div className="form-error">{error}</div>}
-          <h3 className="form-title">{isEditing ? "Редактирование новости" : "Новая новость"}</h3>
+          <h3 className="form-title">Новая новость</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Заголовок</label>
@@ -132,7 +151,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
               <textarea className="glass-effect" value={content} onChange={e => setContent(e.target.value)} required rows={4} />
             </div>
             <div className="form-group">
-              <label>Изображение {isEditing && "(оставьте пустым, чтобы не менять)"}</label>
+              <label>Изображение</label>
               <input type="file" accept="image/*" onChange={handleFileChange} className="file-input" />
               {preview && (
                 <div className="file-preview-container">
@@ -159,12 +178,17 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
           const isAuthor = post.author?.id === currentUserId;
           const canDelete = userRole === "ADMIN" || isAuthor;
           const canEditThis = canEdit || isAuthor;
+          const isCurrentlyEditing = isEditing && editId === post.id;
 
           return (
             <Card key={post.id} className="news-card glass-effect">
               {canEditThis && (
                 <div className="news-actions">
-                  <button onClick={() => openEditModal(post)} className="btn btn-icon btn-edit glass-effect" title="Редактировать">
+                  <button 
+                    onClick={() => isCurrentlyEditing ? resetForm() : openEditModal(post)} 
+                    className="btn btn-icon btn-edit glass-effect" 
+                    title={isCurrentlyEditing ? "Отмена" : "Редактировать"}
+                  >
                     <img src="/uploads/svg/edit.svg" className="svg"/>
                   </button>
                   {canDelete && (
@@ -181,11 +205,38 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
                 </div>
               )}
 
-              <h3 className="news-title">{post.title}</h3>
-              <p className="news-content">{post.content}</p>
-              <span className="news-meta">
-                Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}
-              </span>
+              {isCurrentlyEditing ? (
+                <div>
+                  {error && <div className="form-error">{error}</div>}
+                  <h3 className="form-title">Редактирование новости</h3>
+                  <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                      <label>Заголовок</label>
+                      <input type="text" className="glass-effect" value={title} onChange={e => setTitle(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label>Содержание</label>
+                      <textarea className="glass-effect" value={content} onChange={e => setContent(e.target.value)} required rows={4} />
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn btn-primary glass-effect" disabled={loading}>
+                        {loading ? "Сохранение..." : "Сохранить"}
+                      </button>
+                      <button type="button" className="btn btn-secondary glass-effect" onClick={resetForm}>
+                        Отмена
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="news-title">{post.title}</h3>
+                  <p className="news-content">{post.content}</p>
+                  <span className="news-meta">
+                    Автор: {post.author?.fullName || "Неизвестный"} — {new Date(post.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
             </Card>
           );
         })
