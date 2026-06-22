@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { NewsSection } from "@/components/ui/NewsSection";
 import { LiveSection } from "@/components/ui/LiveSection";
 import { CalendarSection } from "@/components/ui/CalendarSection";
+import { LiveStreamSection } from "@/components/ui/LiveStreamSection";
 import Toast from "@/components/ui/Toast";
 import { NewsPost, Match } from "@/types/page";
 
@@ -12,7 +13,7 @@ function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
   
-  const [activeTab, setActiveTab] = useState<"news" | "live" | "calendar">("news");
+  const [activeTab, setActiveTab] = useState<"news" | "live" | "stream" | "calendar">("news");
   const [matches, setMatches] = useState<Match[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -191,6 +192,7 @@ function HomePageContent() {
       <div className="tabs">
         <button className={`tab glass-btn ${activeTab === "news" ? "active" : ""}`} onClick={() => setActiveTab("news")}>Новости</button>
         <button className={`tab glass-btn ${activeTab === "live" ? "active" : ""}`} onClick={() => setActiveTab("live")}>Текстовая трансляция</button>
+        <button className={`tab glass-btn ${activeTab === "stream" ? "active" : ""}`} onClick={() => setActiveTab("stream")}>Прямая трансляция</button>
         <button className={`tab glass-btn ${activeTab === "calendar" ? "active" : ""}`} onClick={() => setActiveTab("calendar")}>Календарь событий</button>
       </div>
 
@@ -205,6 +207,9 @@ function HomePageContent() {
       )}
       
       {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
+      
+      {activeTab === "stream" && <LiveStreamSection userRole={userRole} />}
+      
       {activeTab === "calendar" && <CalendarSection matches={matches} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
 
       {showMatchModal && (

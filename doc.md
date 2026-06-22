@@ -125,7 +125,7 @@ npx tsx scripts/seed.ts
 
 ---
 
-## 🔧 Полезные команды
+##  Полезные команды
 
 ### Docker
 
@@ -319,3 +319,15 @@ npx prisma generate --schema=./src/lib/schema.prisma
 - [ ] Войти как `admin_vlad` / `admin123`
 
 ---
+
+## Подключение к DBeaver
+
+| Параметр | Значение |
+|----------|----------|
+| Host | `localhost` |
+| Port | **`5433`** |
+| Database | `football_db` |
+| Username | `football` |
+| Password | `football_pass` |
+
+

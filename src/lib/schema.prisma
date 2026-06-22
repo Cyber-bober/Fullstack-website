@@ -131,3 +131,14 @@ model SupportMessage {
   isAdmin   Boolean       @default(false)
   createdAt DateTime      @default(now())
 }
+
+model LiveStream {
+  id          String   @id @default(uuid())
+  title       String   @default("Прямая трансляция")
+  vkVideoUrl  String   // Ссылка на видео ВК (iframe src)
+  vkGroupUrl  String   // Ссылка на группу ВК
+  tgGroupUrl  String   // Ссылка на ТГ канал
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
