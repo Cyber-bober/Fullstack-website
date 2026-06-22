@@ -4568,3 +4568,175 @@ input[type="time"]::-webkit-datetime-edit-hour-field {
   justify-content: flex-end;
   margin-top: 24px;
 }
+
+/* ConfirmModal */
+.confirm-modal {
+  max-width: 450px;
+  text-align: center;
+}
+
+.confirm-modal-title {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.confirm-modal-message {
+  margin: 0 0 24px 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-warning {
+  background: rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: white;
+}
+
+.btn-warning:hover {
+  background: rgba(245, 158, 11, 0.5);
+}
+
+/* Password toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.password-toggle-icon:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Темы */
+:root[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+}
+
+:root[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="light"] {
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+  color: #111827;
+}
+
+body[data-theme="light"] .glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+body[data-theme="light"] .glass-effect:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+body[data-theme="light"] input,
+body[data-theme="light"] textarea,
+body[data-theme="light"] select {
+  background: rgba(255, 255, 255, 0.9);
+  color: #111827;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme="light"] label {
+  color: #374151;
+}
+
+body[data-theme="light"] .text-gray,
+body[data-theme="light"] .news-meta,
+body[data-theme="light"] .empty-text {
+  color: #6b7280;
+}
+
+body[data-theme="light"] .sidebar {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+body[data-theme="light"] .sidebar-link,
+body[data-theme="light"] .sidebar-btn {
+  color: #374151;
+}
+
+body[data-theme="light"] .footer {
+  background: rgba(255, 255, 255, 0.5);
+  color: #374151;
+}
+
+body[data-theme="light"] .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+}
+
+body[data-theme="light"] .form-group label {
+  color: #374151;
+}
+
+body[data-theme="light"] .news-title,
+body[data-theme="light"] .section-title,
+body[data-theme="light"] .home-title {
+  color: #111827;
+}
+
+/* Theme switcher */
+.theme-switcher {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.theme-option {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.theme-option.active {
+  border-color: #0160ce;
+  background: rgba(1, 96, 206, 0.2);
+}
+
+.theme-option:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+}

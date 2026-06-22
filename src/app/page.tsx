@@ -1,4 +1,3 @@
-// src/app/page.tsx
 "use client";
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,6 +6,7 @@ import { LiveSection } from "@/components/ui/LiveSection";
 import { CalendarSection } from "@/components/ui/CalendarSection";
 import { LiveStreamSection } from "@/components/ui/LiveStreamSection";
 import Toast from "@/components/ui/Toast";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { NewsPost, Match } from "@/types/page";
 
 function HomePageContent() {
@@ -27,6 +27,7 @@ function HomePageContent() {
   const [matchForm, setMatchForm] = useState({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
   const [creatingMatch, setCreatingMatch] = useState(false);
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
+  const [confirmDeleteMatchId, setConfirmDeleteMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -72,11 +73,15 @@ function HomePageContent() {
     setNewsData(prev => prev ? { ...prev, data: newPosts } : null);
   }, []);
 
-  const handleDeleteMatch = async (id: string) => {
-    if (!confirm("Вы уверены, что хотите удалить этот матч?")) return;
-    setDeletingMatchId(id);
+  const handleDeleteMatch = (id: string) => {
+    setConfirmDeleteMatchId(id);
+  };
+
+  const confirmDeleteMatch = async () => {
+    if (!confirmDeleteMatchId) return;
+    setDeletingMatchId(confirmDeleteMatchId);
     try {
-      const res = await fetch(`/api/matches?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/matches?id=${confirmDeleteMatchId}`, { method: "DELETE" });
       if (res.ok) {
         setToast({ msg: "Матч успешно удален!", type: "success" });
         const mRes = await fetch("/api/matches");
@@ -86,7 +91,10 @@ function HomePageContent() {
         setToast({ msg: err.error || "Ошибка удаления", type: "error" });
       }
     } catch { setToast({ msg: "Ошибка сети", type: "error" }); }
-    finally { setDeletingMatchId(null); }
+    finally { 
+      setDeletingMatchId(null); 
+      setConfirmDeleteMatchId(null);
+    }
   };
 
   const handleCreateMatch = async (e: React.FormEvent) => {
@@ -98,18 +106,32 @@ function HomePageContent() {
     setCreatingMatch(true);
     try {
       const dateStr = matchForm.date;
-      const [datePart, timePart] = dateStr.split('T');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const [hours, minutes] = timePart.split(':').map(Number);
+      if (!dateStr) {
+        setToast({ msg: "Выберите дату матча", type: "error" });
+        setCreatingMatch(false);
+        return;
+      }
       
-      const localDate = new Date(year, month - 1, day, hours, minutes);
+      let localDate: Date;
+      
+      if (dateStr.includes('T')) {
+        const [datePart, timePart] = dateStr.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        const [hours, minutes] = (timePart || '10:00').split(':').map(Number);
+        localDate = new Date(year, month - 1, day, hours || 10, minutes || 0);
+      } else {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        localDate = new Date(year, month - 1, day, 10, 0);
+      }
       
       const res = await fetch("/api/matches", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({
-          ...matchForm,
-          date: localDate.toISOString()
+          homeTeamId: matchForm.homeTeamId,
+          awayTeamId: matchForm.awayTeamId,
+          date: localDate.toISOString(),
+          venue: matchForm.venue,
         })
       });
       if (res.ok) {
@@ -122,7 +144,8 @@ function HomePageContent() {
         const err = await res.json(); 
         setToast({ msg: err.error || "Ошибка создания", type: "error" }); 
       }
-    } catch { 
+    } catch (err) {
+      console.error("Ошибка создания матча:", err);
       setToast({ msg: "Ошибка сети", type: "error" }); 
     } finally { 
       setCreatingMatch(false); 
@@ -301,6 +324,17 @@ function HomePageContent() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteMatchId}
+        title="Удалить матч?"
+        message="Вы уверены, что хотите удалить этот матч? Это действие нельзя отменить."
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+        onConfirm={confirmDeleteMatch}
+        onCancel={() => setConfirmDeleteMatchId(null)}
+      />
     </div>
   );
 }

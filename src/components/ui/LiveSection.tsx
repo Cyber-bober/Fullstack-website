@@ -1,17 +1,16 @@
-// src/components/ui/LiveSection.tsx
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import { Match, MatchEvent } from "@/types/LiveSection";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 interface Props {
   matches: Match[];
   userRole?: string | null;
-  onDeleteMatch?: (id: string) => Promise<void>;
+  onDeleteMatch?: (id: string) => void;
   deletingId?: string | null;
 }
 
-// Компонент кастомного Select
 const CustomMatchSelect = ({ 
   matches, 
   value, 
@@ -26,7 +25,6 @@ const CustomMatchSelect = ({
 
   const selectedMatch = matches.find(m => m.id === value);
 
-  // Форматирование даты в 24-часовом формате
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
@@ -98,6 +96,7 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [newEvent, setNewEvent] = useState({ minute: "", text: "" });
   const [loading, setLoading] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
   const isAdmin = userRole === "ADMIN";
@@ -146,10 +145,12 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
     }
   };
 
-  const handleClear = async () => {
+  const handleClear = () => {
     if (!selectedMatchId) return;
-    if (!confirm("Очистить все события трансляции?")) return;
+    setShowClearConfirm(true);
+  };
 
+  const confirmClear = async () => {
     try {
       const res = await fetch(`/api/match-events?matchId=${selectedMatchId}`, {
         method: "DELETE",
@@ -158,6 +159,8 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
       else alert("Ошибка очистки");
     } catch {
       alert("Ошибка сети");
+    } finally {
+      setShowClearConfirm(false);
     }
   };
 
@@ -165,7 +168,6 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
     (m) => m.status === "SCHEDULED" || m.status === "LIVE"
   );
 
-  // Форматирование времени в 24-часовом формате (ЧЧ:ММ:СС)
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const hours = date.getHours().toString().padStart(2, '0');
@@ -248,6 +250,17 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
           )}
         </>
       )}
+
+      <ConfirmModal
+        isOpen={showClearConfirm}
+        title="Очистить трансляцию?"
+        message="Все события текущей трансляции будут удалены. Это действие нельзя отменить."
+        confirmText="Очистить"
+        cancelText="Отмена"
+        variant="warning"
+        onConfirm={confirmClear}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

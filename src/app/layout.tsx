@@ -1,4 +1,3 @@
-// src/app/layout.tsx
 import "@/app/globals.css";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
@@ -14,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body className={inter.className}>
+    <html lang="ru" data-theme="dark">
+      <body className={inter.className} data-theme="dark">
         <Providers>
           <Nav />
           <div className="main-wrapper">
@@ -24,10 +23,28 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
-          
           <CookieBanner />
         </Providers>
+        <ThemeInitializer />
       </body>
     </html>
+  );
+}
+
+function ThemeInitializer() {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('theme') || 'dark';
+              document.documentElement.setAttribute('data-theme', theme);
+              document.body.setAttribute('data-theme', theme);
+            } catch (e) {}
+          })();
+        `,
+      }}
+    />
   );
 }

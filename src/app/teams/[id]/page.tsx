@@ -1,4 +1,3 @@
-// src/app/teams/[id]/page.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Card from "@/components/ui/Card";
@@ -6,6 +5,7 @@ import Toast from "@/components/ui/Toast";
 import ImageCropper from "@/components/ui/ImageCropper";
 import AddPlayerForm from "@/components/ui/AddPlayerForm";
 import PlayerCard from "@/components/ui/PlayerCard";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 interface TeamStats {
   description?: string;
@@ -53,6 +53,9 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const [confirmRemovePlayerId, setConfirmRemovePlayerId] = useState<string | null>(null);
+  const [confirmCaptainId, setConfirmCaptainId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTeamData();
@@ -250,28 +253,40 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleRemovePlayer = async (userId: string) => {
-    if (!team || !confirm("Удалить игрока из команды?")) return;
+  const handleRemovePlayer = (userId: string) => {
+    if (!team) return;
+    setConfirmRemovePlayerId(userId);
+  };
+
+  const confirmRemovePlayer = async () => {
+    if (!team || !confirmRemovePlayerId) return;
     try {
       const res = await fetch(`/api/teams/${team.id}/players`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: confirmRemovePlayerId }),
       });
       if (res.ok) await loadTeamData();
     } catch {}
+    setConfirmRemovePlayerId(null);
   };
 
-  const handleSetCaptain = async (userId: string) => {
-    if (!team || !confirm("Назначить капитаном?")) return;
+  const handleSetCaptain = (userId: string) => {
+    if (!team) return;
+    setConfirmCaptainId(userId);
+  };
+
+  const confirmSetCaptain = async () => {
+    if (!team || !confirmCaptainId) return;
     try {
       const res = await fetch(`/api/teams/${team.id}/captain`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: confirmCaptainId }),
       });
       if (res.ok) await loadTeamData();
     } catch {}
+    setConfirmCaptainId(null);
   };
 
   if (loading) return <div className="container"><p className="empty-text">Загрузка...</p></div>;
@@ -300,7 +315,6 @@ export default function TeamPage({ params }: { params: { id: string } }) {
       <div className="container team-profile-page">
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-        {/* Шапка команды */}
         <Card className="team-header-card glass-effect">
           <div className="team-header-content">
             <div className="team-avatar-section">
@@ -450,7 +464,6 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           )}
         </Card>
 
-        {/* Вкладки */}
         <div className="team-tabs glass-effect">
           <button 
             onClick={() => setActiveTab("roster")}
@@ -466,7 +479,6 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           </button>
         </div>
 
-        {/* Вкладка "Состав" */}
         {activeTab === "roster" && (
           <>
             {(isCaptain || isAdmin) && (
@@ -502,7 +514,6 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           </>
         )}
 
-        {/* Вкладка "Статистика" */}
         {activeTab === "stats" && (
           <Card className="glass-effect">
             <div className="stats-header">
@@ -601,6 +612,28 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           </Card>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!confirmRemovePlayerId}
+        title="Удалить игрока?"
+        message="Вы уверены, что хотите удалить игрока из команды?"
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+        onConfirm={confirmRemovePlayer}
+        onCancel={() => setConfirmRemovePlayerId(null)}
+      />
+
+      <ConfirmModal
+        isOpen={!!confirmCaptainId}
+        title="Назначить капитаном?"
+        message="Вы уверены, что хотите назначить этого игрока капитаном команды?"
+        confirmText="Назначить"
+        cancelText="Отмена"
+        variant="warning"
+        onConfirm={confirmSetCaptain}
+        onCancel={() => setConfirmCaptainId(null)}
+      />
     </>
   );
 }

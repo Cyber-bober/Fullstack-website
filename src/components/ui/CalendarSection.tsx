@@ -5,21 +5,10 @@ import { Match } from "@/types/CalendarSection";
 
 interface Props {
   matches: Match[];
-  onDeleteMatch?: (id: string) => Promise<void>;
+  onDeleteMatch?: (id: string) => void;
   deletingId?: string | null;
-}
-
-const getStatusText = (status: string) => {
-  switch (status) {
-    case "SCHEDULED": return "Запланирован";
-    case "LIVE": return "Идет сейчас";
-    case "FINISHED": return "Завершен";
-    case "CANCELLED": return "Отменен";
-    default: return status;
-  }
 };
 
-// ✅ Форматирование времени в 24-часовом формате
 const formatTime = (dateString: string) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -28,7 +17,6 @@ const formatTime = (dateString: string) => {
   return `${hours}:${minutes}`;
 };
 
-// ✅ Форматирование даты и времени
 const formatDateTime = (dateString: string) => {
   if (!dateString) return "";
   const date = new Date(dateString);
