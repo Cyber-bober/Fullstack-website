@@ -217,8 +217,8 @@ export default function SupportPage() {
               <form onSubmit={handleSendReply} style={{ display: 'flex', gap: 12 }}>
                 <input className="glass-effect" value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Сообщение..." required
                   style={{ flex: 1, padding: '12px 16px', fontSize: 14 }} />
-                <button type="submit" className="btn btn-primary glass-effect" style={{ padding: '0 24px' }} disabled={sending}>
-                  {sending ? '...' : '→'}
+                <button type="submit" className="btn btn-primary glass-effect support-send-btn" style={{ padding: '0 24px' }} disabled={sending}>
+                  {sending ? '...' : <img src="/uploads/svg/send.svg" alt="Отправить" className="svg send-icon" />}
                 </button>
               </form>
             </>

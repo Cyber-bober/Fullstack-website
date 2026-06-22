@@ -1053,24 +1053,6 @@ input[type="date"], input[type="time"] {
   overflow: hidden;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid var(--glass-border);
-}
-
-.sidebar::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: -1;
 }
 
 .sidebar:hover {
@@ -3946,4 +3928,561 @@ input[type="time"]::-webkit-datetime-edit-hour-field {
 
 .pd-consent-error.visible {
   display: block;
+}
+
+/* ============================================
+   SVG ICONS - DARK/LIGHT THEME
+   ============================================ */
+
+/* Базовые стили для всех SVG */
+.svg,
+svg {
+  fill: currentColor;
+  stroke: currentColor;
+  transition: fill 0.2s, stroke 0.2s;
+}
+
+/* Тёмная тема - белые иконки */
+body[data-theme="dark"] .svg,
+body[data-theme="dark"] svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Светлая тема - тёмные иконки */
+body[data-theme="light"] .svg,
+body[data-theme="light"] svg {
+  color: #374151 !important;
+  fill: #374151 !important;
+  stroke: #374151 !important;
+}
+
+/* Исключения: иконки с классами цветов */
+.svg.text-primary,
+svg.text-primary {
+  color: var(--color-primary) !important;
+  fill: var(--color-primary) !important;
+  stroke: var(--color-primary) !important;
+}
+
+.svg.text-danger,
+svg.text-danger {
+  color: var(--color-danger) !important;
+  fill: var(--color-danger) !important;
+  stroke: var(--color-danger) !important;
+}
+
+/* Специфичные места */
+body[data-theme="dark"] .sidebar .svg,
+body[data-theme="dark"] .sidebar svg,
+body[data-theme="dark"] .btn .svg,
+body[data-theme="dark"] .btn svg,
+body[data-theme="dark"] .card .svg,
+body[data-theme="dark"] .card svg,
+body[data-theme="dark"] .nav .svg,
+body[data-theme="dark"] .nav svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Иконки кнопок действий */
+body[data-theme="dark"] .btn-icon .svg,
+body[data-theme="dark"] .btn-icon svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Принудительно белые SVG в тёмной теме */
+[data-theme="dark"] img.svg,
+[data-theme="dark"] .sidebar-btn img.svg,
+[data-theme="dark"] .btn img.svg,
+[data-theme="dark"] .card img.svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Profile Page Layout */
+.profile-page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-header-card {
+  margin-bottom: 24px;
+  padding: 32px;
+}
+
+.profile-header-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.profile-avatar-section {
+  flex-shrink: 0;
+}
+
+.profile-avatar-section .avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border: 4px solid var(--glass-border);
+  box-shadow: 0 4px 12px var(--glass-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar-section .avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-section .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--text-secondary);
+  background: var(--glass-border);
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 32px !important;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.profile-username {
+  font-size: 16px;
+  color: var(--text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+.profile-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.detail-item {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-item .label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.detail-item .value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-name {
+    font-size: 24px !important;
+  }
+  
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Profile Edit Page - Fix Photo Size */
+.edit-profile-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Ограничение размера фото в форме редактирования */
+.edit-profile-form img,
+.edit-profile-container img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 16px auto;
+}
+
+/* Если фото в превью */
+.photo-preview-container img,
+.file-preview-container img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Аватар в форме редактирования */
+.avatar-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 16px auto;
+  border: 3px solid var(--glass-border);
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  margin: 0;
+}
+
+/* ============================================
+   SEND BUTTON ICON - БЕЛЫЕ ИКОНКИ
+   ============================================ */
+
+/* Базовые стили для иконок на кнопках */
+.btn .svg,
+.btn svg,
+button .svg,
+button svg {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Белые иконки на всех цветных кнопках */
+.btn-primary .svg,
+.btn-primary svg,
+.btn-danger .svg,
+.btn-danger svg,
+.btn-success .svg,
+.btn-success svg,
+.chat-send-btn .svg,
+.chat-send-btn svg,
+.support-send-btn .svg,
+.support-send-btn svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Если SVG inline (не img), используем fill/stroke */
+.btn-primary svg,
+.btn-danger svg,
+.btn-success svg,
+.chat-send-btn svg,
+.support-send-btn svg {
+  fill: white !important;
+  stroke: white !important;
+  color: white !important;
+}
+
+/* Для светлой темы — иконки тоже белые на цветных кнопках */
+body[data-theme="light"] .btn-primary .svg,
+body[data-theme="light"] .btn-primary svg,
+body[data-theme="light"] .chat-send-btn .svg,
+body[data-theme="light"] .support-send-btn .svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+body[data-theme="light"] .btn-primary svg,
+body[data-theme="light"] .chat-send-btn svg,
+body[data-theme="light"] .support-send-btn svg {
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Иконка send должна быть по центру */
+.chat-send-btn,
+.support-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-send-btn .svg,
+.support-send-btn .svg {
+  margin: 0;
+}
+
+/* ============================================
+   SVG ИКОНКИ - ТЕМА
+   ============================================ */
+
+/* Все SVG по умолчанию наследуют цвет текста */
+.svg {
+  color: inherit;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* Тёмная тема — белые иконки */
+body[data-theme="dark"] .svg {
+  color: #ffffff !important;
+}
+
+/* Светлая тема — тёмные иконки */
+body[data-theme="light"] .svg {
+  color: #374151 !important;
+}
+
+/* ИСКЛЮЧЕНИЯ: иконки на цветных кнопках всегда белые */
+.btn-primary .svg,
+.btn-danger .svg,
+.btn-success .svg,
+.chat-send-btn .svg,
+.support-send-btn .svg {
+  color: #ffffff !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Если SVG inline */
+.btn-primary svg,
+.btn-danger svg,
+.btn-success svg,
+.chat-send-btn svg,
+.support-send-btn svg {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* ============================================
+   NEON BORDER
+   ============================================ */
+
+.neon-border {
+  position: relative;
+  border-radius: 12px;
+}
+
+.neon-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 
+    0 0 5px rgba(255, 215, 0, 0.8),
+    0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Анимация */
+@keyframes neon-pulse {
+  0%, 100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.neon-border {
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   ЦВЕТА
+   ============================================ */
+
+.neon-1st::before {
+  background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+  box-shadow: 
+    0 0 5px rgba(255, 215, 0, 0.8),
+    0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.neon-2nd::before {
+  background: linear-gradient(90deg, #c0c0c0, #e8e8e8, #c0c0c0);
+  box-shadow: 
+    0 0 5px rgba(192, 192, 192, 0.8),
+    0 0 10px rgba(192, 192, 192, 0.5);
+}
+
+.neon-3rd::before {
+  background: linear-gradient(90deg, #cd7f32, #e8a87c, #cd7f32);
+  box-shadow: 
+    0 0 5px rgba(205, 127, 50, 0.8),
+    0 0 10px rgba(205, 127, 50, 0.5);
+}
+
+.neon-captain::before {
+  background: linear-gradient(90deg, #ffa500, #ffb347, #ffa500);
+  box-shadow: 
+    0 0 5px rgba(255, 165, 0, 0.8),
+    0 0 10px rgba(255, 165, 0, 0.5);
+}
+
+.neon-admin::before {
+  background: linear-gradient(90deg, #ff0040, #ff4d88, #ff0040);
+  box-shadow: 
+    0 0 5px rgba(255, 0, 64, 0.8),
+    0 0 10px rgba(255, 0, 64, 0.5);
+}
+
+.neon-editor::before {
+  background: linear-gradient(90deg, #0066ff, #4da6ff, #0066ff);
+  box-shadow: 
+    0 0 5px rgba(0, 102, 255, 0.8),
+    0 0 10px rgba(0, 102, 255, 0.5);
+}
+
+/* ============================================
+   ДЛЯ ТАБЛИЦЫ КОМАНД
+   ============================================ */
+
+.teams-table-row.neon-1st,
+.teams-table-row.neon-2nd,
+.teams-table-row.neon-3rd {
+  position: relative;
+}
+
+.teams-table-row.neon-1st::before,
+.teams-table-row.neon-2nd::before,
+.teams-table-row.neon-3rd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ============================================
+   ДЛЯ ПРОФИЛЯ КОМАНДЫ
+   ============================================ */
+
+.team-header-card.neon-1st,
+.team-header-card.neon-2nd,
+.team-header-card.neon-3rd {
+  position: relative;
+}
+
+.team-header-card.neon-1st::before,
+.team-header-card.neon-2nd::before,
+.team-header-card.neon-3rd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ============================================
+   ДЛЯ ПРОФИЛЯ ИГРОКА
+   ============================================ */
+
+.profile-header-card.neon-admin,
+.profile-header-card.neon-editor,
+.profile-header-card.neon-captain {
+  position: relative;
+}
+
+.profile-header-card.neon-admin::before,
+.profile-header-card.neon-editor::before,
+.profile-header-card.neon-captain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ============================================
+   ДЛЯ КАРТОЧКИ ИГРОКА-КАПИТАНА
+   ============================================ */
+
+.team-player-card.neon-captain {
+  position: relative;
+}
+
+.team-player-card.neon-captain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(90deg, #ffa500, #ffb347, #ffa500);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 
+    0 0 5px rgba(255, 165, 0, 0.8),
+    0 0 10px rgba(255, 165, 0, 0.5);
 }

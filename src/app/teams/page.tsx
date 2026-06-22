@@ -1,4 +1,3 @@
-// src/app/teams/page.tsx
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
@@ -6,12 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 
-type Team = { 
-  id: string; 
-  name: string; 
-  logoUrl?: string | null; 
-  captain?: { fullName: string } | null; 
-  _count?: { players: number }; 
+type Team = {
+  id: string;
+  name: string;
+  logoUrl?: string | null;
+  captain?: { fullName: string } | null;
+  _count?: { players: number };
   rating?: number;
   globalIndex?: number;
 };
@@ -19,7 +18,7 @@ type Team = {
 function TeamsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
-  
+
   const [teamsData, setTeamsData] = useState<{ data: Team[]; meta: any } | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -44,11 +43,17 @@ function TeamsPageContent() {
         if (teamsRes.ok) {
           const data = await teamsRes.json();
           setTeamsData(data);
-        }
-        else setTeamsData({ data: [], meta: {} });
+        } else setTeamsData({ data: [], meta: {} });
 
-        if (sessionRes.ok) { const s = await sessionRes.json(); setUserRole(s?.user?.role || null); }
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+        if (sessionRes.ok) {
+          const s = await sessionRes.json();
+          setUserRole(s?.user?.role || null);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, [searchParams]);
@@ -71,30 +76,74 @@ function TeamsPageContent() {
     if (!newTeamName.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/teams/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newTeamName }) });
-      if (res.ok) { setNewTeamName(""); setShowCreateForm(false); router.push("?page=1"); }
-      else { const error = await res.json(); alert(error.error || "Ошибка создания команды"); }
-    } catch { alert("Ошибка сети"); } finally { setCreating(false); }
+      const res = await fetch("/api/teams/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newTeamName }),
+      });
+      if (res.ok) {
+        setNewTeamName("");
+        setShowCreateForm(false);
+        router.push("?page=1");
+      } else {
+        const error = await res.json();
+        alert(error.error || "Ошибка создания команды");
+      }
+    } catch {
+      alert("Ошибка сети");
+    } finally {
+      setCreating(false);
+    }
   };
 
   if (loading) return <p className="empty-text">Загрузка...</p>;
 
   return (
     <div className="container">
-      <div className="section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 className="home-title" style={{ margin: 0 }}>Команды</h1>
-        {userRole === "ADMIN" && <button className="btn btn-primary glass-effect" onClick={() => setShowCreateForm(!showCreateForm)}>{showCreateForm ? "Отмена" : "Создать команду"}</button>}
+      <div
+        className="section-header"
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}
+      >
+        <h1 className="home-title" style={{ margin: 0 }}>
+          Команды
+        </h1>
+        {userRole === "ADMIN" && (
+          <button
+            className="btn btn-primary glass-effect"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            {showCreateForm ? "Отмена" : "Создать команду"}
+          </button>
+        )}
       </div>
 
       <div className="search-bar glass-effect" style={{ marginBottom: "24px" }}>
-        <input type="text" placeholder="Поиск команд..." value={liveTeamQuery} onChange={(e) => setLiveTeamQuery(e.target.value)} className="search-input" />
+        <input
+          type="text"
+          placeholder="Поиск команд..."
+          value={liveTeamQuery}
+          onChange={(e) => setLiveTeamQuery(e.target.value)}
+          className="search-input"
+        />
       </div>
 
       {showCreateForm && (
         <Card className="form-card glass-effect" style={{ marginBottom: "24px" }}>
           <form onSubmit={handleCreateTeam}>
-            <div className="form-group"><label style={{ color: '#ffffff' }}>Название команды</label><input type="text" className="glass-effect" value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)} placeholder="Введите название команды" required /></div>
-            <button type="submit" className="btn btn-primary glass-effect" disabled={creating}>{creating ? "Создание..." : "Создать"}</button>
+            <div className="form-group">
+              <label style={{ color: "#ffffff" }}>Название команды</label>
+              <input
+                type="text"
+                className="glass-effect"
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                placeholder="Введите название команды"
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary glass-effect" disabled={creating}>
+              {creating ? "Создание..." : "Создать"}
+            </button>
           </form>
         </Card>
       )}
@@ -102,7 +151,10 @@ function TeamsPageContent() {
       {!teamsData?.data || teamsData.data.length === 0 ? (
         <p className="empty-text">Команды не найдены</p>
       ) : (
-        <Card className="glass-effect" style={{ padding: 0, overflow: "hidden", background: 'transparent', border: 'none', boxShadow: 'none' }}>
+        <Card
+          className="glass-effect"
+          style={{ padding: 0, overflow: "visible", background: "transparent", border: "none", boxShadow: "none" }}
+        >
           <div className="teams-table">
             <div className="teams-table-header">
               <div className="table-col position">№</div>
@@ -113,12 +165,22 @@ function TeamsPageContent() {
 
             {teamsData.data.map((team) => {
               const position = team.globalIndex || 0;
+              
+              // Определяем неоновый класс по позиции
+              let neonClass = "";
+              if (position === 1) neonClass = "neon-1st neon-border";
+              else if (position === 2) neonClass = "neon-2nd neon-border";
+              else if (position === 3) neonClass = "neon-3rd neon-border";
+
+              const rowClass = neonClass
+                ? `teams-table-row glass-effect ${neonClass}`
+                : "teams-table-row glass-effect";
 
               return (
-                <Link 
-                  key={team.id} 
+                <Link
+                  key={team.id}
                   href={`/teams/${team.id}`}
-                  className="teams-table-row glass-effect"
+                  className={rowClass}
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
                   <div className="table-col position">
@@ -131,9 +193,13 @@ function TeamsPageContent() {
                   <div className="table-col team">
                     <div className="team-logo-small">
                       {team.logoUrl ? (
-                        <img src={team.logoUrl} alt={team.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img
+                          src={team.logoUrl}
+                          alt={team.name}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
                       ) : (
-                        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#9ca3af' }}>
+                        <span style={{ fontSize: "14px", fontWeight: "bold", color: "#9ca3af" }}>
                           {team.name.charAt(0).toUpperCase()}
                         </span>
                       )}
@@ -149,7 +215,9 @@ function TeamsPageContent() {
         </Card>
       )}
 
-      {teamsData?.meta && <Pagination currentPage={teamsData.meta.page} totalPages={teamsData.meta.totalPages} />}
+      {teamsData?.meta && (
+        <Pagination currentPage={teamsData.meta.page} totalPages={teamsData.meta.totalPages} />
+      )}
     </div>
   );
 }

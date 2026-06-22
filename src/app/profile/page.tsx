@@ -1,75 +1,140 @@
-// src/app/profile/page.tsx
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Toast from "@/components/ui/Toast";
-import { UserProfile } from "@/types/profile";
+import Link from "next/link";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: "error" | "success" } | null>(null);
-  const [showFullPhoto, setShowFullPhoto] = useState(false);
 
   useEffect(() => {
-    fetch("/api/profile/me")
-      .then((res) => res.json())
-      .then((data) => {
-        if ((data as any).error) {
-          setToast({ message: (data as any).error, type: "error" });
-        } else {
-          setUser(data as UserProfile);
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setToast({ message: "Ошибка загрузки профиля", type: "error" });
-        setLoading(false);
-      });
+    loadProfile();
   }, []);
 
-  if (loading && !user) return <p className="empty-text">Загрузка...</p>;
+  const loadProfile = async () => {
+    try {
+      const res = await fetch("/api/profile/me");
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      }
+    } catch (err) {
+      console.error("Ошибка загрузки профиля:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container">
+        <p className="empty-text">Загрузка...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="container">
+        <p className="empty-text">Профиль не найден</p>
+      </div>
+    );
+  }
+
+  // Определяем неоновый класс по роли или статусу капитана
+  const getNeonClass = () => {
+    if (user.role === "ADMIN") return "neon-admin neon-border";
+    if (user.role === "EDITOR") return "neon-editor neon-border";
+    
+    // Проверяем, является ли пользователь капитаном своей команды
+    if (user.team && user.team.captainId === user.id) {
+      return "neon-captain neon-border";
+    }
+    
+    return "";
+  };
+
+  const neonClass = getNeonClass();
 
   return (
     <div className="profile-page-container">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {showFullPhoto && user?.photos?.[0] && (
-        <div className="full-photo-modal" onClick={() => setShowFullPhoto(false)}>
-          <img src={user.photos[0]} alt="Full Photo" onClick={(e) => e.stopPropagation()} />
-          <button className="close-modal-btn" onClick={() => setShowFullPhoto(false)}>×</button>
-        </div>
-      )}
+      <div className={`profile-header-card glass-effect ${neonClass}`}>
+        <div className="profile-header-content">
+          <div className="profile-avatar-section">
+            <div className="avatar-large">
+              {user.photos && user.photos.length > 0 ? (
+                <img src={user.photos[0]} alt={user.fullName} />
+              ) : (
+                <div className="avatar-placeholder">
+                  {user.fullName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+          </div>
 
-      <Card className="profile-header-card glass-effect">
-        <div className="profile-avatar-section">
-          <div 
-            className={`avatar-large ${user?.photos?.[0] ? "clickable-avatar" : ""}`} 
-            onClick={() => user?.photos?.[0] && setShowFullPhoto(true)} 
-            title="Нажми, чтобы посмотреть полное фото"
-          >
-            {user?.photos?.[0] ? (
-              <img src={user.photos[0]} alt="Avatar" />
-            ) : (
-              user?.fullName?.[0]?.toUpperCase() || "?"
-            )}
-          </div>
           <div className="profile-info">
-            <h1>{user?.fullName || "Пользователь"}</h1>
-            <p className="username">@{user?.username || "unknown"}</p>
+            <h1 className="profile-name">{user.fullName}</h1>
+            <p className="profile-username">@{user.username}</p>
+            {user.role && (
+              <p className="profile-role" style={{ 
+                fontSize: "14px", 
+                color: user.role === "ADMIN" ? "#ff0040" : user.role === "EDITOR" ? "#0066ff" : "#9ca3af",
+                marginBottom: "12px" 
+              }}>
+                {user.role === "ADMIN" ? " Администратор" : user.role === "EDITOR" ? "🔵 Редактор" : "Пользователь"}
+              </p>
+            )}
+            <Link href="/profile/edit" className="btn btn-primary glass-effect">
+              Редактировать профиль
+            </Link>
           </div>
         </div>
-        <Link href="/profile/edit" className="btn btn-primary glass-effect">Редактировать профиль</Link>
-      </Card>
+      </div>
 
       <div className="profile-details-grid">
-        <div className="detail-item glass-effect"><span className="label">Дата рождения</span><span className="value">{user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : "—"}</span></div>
-        <div className="detail-item glass-effect"><span className="label">Город</span><span className="value">{user?.city || "—"}</span></div>
-        <div className="detail-item glass-effect"><span className="label">Позиция</span><span className="value">{user?.position || "—"}</span></div>
-        <div className="detail-item glass-effect"><span className="label">Команда</span><span className="value">{user?.team?.name || "—"}</span></div>
-        <div className="detail-item glass-effect"><span className="label">Рост</span><span className="value">{user?.height ? `${user.height} см` : "—"}</span></div>
-        <div className="detail-item glass-effect"><span className="label">Вес</span><span className="value">{user?.weight ? `${user.weight} кг` : "—"}</span></div>
+        <Card className="detail-item glass-effect">
+          <span className="label">Дата рождения</span>
+          <span className="value">
+            {user.birthDate ? new Date(user.birthDate).toLocaleDateString("ru-RU") : "—"}
+          </span>
+        </Card>
+
+        <Card className="detail-item glass-effect">
+          <span className="label">Город</span>
+          <span className="value">{user.city || "—"}</span>
+        </Card>
+
+        <Card className="detail-item glass-effect">
+          <span className="label">Позиция</span>
+          <span className="value">{user.position || "—"}</span>
+        </Card>
+
+        <Card className="detail-item glass-effect">
+          <span className="label">Команда</span>
+          <span className="value">
+            {user.team ? (
+              <Link href={`/teams/${user.team.id}`} className="text-primary">
+                {user.team.name}
+              </Link>
+            ) : (
+              "—"
+            )}
+          </span>
+        </Card>
+
+        <Card className="detail-item glass-effect">
+          <span className="label">Рост</span>
+          <span className="value">{user.height ? `${user.height} см` : "—"}</span>
+        </Card>
+
+        <Card className="detail-item glass-effect">
+          <span className="label">Вес</span>
+          <span className="value">{user.weight ? `${user.weight} кг` : "—"}</span>
+        </Card>
       </div>
     </div>
   );

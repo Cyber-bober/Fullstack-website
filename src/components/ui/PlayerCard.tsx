@@ -1,5 +1,3 @@
-//src/components/ui/PlayerCard.tsx
-
 "use client";
 import Link from "next/link";
 import { PlayerCardProps } from "@/types/PlayerCard";
@@ -11,8 +9,13 @@ export default function PlayerCard({
   onSetCaptain,
   onRemovePlayer,
 }: PlayerCardProps) {
+  const neonClass = player.isCaptain ? "neon-captain neon-border" : "";
+
   return (
-    <div className="team-player-card glass-effect" style={{ position: "relative" }}>
+    <div 
+      className={`team-player-card glass-effect ${neonClass}`}
+      style={{ position: "relative" }}
+    >
       <Link
         href={`/profile/${player.id}`}
         className="player-link"

@@ -210,7 +210,9 @@ export default function ChatPage() {
               </div>
               <form className="chat-input-form" onSubmit={sendMessage}>
                 <input type="text" className="chat-input glass-effect" placeholder="Сообщение..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                <button type="submit" className="btn btn-primary glass-effect chat-send-btn" disabled={!newMessage.trim()}>→</button>
+                <button type="submit" className="btn btn-primary glass-effect chat-send-btn" disabled={!newMessage.trim()}>
+                  <img src="/uploads/svg/send.svg" alt="Отправить" className="svg send-icon" />
+                </button>
               </form>
             </>
           ) : (
