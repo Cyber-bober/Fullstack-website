@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import { NewsPost, Props } from "@/types/NewsSection"; 
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 interface ExtendedProps extends Props {
   currentUserId?: string | null;
@@ -15,6 +16,7 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -83,22 +85,27 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Удалить новость?")) return;
-    setDeletingId(id);
+  const handleDelete = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    setDeletingId(confirmDeleteId);
     try {
-      const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/news/${confirmDeleteId}`, { method: "DELETE" });
       if (res.ok) {
-        const updated = localNews.filter(p => p.id !== id);
+        const updated = localNews.filter(p => p.id !== confirmDeleteId);
         setLocalNews(updated);
         setNews(updated);
       } else {
-        alert("Не удалось удалить");
+        setError("Не удалось удалить");
       }
     } catch {
-      alert("Ошибка сети");
+      setError("Ошибка сети");
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -241,6 +248,17 @@ export function NewsSection({ news, setNews, userRole, currentUserId }: Extended
           );
         })
       )}
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Удалить новость?"
+        message="Вы уверены, что хотите удалить эту новость? Это действие нельзя отменить."
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

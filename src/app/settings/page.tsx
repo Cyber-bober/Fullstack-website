@@ -66,6 +66,9 @@ export default function SettingsPage() {
             <div 
               className={`theme-option glass-effect ${theme === "dark" ? "active" : ""}`}
               onClick={() => handleThemeChange("dark")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && handleThemeChange("dark")}
             >
               <MoonIcon />
               <span>Тёмная</span>
@@ -73,6 +76,9 @@ export default function SettingsPage() {
             <div 
               className={`theme-option glass-effect ${theme === "light" ? "active" : ""}`}
               onClick={() => handleThemeChange("light")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && handleThemeChange("light")}
             >
               <SunIcon />
               <span>Светлая</span>
@@ -97,15 +103,17 @@ export default function SettingsPage() {
                   onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
                   required 
                   autoComplete="current-password"
+                  id="current-password"
                 />
-                <span 
-                  className="password-toggle-icon" 
+                <button
+                  type="button"
+                  className="password-toggle-button"
                   onClick={() => setShowCurrentPass(!showCurrentPass)}
-                  role="button"
-                  tabIndex={0}
+                  aria-label={showCurrentPass ? "Скрыть пароль" : "Показать пароль"}
+                  tabIndex={-1}
                 >
                   {showCurrentPass ? <EyeOffIcon /> : <EyeIcon />}
-                </span>
+                </button>
               </div>
             </div>
             
@@ -120,15 +128,17 @@ export default function SettingsPage() {
                   required 
                   minLength={6}
                   autoComplete="new-password"
+                  id="new-password"
                 />
-                <span 
-                  className="password-toggle-icon" 
+                <button
+                  type="button"
+                  className="password-toggle-button"
                   onClick={() => setShowNewPass(!showNewPass)}
-                  role="button"
-                  tabIndex={0}
+                  aria-label={showNewPass ? "Скрыть пароль" : "Показать пароль"}
+                  tabIndex={-1}
                 >
                   {showNewPass ? <EyeOffIcon /> : <EyeIcon />}
-                </span>
+                </button>
               </div>
             </div>
             
