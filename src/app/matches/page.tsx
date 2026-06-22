@@ -1,8 +1,9 @@
-//src/app/matches/page.tsx
-
+// src/app/matches/page.tsx
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
+
+export const dynamic = 'force-dynamic';
 
 export default async function MatchesPage() {
   const matches = await prisma.match.findMany({

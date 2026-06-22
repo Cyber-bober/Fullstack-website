@@ -1,6 +1,6 @@
 // src/app/page.tsx
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NewsSection } from "@/components/ui/NewsSection";
 import { LiveSection } from "@/components/ui/LiveSection";
@@ -8,7 +8,7 @@ import { CalendarSection } from "@/components/ui/CalendarSection";
 import Toast from "@/components/ui/Toast";
 import { NewsPost, Match } from "@/types/page";
 
-export default function HomePage() {
+function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
   
@@ -163,7 +163,6 @@ export default function HomePage() {
     );
   };
 
-  // Вспомогательные функции для работы с временем
   const getHours = () => {
     if (!matchForm.date) return '10';
     const timePart = matchForm.date.split('T')[1] || '10:00';
@@ -230,7 +229,6 @@ export default function HomePage() {
                 </div>
               </div>
               
-              {/* ✅ РАЗДЕЛЬНЫЕ ПОЛЯ ДАТЫ И ВРЕМЕНИ (SELECT ДЛЯ ЧАСОВ И МИНУТ) */}
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label style={{ color: 'black' }}>Дата</label>
@@ -299,5 +297,13 @@ export default function HomePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="container"><p className="empty-text">Загрузка...</p></div>}>
+      <HomePageContent />
+    </Suspense>
   );
 }

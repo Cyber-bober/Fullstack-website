@@ -1,24 +1,20 @@
 FROM node:20-alpine
-
-# Устанавливаем OpenSSL (нужен для Prisma)
 RUN apk add --no-cache openssl
-
 WORKDIR /app
 
-# Копируем package.json
-COPY package*.json ./
-
-# Устанавливаем зависимости
-RUN npm ci
+# Копируем зависимости
+COPY package.json package-lock.json ./
+RUN npm install
 
 # Копируем весь код
 COPY . .
 
 # Генерируем Prisma Client
-RUN npx prisma generate
+RUN npx prisma generate --schema=./src/lib/schema.prisma
 
-# Открываем порты
-EXPOSE 3000 5555
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Запуск
-CMD ["npm", "run", "dev"]
+# Запускаем dev-сервер
+CMD ["sh", "-c", "npx --yes prisma@5.22.0 db push --schema=./src/lib/schema.prisma --accept-data-loss --skip-generate && npm run dev"]

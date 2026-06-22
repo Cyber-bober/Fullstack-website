@@ -1,6 +1,6 @@
 // src/app/teams/page.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
@@ -16,7 +16,7 @@ type Team = {
   globalIndex?: number;
 };
 
-export default function TeamsPage() {
+function TeamsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
   
@@ -151,5 +151,13 @@ export default function TeamsPage() {
 
       {teamsData?.meta && <Pagination currentPage={teamsData.meta.page} totalPages={teamsData.meta.totalPages} />}
     </div>
+  );
+}
+
+export default function TeamsPage() {
+  return (
+    <Suspense fallback={<div className="container"><p className="empty-text">Загрузка...</p></div>}>
+      <TeamsPageContent />
+    </Suspense>
   );
 }

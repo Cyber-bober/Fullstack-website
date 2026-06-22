@@ -20,14 +20,21 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: football-app
     ports:
       - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./scripts:/app/scripts
+      - ./prisma:/app/prisma
+      - ./package.json:/app/package.json
     environment:
       - DATABASE_URL=postgresql://football:football_pass@postgres:5432/football_db?schema=public
-      - NEXTAUTH_SECRET=3ZYE0pW+MVrzZRWY07LjBU/Cgbejik6/X61aAs/NTlY=
+      - NEXTAUTH_SECRET=Y9D8Rw+pOe8aaGyYi97xlYN43FXN/BcwSHVFUjLD1Pk=
       - NEXTAUTH_URL=http://localhost:3000
+      - WATCHPACK_POLLING=true
     depends_on:
       postgres:
         condition: service_healthy
