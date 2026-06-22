@@ -287,8 +287,8 @@ input[type="date"], input[type="time"] {
   overflow: hidden;
   border-radius: 22px;
   background: var(--glass-bg);
-  backdrop-filter: blur(35px) saturate(200%);
-  -webkit-backdrop-filter: blur(35px) saturate(200%);
+  backdrop-filter: blur(10px) saturate(200%);
+  -webkit-backdrop-filter: blur(10px) saturate(200%);
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px var(--glass-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -304,8 +304,8 @@ input[type="date"], input[type="time"] {
   overflow: hidden;
   border-radius: 22px;
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
   border: 1px solid var(--glass-border);
   box-shadow: 0 4px 16px var(--glass-shadow);
   transition: all 0.3s ease;
@@ -2136,7 +2136,7 @@ footer {
   max-height: 300px;
   overflow-y: auto;
   background: var(--bg-secondary);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 10px 40px var(--glass-shadow);
@@ -2214,7 +2214,7 @@ footer {
   max-height: 400px;
   overflow-y: auto;
   background: var(--bg-secondary);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 10px 40px var(--glass-shadow);
@@ -2910,8 +2910,8 @@ footer {
   padding: 32px;
   margin-bottom: 24px;
   background: var(--glass-bg) !important;
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
   border: 1px solid var(--glass-border) !important;
   box-shadow: 0 8px 32px var(--glass-shadow);
 }
@@ -3035,8 +3035,8 @@ footer {
   margin-bottom: 24px;
   padding: 16px;
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
   border-radius: 12px;
   border: 1px solid var(--glass-border);
 }
@@ -4485,4 +4485,190 @@ body[data-theme="light"] .svg {
   box-shadow: 
     0 0 5px rgba(255, 165, 0, 0.8),
     0 0 10px rgba(255, 165, 0, 0.5);
+}
+
+/* ============================================
+   MOBILE MENU & HAMBURGER BUTTON
+   ============================================ */
+
+/* Кнопка бургер */
+.mobile-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 32px;
+  height: 26px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 5px 6px;
+  z-index: 1001;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+.burger-line {
+  width: 100%;
+  height: 2.5px;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+  transform-origin: center;
+  display: block;
+}
+
+.burger-line.open:nth-child(1) {
+  transform: translateY(10.5px) rotate(45deg);
+}
+
+.burger-line.open:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.burger-line.open:nth-child(3) {
+  transform: translateY(-10.5px) rotate(-45deg);
+}
+
+/* Мобильное меню */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 280px;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1000;
+  transition: right 0.3s ease-in-out;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+
+.mobile-menu.open {
+  right: 0;
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 80px 16px 20px;
+  gap: 8px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.mobile-nav-item.active {
+  background: rgba(0, 255, 136, 0.15);
+  border-color: #00FF88;
+  color: #00FF88;
+}
+
+.mobile-nav-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* Разделитель */
+.mobile-nav-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
+}
+
+/* Кнопка выхода */
+.mobile-nav-logout {
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
+.mobile-nav-logout:hover {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Кнопка входа */
+.mobile-nav-login {
+  color: #00FF88;
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.mobile-nav-login:hover {
+  background: rgba(0, 255, 136, 0.1);
+}
+
+/* Затемнение фона */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Показываем бургер только на мобильных */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-menu {
+    display: block;
+  }
+
+  /* Уменьшаем blur для производительности */
+  .glass-effect {
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+  }
+
+  /* Отключаем тяжёлые анимации */
+  .neon-border {
+    animation: none !important;
+  }
+
+  .glass-effect:hover {
+    transform: none !important;
+  }
 }
