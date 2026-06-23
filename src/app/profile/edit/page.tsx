@@ -1,10 +1,10 @@
-// src/app/profile/edit/page.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Toast from "@/components/ui/Toast";
 import ImageCropper from "@/components/ui/ImageCropper";
+import DatePicker from "@/components/ui/DatePicker";
 
 const POSITIONS = ["Вратарь", "Защитник", "Полузащитник", "Нападающий", "Тренер", "Менеджер", "Болельщик"];
 
@@ -18,17 +18,13 @@ export default function EditProfilePage() {
   const [consentError, setConsentError] = useState(false);
   const [authError, setAuthError] = useState(false);
 
-  // Текущее фото из БД
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   
-  // Фото, которое пользователь выбрал и обрезал (еще не сохранено в БД)
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
   
-  // Флаг для удаления фото (если true, то при сохранении фото удалится из БД)
   const [shouldDeleteAvatar, setShouldDeleteAvatar] = useState(false);
   
-  // Состояние для окна кроппера
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +66,6 @@ export default function EditProfilePage() {
       });
   }, []);
 
-  // Выбор файла -> открытие кроппера
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -86,12 +81,11 @@ export default function EditProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  // Обрезка завершена -> сохраняем файл локально
   const handleCropComplete = async (croppedFile: File) => {
     setPendingAvatarFile(croppedFile);
     const previewUrl = URL.createObjectURL(croppedFile);
     setPendingAvatarPreview(previewUrl);
-    setShouldDeleteAvatar(false); // Если выбрали новое фото, отменяем флаг удаления
+    setShouldDeleteAvatar(false);
     
     setCropImageSrc(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -101,11 +95,10 @@ export default function EditProfilePage() {
     setCurrentAvatar(null);
     setPendingAvatarFile(null);
     setPendingAvatarPreview(null);
-    setShouldDeleteAvatar(true); // Помечаем, что нужно удалить фото из БД
+    setShouldDeleteAvatar(true);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Финальное сохранение ВСЕХ данных
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setConsentError(false);
@@ -120,7 +113,6 @@ export default function EditProfilePage() {
     try {
       let finalAvatarUrl: string | null = currentAvatar;
 
-      // 1. Если есть новое фото - загружаем его
       if (pendingAvatarFile) {
         const photoFormData = new FormData();
         photoFormData.append("photo", pendingAvatarFile);
@@ -138,7 +130,6 @@ export default function EditProfilePage() {
           throw new Error(err.error || "Ошибка загрузки фото");
         }
       } 
-      // 2. Если стоит флаг удаления - удаляем фото через API
       else if (shouldDeleteAvatar) {
         const deleteRes = await fetch("/api/profile/remove-photo", { 
           method: "POST" 
@@ -147,12 +138,10 @@ export default function EditProfilePage() {
         if (!deleteRes.ok) {
           const err = await deleteRes.json();
           console.error("Ошибка удаления фото:", err);
-          // Не прерываем выполнение, если удаление фото не критично
         }
         finalAvatarUrl = null;
       }
 
-      // Обновляем текстовые данные профиля
       const updateRes = await fetch("/api/profile/update", {
         method: "POST", 
         headers: { "Content-Type": "application/json" },
@@ -162,7 +151,6 @@ export default function EditProfilePage() {
       const updateData = await updateRes.json();
 
       if (updateRes.ok) {
-        // Синхронизируем локальное состояние
         setCurrentAvatar(finalAvatarUrl);
         setPendingAvatarFile(null);
         setPendingAvatarPreview(null);
@@ -199,8 +187,10 @@ export default function EditProfilePage() {
 
   if (loading) return <p className="empty-text" style={{ marginTop: '40px' }}>Загрузка...</p>;
 
-  // Определяем, какое фото показывать
   const displayAvatar = pendingAvatarPreview || currentAvatar;
+
+  // Максимальная дата для даты рождения - сегодня
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <>
@@ -232,7 +222,6 @@ export default function EditProfilePage() {
               </div>
               <div className="avatar-edit-overlay"> Изменить</div>
               
-              {/* Индикатор изменений */}
               {(pendingAvatarFile || shouldDeleteAvatar) && (
                 <div style={{ 
                   position: 'absolute', top: '-8px', right: '-8px', 
@@ -258,7 +247,6 @@ export default function EditProfilePage() {
                 {pendingAvatarFile ? "Новое фото выбрано." : shouldDeleteAvatar ? "Фото будет удалено." : "Нажми на фото, чтобы загрузить"}
               </p>
               
-              {/* КНОПКА УДАЛЕНИЯ */}
               {displayAvatar && !pendingAvatarFile && (
                 <button 
                   type="button"
@@ -273,7 +261,6 @@ export default function EditProfilePage() {
           </div>
 
           <form onSubmit={handleSubmit} className="edit-form">
-            {/* ... остальная форма без изменений ... */}
             <div className="form-group">
               <label>@username</label>
               <input 
@@ -292,8 +279,25 @@ export default function EditProfilePage() {
               {!usernameError && <small className="text-gray">Только латиница, цифры и _</small>}
             </div>
 
-            <div className="form-group"><label>Полное имя</label><input type="text" className="glass-effect" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} /></div>
-            <div className="form-group"><label>Город</label><input type="text" className="glass-effect" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} /></div>
+            <div className="form-group">
+              <label>Полное имя</label>
+              <input 
+                type="text" 
+                className="glass-effect" 
+                value={formData.fullName} 
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Город</label>
+              <input 
+                type="text" 
+                className="glass-effect" 
+                value={formData.city} 
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
+              />
+            </div>
 
             <div className="form-group">
               <label>Позиция</label>
@@ -303,9 +307,35 @@ export default function EditProfilePage() {
               </select>
             </div>
 
-            <div className="form-group"><label>Дата рождения</label><input type="date" className="glass-effect" value={formData.birthDate} onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })} /></div>
-            <div className="form-group"><label>Контакты</label><textarea className="glass-effect" value={formData.contacts} onChange={(e) => setFormData({ ...formData, contacts: e.target.value })} rows={3} /></div>
-            <div className="form-group"><label>Статистика</label><textarea className="glass-effect" value={formData.stats} onChange={(e) => setFormData({ ...formData, stats: e.target.value })} rows={3} /></div>
+            <div className="form-group">
+              <DatePicker
+                label="Дата рождения"
+                value={formData.birthDate}
+                onChange={(date) => setFormData({ ...formData, birthDate: date })}
+                placeholder="Выберите дату рождения"
+                maxDate={today}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Контакты</label>
+              <textarea 
+                className="glass-effect" 
+                value={formData.contacts} 
+                onChange={(e) => setFormData({ ...formData, contacts: e.target.value })} 
+                rows={3} 
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Статистика</label>
+              <textarea 
+                className="glass-effect" 
+                value={formData.stats} 
+                onChange={(e) => setFormData({ ...formData, stats: e.target.value })} 
+                rows={3} 
+              />
+            </div>
 
             <div className="pd-consent-wrapper">
               <input 

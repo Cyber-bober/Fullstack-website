@@ -4899,3 +4899,482 @@ body[data-theme="light"] .svg {
     padding-top: 60px !important;
   }
 }
+
+/* ============================================
+   DATEPICKER - КАСТОМНЫЙ КАЛЕНДАРЬ
+   ============================================ */
+
+.datepicker-container {
+  position: relative;
+  width: 100%;
+}
+
+.datepicker-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.datepicker-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.datepicker-input:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.datepicker-input.active {
+  border-color: #00FF88;
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+}
+
+.datepicker-value {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.datepicker-value:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+}
+
+.datepicker-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* Выпадающий календарь */
+.datepicker-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 9999;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  min-width: 280px;
+  max-width: 340px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Позиционирование снизу (по умолчанию) */
+.datepicker-dropdown.dropdown-bottom {
+  top: calc(100% + 8px);
+}
+
+/* Позиционирование сверху (если не хватает места снизу) */
+.datepicker-dropdown.dropdown-top {
+  bottom: calc(100% + 8px);
+}
+
+/* Шапка */
+.datepicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.datepicker-nav-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.datepicker-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #00FF88;
+  color: #00FF88;
+}
+
+.datepicker-month-year {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.datepicker-month-btn,
+.datepicker-year-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.datepicker-month-btn:hover,
+.datepicker-year-btn:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: #00FF88;
+  color: #00FF88;
+}
+
+/* Сетка месяцев */
+.datepicker-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.datepicker-month-option {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 10px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.datepicker-month-option:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: #00FF88;
+  color: #00FF88;
+}
+
+.datepicker-month-option.active {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: #00FF88;
+  color: #00FF88;
+  font-weight: 600;
+}
+
+/* Сетка годов */
+.datepicker-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding-right: 4px;
+}
+
+.datepicker-year-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.datepicker-year-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.datepicker-year-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.3);
+  border-radius: 3px;
+}
+
+.datepicker-year-option {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 8px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.datepicker-year-option:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: #00FF88;
+  color: #00FF88;
+}
+
+.datepicker-year-option.active {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: #00FF88;
+  color: #00FF88;
+  font-weight: 600;
+}
+
+/* Дни недели */
+.datepicker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.datepicker-weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px 0;
+  text-transform: uppercase;
+}
+
+/* Дни */
+.datepicker-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.datepicker-day {
+  aspect-ratio: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.datepicker-day:hover:not(.empty):not(.disabled) {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.datepicker-day.empty {
+  cursor: default;
+}
+
+.datepicker-day.today {
+  border-color: #00FF88;
+  color: #00FF88;
+  font-weight: 600;
+}
+
+.datepicker-day.selected {
+  background: #00FF88;
+  color: #0a1628;
+  font-weight: 700;
+  border-color: #00FF88;
+}
+
+.datepicker-day.selected.today {
+  background: #00FF88;
+  color: #0a1628;
+}
+
+.datepicker-day.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Футер */
+.datepicker-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.datepicker-today-btn {
+  width: 100%;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 8px;
+  color: #00FF88;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.datepicker-today-btn:hover {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: #00FF88;
+}
+
+/* ============================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   ============================================ */
+
+@media (max-width: 768px) {
+  .datepicker-dropdown {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    max-width: none !important;
+    width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    max-height: 75vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+    z-index: 99999;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Увеличиваем размеры для удобства на тач-устройствах */
+  .datepicker-day {
+    font-size: 14px;
+  }
+
+  .datepicker-month-btn,
+  .datepicker-year-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .datepicker-nav-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .datepicker-month-option,
+  .datepicker-year-option {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .datepicker-year-grid {
+    grid-template-columns: repeat(5, 1fr);
+    max-height: 240px;
+  }
+
+  .datepicker-month-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .datepicker-weekday {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+
+  .datepicker-today-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   ИСПРАВЛЕНИЯ ДЛЯ МОДАЛЬНЫХ ОКОН
+   ============================================ */
+
+/* Модалка должна позволять показывать dropdown */
+.modal-content {
+  overflow: visible !important;
+  position: relative;
+}
+
+.modal-overlay {
+  z-index: 1000;
+}
+
+/* На мобильных модалка снизу */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0;
+  }
+  
+  .modal-content {
+    max-height: 90vh;
+    border-radius: 20px 20px 0 0 !important;
+    margin: 0;
+    width: 100%;
+    overflow-y: auto;
+  }
+}
+
+/* ============================================
+   АДАПТАЦИЯ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ
+   ============================================ */
+
+@media (max-width: 480px) {
+  .datepicker-header {
+    gap: 2px;
+  }
+
+  .datepicker-month-year {
+    gap: 4px;
+  }
+
+  .datepicker-month-btn,
+  .datepicker-year-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .datepicker-nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .datepicker-day {
+    font-size: 13px;
+  }
+}

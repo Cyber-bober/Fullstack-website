@@ -7,6 +7,7 @@ import { CalendarSection } from "@/components/ui/CalendarSection";
 import { LiveStreamSection } from "@/components/ui/LiveStreamSection";
 import Toast from "@/components/ui/Toast";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import DatePicker from "@/components/ui/DatePicker";
 import { NewsPost, Match } from "@/types/page";
 
 function HomePageContent() {
@@ -24,12 +25,24 @@ function HomePageContent() {
 
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [teams, setTeams] = useState<any[]>([]);
-  const [matchForm, setMatchForm] = useState({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
+  
+  const [matchForm, setMatchForm] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    return {
+      homeTeamId: "",
+      awayTeamId: "",
+      date: `${year}-${month}-${day}T18:00`,
+      venue: ""
+    };
+  });
+  
   const [creatingMatch, setCreatingMatch] = useState(false);
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
   const [confirmDeleteMatchId, setConfirmDeleteMatchId] = useState<string | null>(null);
 
-  // Загрузка данных при монтировании
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -46,21 +59,17 @@ function HomePageContent() {
     loadData();
   }, []);
 
-  // ✅ НОВОЕ: Слушаем событие открытия модалки от мобильного хедера
   useEffect(() => {
     const handleOpenMatchModal = () => {
-      // Инициализируем форму текущей датой и временем
       const now = new Date();
       const year = now.getFullYear();
       const month = (now.getMonth() + 1).toString().padStart(2, '0');
       const day = now.getDate().toString().padStart(2, '0');
-      const hours = '18';
-      const minutes = '00';
       
       setMatchForm({
         homeTeamId: "",
         awayTeamId: "",
-        date: `${year}-${month}-${day}T${hours}:${minutes}`,
+        date: `${year}-${month}-${day}T18:00`,
         venue: ""
       });
       setShowMatchModal(true);
@@ -73,7 +82,6 @@ function HomePageContent() {
     };
   }, []);
 
-  // Загрузка новостей при переключении вкладки
   useEffect(() => {
     if (activeTab !== "news") return;
     const page = searchParams.get("page") || "1";
@@ -85,7 +93,6 @@ function HomePageContent() {
       .catch(() => setToast({ msg: "Не удалось загрузить новости", type: "error" }));
   }, [activeTab, searchParams]);
 
-  // Синхронизация поиска с URL
   useEffect(() => {
     const timer = setTimeout(() => {
       const currentQ = searchParams.get("q") || "";
@@ -127,19 +134,16 @@ function HomePageContent() {
     }
   };
 
-  // ✅ ИСПРАВЛЕННАЯ функция открытия модалки (с инициализацией даты)
   const openMatchModal = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
-    const hours = '18';
-    const minutes = '00';
     
     setMatchForm({
       homeTeamId: "",
       awayTeamId: "",
-      date: `${year}-${month}-${day}T${hours}:${minutes}`,
+      date: `${year}-${month}-${day}T18:00`,
       venue: ""
     });
     setShowMatchModal(true);
@@ -147,13 +151,14 @@ function HomePageContent() {
 
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (matchForm.homeTeamId === matchForm.awayTeamId) { 
       setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" }); 
       return; 
     }
     
     if (!matchForm.date) {
-      setToast({ msg: "Выберите дату матча", type: "error" });
+      setToast({ msg: "Дата матча не указана", type: "error" });
       return;
     }
     
@@ -189,12 +194,23 @@ function HomePageContent() {
           venue: matchForm.venue,
         })
       });
+      
       if (res.ok) {
         setToast({ msg: "Матч успешно создан!", type: "success" });
         setShowMatchModal(false);
         const mRes = await fetch("/api/matches");
         if (mRes.ok) setMatches(await mRes.json());
-        setMatchForm({ homeTeamId: "", awayTeamId: "", date: "", venue: "" });
+        
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        setMatchForm({ 
+          homeTeamId: "", 
+          awayTeamId: "", 
+          date: `${year}-${month}-${day}T18:00`,
+          venue: "" 
+        });
       } else { 
         const err = await res.json(); 
         setToast({ msg: err.error || "Ошибка создания", type: "error" }); 
@@ -244,18 +260,24 @@ function HomePageContent() {
 
   const getHours = () => {
     if (!matchForm.date) return '18';
-    const timePart = matchForm.date.split('T')[1] || '18:00';
-    return timePart.split(':')[0];
+    const timePart = matchForm.date.split('T')[1];
+    if (!timePart) return '18';
+    return timePart.split(':')[0] || '18';
   };
 
   const getMinutes = () => {
     if (!matchForm.date) return '00';
-    const timePart = matchForm.date.split('T')[1] || '18:00';
+    const timePart = matchForm.date.split('T')[1];
+    if (!timePart) return '00';
     return timePart.split(':')[1] || '00';
   };
 
   const getDatePart = () => {
-    return matchForm.date ? matchForm.date.split('T')[0] : new Date().toISOString().split('T')[0];
+    if (!matchForm.date) {
+      const now = new Date();
+      return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+    }
+    return matchForm.date.split('T')[0];
   };
 
   return (
@@ -321,22 +343,22 @@ function HomePageContent() {
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
-                  <label>Дата</label>
-                  <input 
-                    className="glass-effect" 
-                    type="date" 
-                    value={getDatePart()} 
-                    onChange={e => {
+                  <DatePicker
+                    label="Дата матча"
+                    value={getDatePart()}
+                    onChange={(date) => {
                       const hours = getHours();
                       const minutes = getMinutes();
-                      setMatchForm({...matchForm, date: `${e.target.value}T${hours}:${minutes}`});
-                    }} 
-                    required 
+                      setMatchForm({...matchForm, date: `${date}T${hours}:${minutes}`});
+                    }}
+                    placeholder="Выберите дату"
+                    minDate={new Date().toISOString().split('T')[0]}
                   />
                 </div>
+                
                 <div className="form-group">
                   <label>Время (24ч)</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <select 
                       className="glass-effect" 
                       value={getHours()}
@@ -345,7 +367,7 @@ function HomePageContent() {
                         const minutes = getMinutes();
                         setMatchForm({...matchForm, date: `${date}T${e.target.value}:${minutes}`});
                       }}
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, padding: '12px 8px' }}
                     >
                       {Array.from({length: 24}, (_, i) => (
                         <option key={i} value={i.toString().padStart(2, '0')}>
@@ -353,7 +375,7 @@ function HomePageContent() {
                         </option>
                       ))}
                     </select>
-                    <span style={{ alignSelf: 'center', color: 'black', fontWeight: 'bold' }}>:</span>
+                    <span style={{ color: 'white', fontWeight: 'bold' }}>:</span>
                     <select 
                       className="glass-effect" 
                       value={getMinutes()}
@@ -362,7 +384,7 @@ function HomePageContent() {
                         const hours = getHours();
                         setMatchForm({...matchForm, date: `${date}T${hours}:${e.target.value}`});
                       }}
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, padding: '12px 8px' }}
                     >
                       {Array.from({length: 60}, (_, i) => (
                         <option key={i} value={i.toString().padStart(2, '0')}>
