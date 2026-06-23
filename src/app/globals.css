@@ -4884,7 +4884,7 @@ body[data-theme="light"] .svg {
 }
 
 /* Показываем хедер только на мобильных */
-@media (max-width: 768px) {
+@media (pointer: coarse) {
   .mobile-header {
     display: flex;
   }
