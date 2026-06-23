@@ -242,14 +242,14 @@ function HomePageContent() {
             <form onSubmit={handleCreateMatch}>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
-                  <label style={{ color: 'black' }}>Хозяева</label>
+                  <label>Хозяева</label>
                   <select className="glass-effect" value={matchForm.homeTeamId} onChange={e => setMatchForm({...matchForm, homeTeamId: e.target.value})} required>
                     <option value="">Выберите...</option>
                     {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label style={{ color: 'black' }}>Гости</label>
+                  <label>Гости</label>
                   <select className="glass-effect" value={matchForm.awayTeamId} onChange={e => setMatchForm({...matchForm, awayTeamId: e.target.value})} required>
                     <option value="">Выберите...</option>
                     {teams.map(t => <option key={t.id} value={t.id} disabled={t.id === matchForm.homeTeamId}>{t.name}{t.id === matchForm.homeTeamId ? " (уже выбраны)" : ""}</option>)}
@@ -259,7 +259,7 @@ function HomePageContent() {
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
-                  <label style={{ color: 'black' }}>Дата</label>
+                  <label>Дата</label>
                   <input 
                     className="glass-effect" 
                     type="date" 
@@ -273,7 +273,7 @@ function HomePageContent() {
                   />
                 </div>
                 <div className="form-group">
-                  <label style={{ color: 'black' }}>Время (24ч)</label>
+                  <label>Время (24ч)</label>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <select 
                       className="glass-effect" 
@@ -313,7 +313,7 @@ function HomePageContent() {
               </div>
               
               <div className="form-group mb-4">
-                <label style={{ color: 'black' }}>Стадион</label>
+                <label>Стадион</label>
                 <input className="glass-effect" type="text" value={matchForm.venue} onChange={e => setMatchForm({...matchForm, venue: e.target.value})} placeholder="Название стадиона" />
               </div>
               <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>

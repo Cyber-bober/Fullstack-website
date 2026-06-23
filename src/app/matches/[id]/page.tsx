@@ -2,7 +2,6 @@
 import { prisma } from "@/lib/prisma";
 import Card from "@/components/ui/Card";
 
-// Вспомогательная функция для перевода статуса
 const getStatusText = (status: string) => {
   switch (status) {
     case "SCHEDULED": return "Запланирован";

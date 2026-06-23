@@ -124,7 +124,6 @@ export default function ChatPage() {
     const nextPage = page + 1;
     setPage(nextPage);
     await loadMessages(selectedUser.id, nextPage);
-    // Восстановить позицию скролла
     setTimeout(() => {
       if (messagesContainerRef.current) {
         const newScrollHeight = messagesContainerRef.current.scrollHeight;
