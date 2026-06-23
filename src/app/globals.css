@@ -78,8 +78,8 @@
   --color-info: #3b82f6;
   
   /* Glass effect */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(198, 198, 198, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.3);
   --glass-shadow: rgba(0, 0, 0, 0.1);
   
   /* Borders */
