@@ -391,6 +391,7 @@ input[type="date"], input[type="time"] {
   font-weight: 700;
   margin-bottom: 8px;
   color: var(--color-primary);
+  margin-right: 80px;
 }
 
 .news-content {
@@ -684,6 +685,14 @@ input[type="date"], input[type="time"] {
   font-weight: 600;
   font-size: 12px;
   color: var(--text-tertiary);
+}
+
+.day-header-glass {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  backdrop-filter: blur(10px) saturate(200%);
+  -webkit-backdrop-filter: blur(10px) saturate(200%);
 }
 
 .calendar-day {
@@ -1144,7 +1153,6 @@ input[type="date"], input[type="time"] {
   color: var(--text-secondary);
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-color);
 }
 
 .logout-btn {
@@ -1367,9 +1375,6 @@ footer {
   gap: 20px;
   overflow: hidden;
   min-height: 0;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
 }
 
 .chat-header {
@@ -1473,7 +1478,6 @@ footer {
   gap: 8px;
   flex-shrink: 0;
   padding: 16px;
-  border-top: 1px solid var(--border-color);
 }
 
 .chat-input {
@@ -1955,7 +1959,7 @@ footer {
    ============================================ */
 
 .toast-container {
-  position: fixed;
+  position: absolute;
   top: 24px;
   right: 24px;
   z-index: 9999;
@@ -3323,25 +3327,16 @@ label.text {
 .support-main {
   display: grid;
   grid-template-columns: 380px 1fr;
+  grid-template-rows: 60px 1fr;
+  grid-template-areas: 
+  "header right"
+  "list right";
   gap: 16px;
   flex: 1;
   padding: 16px;
   height: 100%;
   overflow: hidden;
   min-height: 0;
-}
-
-.support-left {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 16px;
 }
 
 .support-left-header {
@@ -3351,6 +3346,7 @@ label.text {
   align-items: center;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
+  grid-area: header;
 }
 
 .support-ticket-list {
@@ -3358,6 +3354,7 @@ label.text {
   overflow-y: auto;
   padding: 8px;
   min-height: 0;
+  grid-area: list;
 }
 
 .support-ticket-item {
@@ -3408,6 +3405,7 @@ label.text {
   backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border) !important;
   border-radius: 16px;
+  grid-area: right;
 }
 
 .support-chat-header {
@@ -4494,33 +4492,37 @@ body[data-theme="light"] .svg {
 /* Кнопка бургер */
 .mobile-menu-btn {
   display: none;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 32px;
-  height: 26px;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
-  padding: 5px 6px;
-  z-index: 1001;
+  padding: 0;
+  z-index: 10001;
   position: fixed;
   top: 20px;
-  right: 20px;
+  left: 20px;
+  flex-direction: column;
+  gap: 5px;
+  border: 2px solid var(--text-tertiary);
+  background: transparent;
 }
 
 .burger-line {
-  width: 100%;
+  width: 22px;
   height: 2.5px;
-  background: #ffffff;
   border-radius: 2px;
-  transition: all 0.3s ease-in-out;
+  background: var(--text-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
   display: block;
+  flex-shrink: 0;
 }
 
 .burger-line.open:nth-child(1) {
-  transform: translateY(10.5px) rotate(45deg);
+  transform: translateY(7.5px) rotate(45deg);
 }
 
 .burger-line.open:nth-child(2) {
@@ -4529,27 +4531,26 @@ body[data-theme="light"] .svg {
 }
 
 .burger-line.open:nth-child(3) {
-  transform: translateY(-10.5px) rotate(-45deg);
+  transform: translateY(-7.5px) rotate(-45deg);
 }
 
-/* Мобильное меню */
 .mobile-menu {
   position: fixed;
   top: 0;
-  right: -100%;
+  left: -100%; /* ← было: right: -100% */
   width: 280px;
-  height: 100vh;
+  height: 100dvh;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: 1000;
-  transition: right 0.3s ease-in-out;
-  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+  transition: left 0.3s ease-in-out; /* ← было: right */
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5); /* ← тень справа от меню */
   overflow-y: auto;
 }
 
 .mobile-menu.open {
-  right: 0;
+  left: 0;
 }
 
 .mobile-nav {
@@ -4577,11 +4578,6 @@ body[data-theme="light"] .svg {
   text-align: left;
 }
 
-.mobile-nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(4px);
-}
-
 .mobile-nav-item.active {
   background: rgba(0, 255, 136, 0.15);
   border-color: #00FF88;
@@ -4594,17 +4590,11 @@ body[data-theme="light"] .svg {
   flex-shrink: 0;
 }
 
-/* Разделитель */
-.mobile-nav-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 12px 0;
-}
-
 /* Кнопка выхода */
 .mobile-nav-logout {
   color: #ff4444;
   border-color: rgba(255, 68, 68, 0.3);
+  margin-top: 40px;
 }
 
 .mobile-nav-logout:hover {
@@ -4615,6 +4605,7 @@ body[data-theme="light"] .svg {
 .mobile-nav-login {
   color: #00FF88;
   border-color: rgba(0, 255, 136, 0.3);
+  margin-top: 40px;
 }
 
 .mobile-nav-login:hover {
@@ -4644,7 +4635,7 @@ body[data-theme="light"] .svg {
 }
 
 /* Показываем бургер только на мобильных */
-@media (max-width: 768px) {
+@media (pointer: coarse) {
   .mobile-menu-btn {
     display: flex;
   }

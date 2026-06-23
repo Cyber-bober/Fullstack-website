@@ -56,7 +56,7 @@ export default function MobileNav() {
       <button
         className="mobile-menu-btn"
         onClick={toggleMenu}
-        aria-label="Открыть меню"
+        aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
         aria-expanded={isOpen}
       >
         <span className={`burger-line ${isOpen ? "open" : ""}`}></span>
@@ -110,9 +110,6 @@ export default function MobileNav() {
             <img src="/uploads/svg/info.svg" alt="" className="mobile-nav-icon" />
             <span>Поддержка</span>
           </Link>
-
-          {/* Разделитель */}
-          <div className="mobile-nav-divider"></div>
 
           {/* Выйти/Войти */}
           {status === "loading" ? (

@@ -105,10 +105,10 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
         style={{
           maxWidth: '800px',
           width: '100%',
-          margin: '0 auto',
+          margin: '10px',
           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
           borderRadius: '20px',
-          padding: '24px',
+          padding: '5px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
         }}
       >

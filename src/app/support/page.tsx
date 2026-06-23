@@ -126,44 +126,42 @@ export default function SupportPage() {
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
 
       <div className="support-main">
-        <Card className="support-left">
-          <div className="support-left-header glass-effect">
-            <h3 style={{ margin: 0 }}>{userRole === 'ADMIN' ? 'Обращения в поддержку' : 'Мои обращения'}</h3>
-            {userRole !== 'ADMIN' && (
-              <button onClick={() => setIsNewTicketMode(!isNewTicketMode)} className="btn btn-primary glass-effect" style={{ padding: '4px 8px' }}>
-                {isNewTicketMode ? "Назад" : "Новое"}
-              </button>
-            )}
-          </div>
+        <div className="support-left-header glass-effect">
+          <h3 style={{ margin: 0 }}>{userRole === 'ADMIN' ? 'Обращения в поддержку' : 'Мои обращения'}</h3>
+          {userRole !== 'ADMIN' && (
+            <button onClick={() => setIsNewTicketMode(!isNewTicketMode)} className="btn btn-primary glass-effect" style={{ padding: '4px 8px' }}>
+              {isNewTicketMode ? "Назад" : "Новое"}
+            </button>
+          )}
+        </div>
 
-          <div className="glass-effect support-ticket-list">
-            {isNewTicketMode ? (
-              <form onSubmit={handleCreateTicket} style={{ padding: '16px' }}>
-                <div className="form-group"><label>Тема</label><input className="glass-effect" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} required /></div>
-                <div className="form-group"><label>Описание</label><textarea className="glass-effect" value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} required rows={4} /></div>
-                <button type="submit" className="btn btn-primary glass-effect w-full" disabled={sending}>Создать</button>
-              </form>
-            ) : tickets.length > 0 ? (
-              tickets.map((t: any) => {
-                const s = getStatusColor(t.status);
-                return (
-                  <div key={t.id} onClick={() => { setActiveTicket(t); loadMessages(t.id); }}
-                    className={`support-ticket-item glass-effect ${activeTicket?.id === t.id ? 'active' : ''}`}
-                    style={{ padding: '16px', cursor: 'pointer' }}>
-                    <div style={{ fontWeight: 600 }}>{t.subject}</div>
-                    <div className="support-text">{t.messages?.[0]?.text?.substring(0, 40) || '—'}</div>
-                    <div className="support-ticket-item-bottom">
-                      <span>{new Date(t.updatedAt).toLocaleDateString()}</span>
-                      <span style={{ background: s.bg, color: s.text, padding: '2px 8px', borderRadius: 12, fontSize: 12 }}>{s.label}</span>
-                    </div>
+        <div className="glass-effect support-ticket-list">
+          {isNewTicketMode ? (
+            <form onSubmit={handleCreateTicket} style={{ padding: '16px' }}>
+              <div className="form-group"><label>Тема</label><input className="glass-effect" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} required /></div>
+              <div className="form-group"><label>Описание</label><textarea className="glass-effect" value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} required rows={4} /></div>
+              <button type="submit" className="btn btn-primary glass-effect w-full" disabled={sending}>Создать</button>
+            </form>
+          ) : tickets.length > 0 ? (
+            tickets.map((t: any) => {
+              const s = getStatusColor(t.status);
+              return (
+                <div key={t.id} onClick={() => { setActiveTicket(t); loadMessages(t.id); }}
+                  className={`support-ticket-item glass-effect ${activeTicket?.id === t.id ? 'active' : ''}`}
+                  style={{ padding: '16px', cursor: 'pointer' }}>
+                  <div style={{ fontWeight: 600 }}>{t.subject}</div>
+                  <div className="support-text">{t.messages?.[0]?.text?.substring(0, 40) || '—'}</div>
+                  <div className="support-ticket-item-bottom">
+                    <span>{new Date(t.updatedAt).toLocaleDateString()}</span>
+                    <span style={{ background: s.bg, color: s.text, padding: '2px 8px', borderRadius: 12, fontSize: 12 }}>{s.label}</span>
                   </div>
-                );
-              })
-            ) : (
-              <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Нет обращений</div>
-            )}
-          </div>
-        </Card>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Нет обращений</div>
+          )}
+        </div>
 
         <Card className="support-right">
           {activeTicket ? (
