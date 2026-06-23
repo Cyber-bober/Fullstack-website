@@ -1,6 +1,6 @@
 import "@/app/globals.css";
 import Nav from "@/components/ui/Nav";
-import MobileNav from "@/components/ui/MobileNav";
+import MobileHeader from "@/components/ui/MobileHeader";
 import Footer from "@/components/ui/Footer";
 import Providers from "@/components/ui/Providers";
 import CookieBanner from "@/components/ui/CookieBanner";
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="ru" data-theme="dark">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
         <meta name="theme-color" content="#00FF88" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -45,7 +45,8 @@ export default function RootLayout({
 
         <Providers>
           <Nav />
-          <MobileNav />
+          <MobileHeader />
+          
           <div className="main-wrapper">
             <main className="main-content">
               {children}

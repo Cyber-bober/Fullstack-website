@@ -29,6 +29,7 @@ function HomePageContent() {
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
   const [confirmDeleteMatchId, setConfirmDeleteMatchId] = useState<string | null>(null);
 
+  // Загрузка данных при монтировании
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -45,6 +46,34 @@ function HomePageContent() {
     loadData();
   }, []);
 
+  // ✅ НОВОЕ: Слушаем событие открытия модалки от мобильного хедера
+  useEffect(() => {
+    const handleOpenMatchModal = () => {
+      // Инициализируем форму текущей датой и временем
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const hours = '18';
+      const minutes = '00';
+      
+      setMatchForm({
+        homeTeamId: "",
+        awayTeamId: "",
+        date: `${year}-${month}-${day}T${hours}:${minutes}`,
+        venue: ""
+      });
+      setShowMatchModal(true);
+    };
+
+    window.addEventListener('openMatchModal', handleOpenMatchModal);
+    
+    return () => {
+      window.removeEventListener('openMatchModal', handleOpenMatchModal);
+    };
+  }, []);
+
+  // Загрузка новостей при переключении вкладки
   useEffect(() => {
     if (activeTab !== "news") return;
     const page = searchParams.get("page") || "1";
@@ -56,6 +85,7 @@ function HomePageContent() {
       .catch(() => setToast({ msg: "Не удалось загрузить новости", type: "error" }));
   }, [activeTab, searchParams]);
 
+  // Синхронизация поиска с URL
   useEffect(() => {
     const timer = setTimeout(() => {
       const currentQ = searchParams.get("q") || "";
@@ -97,31 +127,56 @@ function HomePageContent() {
     }
   };
 
+  // ✅ ИСПРАВЛЕННАЯ функция открытия модалки (с инициализацией даты)
+  const openMatchModal = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = '18';
+    const minutes = '00';
+    
+    setMatchForm({
+      homeTeamId: "",
+      awayTeamId: "",
+      date: `${year}-${month}-${day}T${hours}:${minutes}`,
+      venue: ""
+    });
+    setShowMatchModal(true);
+  };
+
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (matchForm.homeTeamId === matchForm.awayTeamId) { 
       setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" }); 
       return; 
     }
+    
+    if (!matchForm.date) {
+      setToast({ msg: "Выберите дату матча", type: "error" });
+      return;
+    }
+    
     setCreatingMatch(true);
     try {
       const dateStr = matchForm.date;
-      if (!dateStr) {
-        setToast({ msg: "Выберите дату матча", type: "error" });
-        setCreatingMatch(false);
-        return;
-      }
       
       let localDate: Date;
       
       if (dateStr.includes('T')) {
         const [datePart, timePart] = dateStr.split('T');
         const [year, month, day] = datePart.split('-').map(Number);
-        const [hours, minutes] = (timePart || '10:00').split(':').map(Number);
-        localDate = new Date(year, month - 1, day, hours || 10, minutes || 0);
+        const [hours, minutes] = (timePart || '18:00').split(':').map(Number);
+        localDate = new Date(year, month - 1, day, hours || 18, minutes || 0);
       } else {
         const [year, month, day] = dateStr.split('-').map(Number);
-        localDate = new Date(year, month - 1, day, 10, 0);
+        localDate = new Date(year, month - 1, day, 18, 0);
+      }
+      
+      if (isNaN(localDate.getTime())) {
+        setToast({ msg: "Некорректная дата", type: "error" });
+        setCreatingMatch(false);
+        return;
       }
       
       const res = await fetch("/api/matches", { 
@@ -188,14 +243,14 @@ function HomePageContent() {
   };
 
   const getHours = () => {
-    if (!matchForm.date) return '10';
-    const timePart = matchForm.date.split('T')[1] || '10:00';
+    if (!matchForm.date) return '18';
+    const timePart = matchForm.date.split('T')[1] || '18:00';
     return timePart.split(':')[0];
   };
 
   const getMinutes = () => {
     if (!matchForm.date) return '00';
-    const timePart = matchForm.date.split('T')[1] || '10:00';
+    const timePart = matchForm.date.split('T')[1] || '18:00';
     return timePart.split(':')[1] || '00';
   };
 
@@ -209,7 +264,14 @@ function HomePageContent() {
       
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
-        {canManageMatches && <button className="btn btn-primary glass-effect" onClick={() => setShowMatchModal(true)}>Добавить матч</button>}
+        {canManageMatches && (
+          <button 
+            className="btn btn-primary glass-effect" 
+            onClick={openMatchModal}
+          >
+            Добавить матч
+          </button>
+        )}
       </div>
 
       <div className="tabs">

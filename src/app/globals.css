@@ -4663,3 +4663,239 @@ body[data-theme="light"] .svg {
     transform: none !important;
   }
 }
+
+/* ============================================
+   MOBILE HEADER
+   ============================================ */
+
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  padding: 0 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Кнопка бургер */
+.mobile-burger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.burger-line {
+  width: 100%;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+  transform-origin: center;
+}
+
+.burger-line.open:nth-child(1) {
+  transform: translateY(9px) rotate(45deg);
+}
+
+.burger-line.open:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.burger-line.open:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg);
+}
+
+/* Логотип */
+.mobile-logo {
+  text-decoration: none;
+  color: #00FF88;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.mobile-logo-text {
+  background: linear-gradient(90deg, #00FF88, #00CCFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Кнопка добавить матч */
+.mobile-add-match-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #00FF88, #00CC6A);
+  color: #0a1628;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-add-match-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+}
+
+.mobile-add-match-icon {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mobile-add-match-text {
+  font-size: 13px;
+}
+
+/* Мобильное меню */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 280px;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1001;
+  transition: left 0.3s ease-in-out;
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+
+.mobile-menu.open {
+  left: 0;
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 80px 16px 20px;
+  gap: 8px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.mobile-nav-item.active {
+  background: rgba(0, 255, 136, 0.15);
+  border-color: #00FF88;
+  color: #00FF88;
+}
+
+.mobile-nav-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.mobile-nav-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
+}
+
+.mobile-nav-logout {
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
+.mobile-nav-logout:hover {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.mobile-nav-login {
+  color: #00FF88;
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.mobile-nav-login:hover {
+  background: rgba(0, 255, 136, 0.1);
+}
+
+/* Затемнение фона */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Показываем хедер только на мобильных */
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  /* Скрываем обычный сайдбар */
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Добавляем отступ сверху для контента */
+  .main-content {
+    padding-top: 60px !important;
+  }
+}
