@@ -13,8 +13,8 @@
   --color-primary-dark: #0052a3;
   --color-primary-light: #3385d6;
   
-  --color-secondary: #663399;
-  --color-secondary-dark: #522980;
+  --color-secondary: #f50b0b;
+  --color-secondary-dark: #d90606;
   
   --color-accent: #008080;
   --color-accent-dark: #006666;
@@ -39,6 +39,7 @@
   --glass-bg: rgba(30, 41, 59, 0.7);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: rgba(0, 0, 0, 0.3);
+  --glass-hover: rgba(10, 21, 39, 0.5);
   
   /* Borders */
   --border-color: rgba(255, 255, 255, 0.1);
@@ -55,8 +56,8 @@
   --color-primary-dark: #2563eb;
   --color-primary-light: #60a5fa;
   
-  --color-secondary: #f59e0b;
-  --color-secondary-dark: #d97706;
+  --color-secondary: #f50b0b;
+  --color-secondary-dark: #d90606;
   
   --color-accent: #14b8a6;
   --color-accent-dark: #0d9488;
@@ -81,6 +82,7 @@
   --glass-bg: rgba(198, 198, 198, 0.7);
   --glass-border: rgba(0, 0, 0, 0.3);
   --glass-shadow: rgba(0, 0, 0, 0.1);
+  --glass-hover: rgba(176, 176, 176, 0.6);
   
   /* Borders */
   --border-color: rgba(0, 0, 0, 0.1);
@@ -104,6 +106,11 @@
 html {
   background: url('/uploads/img/bg-3.jpg') center center / cover no-repeat fixed;
   min-height: 100%;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  visibility: hidden;
 }
 
 body {
@@ -286,12 +293,16 @@ input[type="date"], input[type="time"] {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: var(--glass-bg);
+  background: var(--bg-secondary);
   backdrop-filter: blur(10px) saturate(200%);
   -webkit-backdrop-filter: blur(10px) saturate(200%);
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px var(--glass-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sidebar-btn.glass-effect {
+  background: var(--glass-bg);
 }
 
 .glass-effect:hover {
@@ -342,6 +353,7 @@ input[type="date"], input[type="time"] {
   margin-bottom: 36px;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: space-around;
 }
 
 .tab {
@@ -363,7 +375,7 @@ input[type="date"], input[type="time"] {
 }
 
 .tab:hover:not(.active) {
-  background: var(--glass-border);
+  background: var(--glass-hover);
 }
 
 .empty-text {
@@ -543,7 +555,7 @@ input[type="date"], input[type="time"] {
   padding: 10px 12px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -759,13 +771,14 @@ input[type="date"], input[type="time"] {
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(4px);
 }
 
 .modal-content {
+  top: 100px;
   background: var(--bg-secondary);
   padding: 24px;
   border-radius: 12px;
@@ -1098,7 +1111,7 @@ input[type="date"], input[type="time"] {
   color: var(--color-primary);
   transform: translateX(4px);
   text-decoration: none;
-  background: var(--glass-border);
+  background: var(--glass-hover);
 }
 
 .sidebar-btn.btn-primary {
@@ -1157,29 +1170,25 @@ input[type="date"], input[type="time"] {
 
 .logout-btn {
   justify-content: flex-start;
-  border: none;
   cursor: pointer;
-  width: 100%;
   font-size: 15px;
   padding: 5px 15px;
   color: var(--color-danger);
-  background: transparent;
+  background: var(--glass-bg);
 }
 
 .logout-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.4);
   transform: translateX(4px);
 }
 
 .login-btn {
   color: var(--color-primary);
   justify-content: flex-start;
-  border: none;
   cursor: pointer;
-  width: 100%;
   font-size: 15px;
   padding: 5px 15px;
-  background: transparent;
+  background: var(--glass-bg);
 }
 
 .login-btn:hover {
@@ -2145,6 +2154,11 @@ footer {
   border-radius: 8px;
   box-shadow: 0 10px 40px var(--glass-shadow);
   z-index: 1000;
+  scrollbar-width: none;
+}
+
+.custom-select-dropdown::-webkit-scrollbar {
+  visibility: hidden;
 }
 
 .custom-select-option {
@@ -4693,7 +4707,9 @@ body[data-theme="light"] .svg {
 
 .mobile-header-right {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -4703,11 +4719,13 @@ body[data-theme="light"] .svg {
   flex-direction: column;
   justify-content: space-between;
   width: 28px;
-  height: 20px;
+  height: 28px;
   background: transparent;
-  border: none;
+  border-radius: 50%;
+  border: 1px solid var(--bg-tertiary);
   cursor: pointer;
-  padding: 0;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .burger-line {
@@ -4762,6 +4780,7 @@ body[data-theme="light"] .svg {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-bottom: 0 !important;
 }
 
 .mobile-add-match-btn:hover {
@@ -5246,7 +5265,7 @@ body[data-theme="light"] .svg {
    МОБИЛЬНАЯ АДАПТАЦИЯ
    ============================================ */
 
-@media (max-width: 768px) {
+@media (pointer: coarse) {
   .datepicker-dropdown {
     position: fixed !important;
     left: 0 !important;
@@ -5334,7 +5353,7 @@ body[data-theme="light"] .svg {
 }
 
 /* На мобильных модалка снизу */
-@media (max-width: 768px) {
+@media (pointer: coarse) {
   .modal-overlay {
     align-items: flex-end !important;
     padding: 0;
@@ -5343,9 +5362,17 @@ body[data-theme="light"] .svg {
   .modal-content {
     max-height: 90vh;
     border-radius: 20px 20px 0 0 !important;
-    margin: 0;
+    margin: 0 0 85px;
     width: 100%;
     overflow-y: auto;
+  }
+
+  .datepicker-nav-btn {
+    visibility: hidden;
+  }
+
+  .tabs {
+    margin-top: 10px;
   }
 }
 
@@ -5353,7 +5380,7 @@ body[data-theme="light"] .svg {
    АДАПТАЦИЯ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ
    ============================================ */
 
-@media (max-width: 480px) {
+@media (pointer: coarse) {
   .datepicker-header {
     gap: 2px;
   }
@@ -5377,4 +5404,44 @@ body[data-theme="light"] .svg {
   .datepicker-day {
     font-size: 13px;
   }
+
+  .after-header {
+    display: none !important;
+  }
+
+  .tabs {
+    margin-top: 10px;
+  }
+}
+
+.after-header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 20px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-transition: background-color 5000s ease-in-out 0s;
+    transition: background-color 5000s ease-in-out 0s;
+
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+    box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+    
+    -webkit-text-fill-color: var(--text-primary);
+    color: var(--text-primary);
+
+    outline: none;
+    border: 1px solid var(--border-color);
+}
+
+.datepicker-dropdown {
+  scrollbar-width: none;
+}
+
+.datepicker-dropdown::-webkit-scrollbar {
+  visibility: hidden;
 }

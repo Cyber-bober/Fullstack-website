@@ -284,7 +284,7 @@ function HomePageContent() {
     <div className="container">
       {toast && <div className="toast-container"><Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} /></div>}
       
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div className="after-header">
         <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
         {canManageMatches && (
           <button 
