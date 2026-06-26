@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (username.length < 3) {
+    return NextResponse.json({ error: "Логин минимум 3 символа" }, { status: 400 });
+  }
+
   // Проверяем существующего пользователя
   const existingUser = await prisma.user.findUnique({
     where: { username },

@@ -330,4 +330,17 @@ npx prisma generate --schema=./src/lib/schema.prisma
 | Username | `football` |
 | Password | `football_pass` |
 
+## тесты
+```bash
+docker compose exec app pytest tests/ -v --html=report.html
 
+docker compose exec app sh -c "apk add --no-cache python3 py3-pip && python3 -m venv /venv && /venv/bin/pip install pytest requests pytest-html"
+
+
+# Локально (в папке проекта)
+npm test                                  #unit
+
+pytest tests/ -v                          # все тесты (api)
+pytest tests/ -v --html=report.html       # с HTML-отчётом
+
+```

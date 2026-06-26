@@ -9,6 +9,7 @@ postgres_data/
 .next/
 
 # environment
+venv/
 .env
 .env.local
 
