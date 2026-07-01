@@ -25,3 +25,19 @@ Thumbs.db
 .idea/.next
 node_modules
 src/lib/prisma/migrations/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Тесты
+report.html
+
+# Загрузки
+public/uploads/avatars/
+public/uploads/news/
+public/uploads/team-*
+
+# Prisma migrations
+prisma/migrations/
