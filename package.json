@@ -20,16 +20,19 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "amqplib": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "next": "^14.2.0",
     "next-auth": "^4.24.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-easy-crop": "^6.0.2",
+    "redis": "^6.1.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",

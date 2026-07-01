@@ -24,7 +24,7 @@ class TestAdmin:
     def test_admin_create_team(self):
         s, _ = login("admin_vlad", "admin123")
         r = s.post(f"{BASE}/api/teams/create", json={"name": f"Team_{int(time.time())}"})
-        assert r.status_code in [201, 400]
+        assert r.status_code == 201
 
 class TestUser:
     def test_user_login(self):
@@ -44,7 +44,7 @@ class TestEditor:
     def test_editor_create_news(self):
         s, _ = login("editor", "123456")
         r = s.post(f"{BASE}/api/news", json={"title": f"News_{int(time.time())}", "content": "Test"})
-        assert r.status_code in [201, 403]
+        assert r.status_code == 201
 
 class TestCaptain:
     def test_captain_login(self):
@@ -60,7 +60,7 @@ class TestLogout:
     def test_logout(self):
         s, _ = login("player1", "123456")
         r = s.post(f"{BASE}/api/auth/signout")
-        assert r.status_code in [200, 302, 404]
+        assert r.status_code == 200
 
     def test_after_logout_no_access(self):
         s, _ = login("player1", "123456")

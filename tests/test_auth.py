@@ -88,7 +88,7 @@ class TestLoginLogout:
             "password": registered_user["password"],
         })
         r = s.post(f"{BASE_URL}/api/auth/signout")
-        assert r.status_code in [200, 302, 404]
+        assert r.status_code == 200
 
     def test_after_logout_no_profile(self, registered_user):
         s = requests.Session()
@@ -118,7 +118,7 @@ class TestRoles:
 
     def test_admin_access(self, admin_session):
         r = admin_session.get(f"{BASE_URL}/api/admin/users")
-        assert r.status_code in [200, 404]
+        assert r.status_code == 200
 
     def test_user_cannot_access_admin(self, registered_user):
         s = requests.Session()

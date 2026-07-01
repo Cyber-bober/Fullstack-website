@@ -13,8 +13,8 @@ docker-compose ps
 ```
 
 Ожидаемый результат:
-- `football-postgres` → **Healthy**
-- `football-app` → **Up**
+- `football-postgres` - **Healthy**
+- `football-app` - **Up**
 
 ### 2. Синхронизация локальной среды
 
@@ -340,7 +340,21 @@ docker compose exec app sh -c "apk add --no-cache python3 py3-pip && python3 -m 
 # Локально (в папке проекта)
 npm test                                  #unit
 
+# Создать виртуальное окружение (один раз и добавь в гитигнор венв не забудь)
+python -m venv venv
+
+# Активировать
+source venv/bin/activate
+
+# Установить зависимости
+pip install pytest requests pytest-html pytest-xdist
+
+
 pytest tests/ -v                          # все тесты (api)
 pytest tests/ -v --html=report.html       # с HTML-отчётом
+
+# После работы — деактивировать
+deactivate
+
 
 ```

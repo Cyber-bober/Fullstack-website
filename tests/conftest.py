@@ -4,6 +4,11 @@ import time
 
 BASE_URL = "http://localhost:3000"
 
+@pytest.fixture(scope="session", autouse=True)
+def warmup(api):
+    api.get(f"{BASE_URL}/api/teams")  # прогреть БД
+    time.sleep(1)
+
 @pytest.fixture(scope="session")
 def api():
     for _ in range(30):
