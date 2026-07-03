@@ -337,24 +337,40 @@ docker compose exec app pytest tests/ -v --html=report.html
 docker compose exec app sh -c "apk add --no-cache python3 py3-pip && python3 -m venv /venv && /venv/bin/pip install pytest requests pytest-html"
 
 
-# Локально (в папке проекта)
-npm test                                  #unit
+# ТЕСТИРОВАНИЕ
 
-# Создать виртуальное окружение (один раз и добавь в гитигнор венв не забудь)
+# 1. Python-зависимости
 python -m venv venv
-
-# Активировать
 source venv/bin/activate
+pip install pytest requests pytest-html pytest-xdist jsonschema locust
 
-# Установить зависимости
-pip install pytest requests pytest-html pytest-xdist
+# 2. E2E (Playwright)
+npm install -D @playwright/test
+npx playwright install chromium firefox webkit
+
+# 3. Добавить venv в .gitignore
+echo "venv/" >> .gitignore
 
 
-pytest tests/ -v                          # все тесты (api)
-pytest tests/ -v --html=report.html       # с HTML-отчётом
+# ЗАПУСК ТЕСТОВ
 
-# После работы — деактивировать
+# Unit-тесты (Jest)
+npm test
+
+# Все API-тесты
+pytest tests/ -v
+
+# API-тесты с HTML-отчётом
+pytest tests/ -v --html=report.html
+
+
+# Конкретный файл
+pytest tests/test_auth.py -v
+
+# E2E (браузерные)
+npx playwright test tests/e2e/ --reporter=html
+
+
+# Деактивировать виртуальное окружение
 deactivate
-
-
 ```

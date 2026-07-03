@@ -1,4 +1,3 @@
-// src/app/api/news/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,6 +5,21 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { redis } from "@/lib/redis";
+
+const CACHE_TTL = 300; // 5 минут
+
+async function invalidateNewsCache() {
+  try {
+    const keys = await redis.keys("news:*");
+    if (keys.length > 0) {
+      await redis.del(keys);
+      console.log(`🗑️ Invalidated ${keys.length} news cache keys`);
+    }
+  } catch (err) {
+    console.error("News cache invalidation error:", err);
+  }
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -47,6 +61,9 @@ export async function POST(req: NextRequest) {
       include: { author: { select: { id: true, fullName: true, username: true } } },
     });
 
+    // Инвалидируем кэш после создания новости
+    await invalidateNewsCache();
+
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
     console.error("News create error:", error);
@@ -60,6 +77,21 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const query = searchParams.get("q") || "";
+    
+    const cacheKey = `news:list:page:${page}:limit:${limit}:q:${query}`;
+
+    // Пробуем кэш
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.log(`Cache hit: ${cacheKey}`);
+        return NextResponse.json(JSON.parse(cached));
+      }
+      console.log(`Cache miss: ${cacheKey}`);
+    } catch (err) {
+      console.error("Redis cache error:", err);
+    }
+
     const skip = (page - 1) * limit;
     const where = query
       ? { OR: [{ title: { contains: query, mode: Prisma.QueryMode.insensitive } }, { content: { contains: query, mode: Prisma.QueryMode.insensitive } }], isPublished: true }
@@ -70,7 +102,16 @@ export async function GET(req: NextRequest) {
       prisma.newsPost.count({ where }),
     ]);
 
-    return NextResponse.json({ data: posts, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } });
+    const result = { data: posts, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+
+    // Сохраняем в кэш
+    try {
+      await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result));
+    } catch (err) {
+      console.error("Redis cache set error:", err);
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("News load error:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

@@ -1,5 +1,3 @@
-// src/app/profile/ProfileClient.tsx
-
 "use client";
 import { useState } from "react";
 import Card from "@/components/ui/Card";
@@ -15,6 +13,7 @@ export default function ProfileClient({
 }) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const photos = user.photos || [];
+  const displayPhoto = photos[0] || null;
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,53 +42,100 @@ export default function ProfileClient({
 
   return (
     <div className="profile-container">
-      <Card className="profile-card">
-        <div className="photos-section">
-          {photos.map((url: string, i: number) => (
-            <div key={i} className="photo-link">
-              <img
-                src={url}
-                alt={`Фото ${i + 1}`}
-                className="profile-photo"
-                onClick={() => setSelectedImage(url)}
-                style={{ cursor: "pointer" }}
-              />
+      {/* Верхняя карточка с фото и основной информацией */}
+      <Card className="profile-header-card">
+        <div className="profile-header-content">
+          {/* Фото слева */}
+          <div className="profile-avatar-section">
+            <div 
+              className="profile-avatar-large"
+              onClick={() => displayPhoto && setSelectedImage(displayPhoto)}
+              style={{ cursor: displayPhoto ? 'pointer' : 'default' }}
+            >
+              {displayPhoto ? (
+                <img src={displayPhoto} alt="Avatar" />
+              ) : (
+                <div className="avatar-placeholder">
+                  {user.fullName?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
             </div>
-          ))}
-          {photos.length === 0 && (
-            <div className="profile-photo-empty" />
-          )}
-        </div>
+          </div>
 
-        <h1 className="profile-name">{user.fullName}</h1>
-        <p className="profile-username">@{user.username}</p>
-        
-        {/* Показываем ссылку на редактирование ТОЛЬКО в своём профиле */}
-        {isOwnProfile && (
-          <Link href="/profile/edit" className="edit-link">
-            Редактировать
-          </Link>
-        )}
+          {/* Информация справа */}
+          <div className="profile-info-section">
+            <div className="profile-header-info">
+              <h1 className="profile-name-compact">{user.fullName}</h1>
+              <p className="profile-username-compact">@{user.username}</p>
+              
+              {/* Быстрая информация в одну строку */}
+              <div className="profile-quick-info">
+                {user.position && (
+                  <span className="quick-info-item">
+                    <strong>Позиция:</strong> {user.position}
+                  </span>
+                )}
+                {user.city && (
+                  <span className="quick-info-item">
+                    <strong>Город:</strong> {user.city}
+                  </span>
+                )}
+                {user.team && (
+                  <span className="quick-info-item">
+                    <strong>Команда:</strong> {user.team.name}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Кнопка редактирования */}
+            {isOwnProfile && (
+              <Link href="/profile/edit" className="btn btn-primary edit-profile-btn">
+                Редактировать
+              </Link>
+            )}
+          </div>
+        </div>
       </Card>
 
-      <div className="info-grid">
-        <Card>
-          <strong>Дата рождения:</strong>{" "}
-          {user.birthDate ? new Date(user.birthDate).toLocaleDateString() : "—"}
+      {/* Детальная информация в сетке */}
+      <div className="profile-details-grid">
+        <Card className="detail-card">
+          <div className="detail-label">Дата рождения</div>
+          <div className="detail-value">
+            {user.birthDate ? new Date(user.birthDate).toLocaleDateString('ru-RU') : "—"}
+          </div>
         </Card>
-        <Card>
-          <strong>Город:</strong> {user.city || "—"}
-        </Card>
-        <Card>
-          <strong>Позиция:</strong> {user.position || "—"}
-        </Card>
-        <Card>
-          <strong>Команда:</strong> {user.team ? user.team.name : "—"}
-        </Card>
-      </div>
 
-      {user.contacts && <Card><strong>Контакты:</strong> {user.contacts}</Card>}
-      {user.stats && <Card><strong>Статистика:</strong> {user.stats}</Card>}
+        <Card className="detail-card">
+          <div className="detail-label">Город</div>
+          <div className="detail-value">{user.city || "—"}</div>
+        </Card>
+
+        <Card className="detail-card">
+          <div className="detail-label">Позиция</div>
+          <div className="detail-value">{user.position || "—"}</div>
+        </Card>
+
+        <Card className="detail-card">
+          <div className="detail-label">Команда</div>
+          <div className="detail-value">{user.team?.name || "—"}</div>
+        </Card>
+
+        {user.contacts && (
+          <Card className="detail-card full-width">
+            <div className="detail-label">Контакты</div>
+            <div className="detail-value">{user.contacts}</div>
+          </Card>
+        )}
+
+        {user.stats && (
+          <Card className="detail-card full-width">
+            <div className="detail-label">Статистика</div>
+            <div className="detail-value">{user.stats}</div>
+          </Card>
+        )}
+      </div>
 
       {/* Блок установки пароля для OAuth-пользователей */}
       {isOwnProfile && !user.passwordHash && (
