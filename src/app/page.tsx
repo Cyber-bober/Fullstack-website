@@ -5,6 +5,7 @@ import { NewsSection } from "@/components/ui/NewsSection";
 import { LiveSection } from "@/components/ui/LiveSection";
 import { CalendarSection } from "@/components/ui/CalendarSection";
 import { LiveStreamSection } from "@/components/ui/LiveStreamSection";
+import NewsForm from "@/components/ui/NewsForm";
 import Toast from "@/components/ui/Toast";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import DatePicker from "@/components/ui/DatePicker";
@@ -24,6 +25,8 @@ function HomePageContent() {
   const [toast, setToast] = useState<{ msg: string; type: "error" | "success" } | null>(null);
 
   const [showMatchModal, setShowMatchModal] = useState(false);
+  const [showNewsForm, setShowNewsForm] = useState(false);
+  const [editingNews, setEditingNews] = useState<NewsPost | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
   
   const [matchForm, setMatchForm] = useState(() => {
@@ -121,6 +124,46 @@ function HomePageContent() {
   const handleUpdateNews = useCallback((newPosts: NewsPost[]) => {
     setNewsData(prev => prev ? { ...prev, data: newPosts } : null);
   }, []);
+
+  const handleAddNews = () => {
+    setEditingNews(null);
+    setShowNewsForm(true);
+  };
+
+  const handleEditNews = (post: NewsPost) => {
+    setEditingNews(post);
+    setShowNewsForm(true);
+  };
+
+  const handleSaveNews = async (formData: FormData) => {
+    const isEditing = editingNews !== null;
+    const url = isEditing ? `/api/news?id=${editingNews!.id}` : "/api/news";
+    const method = isEditing ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Ошибка сохранения");
+    }
+
+    setToast({ 
+      msg: isEditing ? "Новость обновлена!" : "Новость создана!", 
+      type: "success" 
+    });
+    setShowNewsForm(false);
+    setEditingNews(null);
+
+    // Перезагружаем новости
+    const mRes = await fetch(`/api/news?page=1&limit=10`, { cache: 'no-store' });
+    if (mRes.ok) {
+      const data = await mRes.json();
+      setNewsData(data);
+    }
+  };
 
   const handleDeleteMatch = (id: string) => {
     setConfirmDeleteMatchId(id);
@@ -331,7 +374,14 @@ function HomePageContent() {
           <div className="search-bar glass-effect">
             <input type="text" className="search-input" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} />
           </div>
-          <NewsSection news={newsData?.data || []} setNews={handleUpdateNews} userRole={userRole} currentUserId={currentUserId ?? undefined} />
+          <NewsSection 
+            news={newsData?.data || []} 
+            setNews={handleUpdateNews} 
+            userRole={userRole} 
+            currentUserId={currentUserId ?? undefined}
+            onAdd={handleAddNews}
+            onEdit={handleEditNews}
+          />
           {renderPagination()}
         </>
       )}
@@ -443,6 +493,17 @@ function HomePageContent() {
             </form>
           </div>
         </div>
+      )}
+
+      {showNewsForm && (
+        <NewsForm
+          post={editingNews}
+          onSave={handleSaveNews}
+          onCancel={() => {
+            setShowNewsForm(false);
+            setEditingNews(null);
+          }}
+        />
       )}
 
       <ConfirmModal

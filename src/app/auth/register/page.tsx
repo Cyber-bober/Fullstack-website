@@ -1,5 +1,3 @@
-// src/app/auth/register/page.tsx
-
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +17,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setConsentError(false);
 
-    // Ручная проверка галочки
     if (!consentChecked) {
       setConsentError(true);
       return;
@@ -55,28 +52,32 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
             <label>@username</label>
-            <div className="glass-effect"><input 
-              type="text" 
-              className="glass-input"
-              value={formData.username} 
-              onChange={(e) => setFormData({...formData, username: e.target.value})} 
-              placeholder="ivan_petrov"
-              required 
-              minLength={3} 
-              maxLength={30} 
-              pattern="[a-zA-Z0-9_]+" 
-            /></div>
+            <div className="glass-effect">
+              <input 
+                type="text" 
+                className="glass-input"
+                value={formData.username} 
+                onChange={(e) => setFormData({...formData, username: e.target.value})} 
+                placeholder="ivan_petrov"
+                required 
+                minLength={3} 
+                maxLength={30} 
+                pattern="[a-zA-Z0-9_]+" 
+              />
+            </div>
           </div>
           <div className="form-group">
             <label>Полное имя</label>
-            <div className="glass-effect"><input 
-              type="text" 
-              className="glass-input"
-              value={formData.fullName} 
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
-              placeholder="Иван"
-              required 
-            /></div>
+            <div className="glass-effect">
+              <input 
+                type="text" 
+                className="glass-input"
+                value={formData.fullName} 
+                onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
+                placeholder="Иван"
+                required 
+              />
+            </div>
           </div>
           <div className="form-group">
             <label>Пароль</label>
@@ -89,18 +90,23 @@ export default function RegisterPage() {
                 placeholder="123456"
                 required 
                 minLength={6} 
+                style={{ paddingRight: "48px" }}
               />
-              <span className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)}>
+              <button 
+                type="button"
+                className="password-toggle-button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
                 {showPassword ? (
-                  <img src="/uploads/svg/eye-off.svg" className="svg"/>
+                  <img src="/uploads/svg/eye-off.svg" className="svg" alt="Скрыть"/>
                 ) : (
-                  <img src="/uploads/svg/eye-on.svg" className="svg"/>
+                  <img src="/uploads/svg/eye-on.svg" className="svg" alt="Показать"/>
                 )}
-              </span>
+              </button>
             </div>
           </div>
 
-          {/* ГАЛОЧКА СОГЛАСИЯ НА ПДн (БЕЗ required, с ручной проверкой) */}
           <div className="pd-consent-wrapper">
             <input 
               type="checkbox" 
@@ -121,7 +127,6 @@ export default function RegisterPage() {
             </label>
           </div>
           
-          {/* Красный текст ошибки вместо браузерного тултипа */}
           {consentError && (
             <span className="pd-consent-error visible">
               Необходимо согласие на обработку персональных данных

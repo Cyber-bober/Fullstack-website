@@ -23,4 +23,6 @@ export interface Props {
   setNews: (posts: NewsPost[]) => void; 
   userRole?: string | null;
   currentUserId?: string;
+  onEdit?: (post: NewsPost) => void;
+  onAdd?: () => void;
 }

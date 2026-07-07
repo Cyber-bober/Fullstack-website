@@ -1,384 +1,448 @@
 "use client";
 import { useState, useEffect } from "react";
 
-interface LiveStreamData {
-  isActive: boolean;
-  title: string;
-  vkVideoUrl: string;
-  vkGroupUrl: string;
-  tgGroupUrl: string;
+interface Match {
+  id: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeTeam: { id: string; name: string; logoUrl?: string | null };
+  awayTeam: { id: string; name: string; logoUrl?: string | null };
+  date: string;
+  status: string;
+  score?: string | null;
+  venue?: string | null;
+  stats?: string | null;
+}
+
+interface MatchEvent {
+  id: string;
+  matchId: string;
+  minute?: number | null;
+  text: string;
+  createdAt: string;
 }
 
 interface Props {
+  matches: Match[];
   userRole: string | null;
+  onDeleteMatch?: (id: string) => void;
+  deletingId?: string | null;
 }
 
-function extractVideoUrl(input: string): string {
-  if (!input) return "";
-  const trimmed = input.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed;
-  }
-  const iframeMatch = input.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-  if (iframeMatch && iframeMatch[1]) {
-    return iframeMatch[1];
-  }
-  return trimmed;
-}
+export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Props) {
+  const [selectedMatchId, setSelectedMatchId] = useState<string>("");
+  const [events, setEvents] = useState<MatchEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [eventText, setEventText] = useState("");
+  const [eventMinute, setEventMinute] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-function isValidVideoUrl(url: string): boolean {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    const isHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
-    if (!isHttp) return false;
-    const hostname = parsed.hostname.toLowerCase();
-    const isVK = hostname.includes("vk.com") || hostname.includes("vkvideo.ru") || hostname.includes("vk.ru");
-    if (!isVK) return false;
-    return parsed.pathname.includes("video_ext.php") || parsed.pathname.includes("/video") || parsed.pathname.includes("/embed");
-  } catch {
-    return false;
-  }
-}
+  const canManage = userRole === "ADMIN" || userRole === "EDITOR";
 
-export function LiveStreamSection({ userRole }: Props) {
-  const [stream, setStream] = useState<LiveStreamData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    vkVideoUrl: "",
-    vkGroupUrl: "",
-    tgGroupUrl: "",
-    isActive: true,
-  });
-  const [saving, setSaving] = useState(false);
-  const [urlError, setUrlError] = useState("");
+  const liveMatches = matches.filter(m => m.status === "LIVE");
+  const scheduledMatches = matches.filter(m => m.status === "SCHEDULED");
+  const finishedMatches = matches.filter(m => m.status === "FINISHED");
 
   useEffect(() => {
-    fetch("/api/livestream")
-      .then(res => res.json())
-      .then(data => {
-        setStream(data);
-        setForm({
-          title: data.title || "",
-          vkVideoUrl: data.vkVideoUrl || "",
-          vkGroupUrl: data.vkGroupUrl || "",
-          tgGroupUrl: data.tgGroupUrl || "",
-          isActive: data.isActive,
-        });
-        setIframeError(false);
-      })
-      .catch(err => console.error("Ошибка загрузки трансляции:", err))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUrlError("");
-
-    if (form.isActive && form.vkVideoUrl && !isValidVideoUrl(form.vkVideoUrl)) {
-      setUrlError("Неверный формат ссылки. Используйте ссылку вида: https://vk.com/video_ext.php?...");
+    if (!selectedMatchId) {
+      setEvents([]);
       return;
     }
 
-    setSaving(true);
+    const loadEvents = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/match-events?matchId=${selectedMatchId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setEvents(Array.isArray(data) ? data : []);
+        } else {
+          setEvents([]);
+        }
+      } catch (err) {
+        console.error("Ошибка загрузки событий:", err);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, [selectedMatchId]);
+
+  const handleAddEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMatchId || !eventText.trim()) return;
+
+    setSubmitting(true);
+    setError("");
+
     try {
-      const res = await fetch("/api/livestream", {
-        method: "PATCH",
+      const res = await fetch("/api/match-events", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          matchId: selectedMatchId,
+          text: eventText,
+          minute: eventMinute ? parseInt(eventMinute) : null,
+        }),
       });
+
       if (res.ok) {
-        const data = await res.json();
-        setStream(data);
-        setShowAdminPanel(false);
-        setIframeError(false);
+        const newEvent = await res.json();
+        setEvents(prev => [newEvent, ...prev]);
+        setEventText("");
+        setEventMinute("");
+        setShowEventForm(false);
       } else {
-        const error = await res.json();
-        alert("Ошибка: " + (error.error || "Неизвестная ошибка"));
+        const err = await res.json();
+        setError(err.error || "Ошибка добавления события");
       }
     } catch (err) {
-      console.error("Ошибка сохранения:", err);
-      alert("Ошибка сети");
+      setError("Ошибка сети");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
-  const openSettings = () => setShowAdminPanel(true);
-  const closeSettings = () => {
-    setShowAdminPanel(false);
-    setUrlError("");
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm("Удалить событие?")) return;
+
+    try {
+      const res = await fetch(`/api/match-events?eventId=${eventId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setEvents(prev => prev.filter(e => e.id !== eventId));
+      }
+    } catch (err) {
+      console.error("Ошибка удаления события:", err);
+    }
   };
 
-  if (loading) {
-    return <p className="empty-text">Загрузка трансляции...</p>;
-  }
+  const selectedMatch = matches.find(m => m.id === selectedMatchId);
 
-  const urlValid = isValidVideoUrl(stream?.vkVideoUrl || "");
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
-  if (!stream || !stream.isActive || !urlValid) {
-    return (
-      <div className="livestream-container">
-        <div className="glass-effect stream-placeholder">
-          <h2 className="section-title">Прямая трансляция</h2>
-          <p className="empty-text">
-            {!stream?.isActive ? "Сейчас нет активной трансляции" : "Ссылка на видео не настроена или невалидна"}
-          </p>
-          <div className="stream-placeholder-links">
-            <a href={stream?.vkGroupUrl || "#"} target="_blank" rel="noopener noreferrer" className="btn glass-btn">
-              Наша группа ВК
-            </a>
-            <a href={stream?.tgGroupUrl || "#"} target="_blank" rel="noopener noreferrer" className="btn glass-btn">
-              Наш Telegram
-            </a>
-          </div>
-          {userRole === "ADMIN" && (
-            <button onClick={openSettings} className="btn btn-primary glass-effect stream-setup-btn">
-              Настроить трансляцию
-            </button>
-          )}
-        </div>
-        {showAdminPanel && (
-          <AdminModal form={form} setForm={setForm} urlError={urlError} saving={saving} onSave={handleSave} onClose={closeSettings} />
-        )}
-      </div>
-    );
-  }
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "LIVE":
+        return <span className="status-badge status-live">LIVE</span>;
+      case "SCHEDULED":
+        return <span className="status-badge status-scheduled">Запланирован</span>;
+      case "FINISHED":
+        return <span className="status-badge status-finished">Завершён</span>;
+      case "CANCELLED":
+        return <span className="status-badge status-cancelled">Отменён</span>;
+      default:
+        return <span className="status-badge">{status}</span>;
+    }
+  };
 
   return (
-    <div className="livestream-container">
-      <div className="livestream-header">
-        <h2 className="section-title livestream-title">{stream.title}</h2>
-        <div className="livestream-actions">
-          <span className="live-badge">
-            <span className="live-dot"></span>
-            LIVE
-          </span>
-          {userRole === "ADMIN" && (
-            <button onClick={openSettings} className="btn glass-btn settings-btn">
-              Настройки
-            </button>
-          )}
-        </div>
+    <div className="live-section">
+      <div className="section-header">
+        <h3 className="section-title" style={{ margin: 0 }}>Текстовая трансляция</h3>
       </div>
 
-      <div className="glass-effect video-wrapper">
-        {iframeError ? (
-          <div className="video-error-overlay">
-            <div className="video-error-icon">!</div>
-            <h3 className="video-error-title">Видео недоступно</h3>
-            <p className="video-error-text">
-              Не удалось загрузить видео. Проверьте ссылку в настройках или зайдите позже.
-            </p>
-            {userRole === "ADMIN" && (
-              <button onClick={openSettings} className="btn btn-primary glass-effect video-error-btn">
-                Исправить ссылку
-              </button>
-            )}
-          </div>
-        ) : (
-          <iframe
-            src={stream.vkVideoUrl}
-            className="video-iframe"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture;"
-            allowFullScreen
-            title="VK Live Stream"
-            onLoad={() => setIframeError(false)}
-            onError={() => setIframeError(true)}
-          />
-        )}
-      </div>
-
-      <div className="social-links-row">
-        <a href={stream.vkGroupUrl} target="_blank" rel="noopener noreferrer" className="btn glass-btn social-link">
-          Группа ВК
-        </a>
-        <a href={stream.tgGroupUrl} target="_blank" rel="noopener noreferrer" className="btn glass-btn social-link">
-          Telegram канал
-        </a>
-      </div>
-
-      {showAdminPanel && (
-        <AdminModal form={form} setForm={setForm} urlError={urlError} saving={saving} onSave={handleSave} onClose={closeSettings} />
-      )}
-    </div>
-  );
-}
-
-function AdminModal({
-  form,
-  setForm,
-  urlError,
-  saving,
-  onSave,
-  onClose,
-}: {
-  form: any;
-  setForm: (f: any) => void;
-  urlError: string;
-  saving: boolean;
-  onSave: (e: React.FormEvent) => void;
-  onClose: () => void;
-}) {
-  return (
-    <div 
-      className="modal-overlay"
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 10000,
-        background: 'rgba(0, 0, 0, 0.85)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        overflowY: 'auto',
-      }}
-    >
-      <div 
-        className="modal-content glass-effect"
-        onClick={e => e.stopPropagation()}
-        style={{
-          maxWidth: '600px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          position: 'relative',
-          margin: 'auto',
-          padding: '24px',
-          borderRadius: '16px',
-        }}
-      >
-        {/* Кнопка закрытия */}
-        <button 
-          className="modal-close"
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            color: '#fff',
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            fontSize: '24px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10,
-            transition: 'all 0.2s',
-          }}
-        >
-          ×
-        </button>
-
-        <h3 className="section-title" style={{ 
-          paddingRight: '40px',
-          marginBottom: '20px',
+      {/* Выбор матча */}
+      <div className="match-selector glass-effect" style={{ padding: "16px", marginBottom: "20px" }}>
+        <label style={{ 
+          display: "block", 
+          marginBottom: "8px",
+          color: "var(--text-secondary)",
+          fontSize: "14px",
+          fontWeight: 600
         }}>
-          Настройка трансляции
-        </h3>
-        <form onSubmit={onSave}>
-          <div className="form-group">
-            <label>Название</label>
-            <input
-              className="glass-effect"
-              type="text"
-              value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
-            />
-          </div>
-          <div className="form-group">
-            <label>Ссылка на видео ВК (iframe src)</label>
-            <textarea
-              className="glass-effect form-textarea"
-              rows={3}
-              value={form.vkVideoUrl}
-              onChange={e => {
-                const extractedUrl = extractVideoUrl(e.target.value);
-                setForm({ ...form, vkVideoUrl: extractedUrl });
-              }}
-              placeholder="Вставь сюда код из ВК (начиная с <iframe...)"
-            />
-            <small className="form-hint">
-              ВК → Видео → Поделиться → Код для вставки → Скопируй весь код
-            </small>
-            {urlError && <small className="form-error">{urlError}</small>}
-          </div>
-          <div className="form-group">
-            <label>Ссылка на группу ВК</label>
-            <input
-              className="glass-effect"
-              type="text"
-              value={form.vkGroupUrl}
-              onChange={e => setForm({ ...form, vkGroupUrl: e.target.value })}
-              placeholder="https://vk.com/your_group"
-            />
-          </div>
-          <div className="form-group">
-            <label>Ссылка на Telegram</label>
-            <input
-              className="glass-effect"
-              type="text"
-              value={form.tgGroupUrl}
-              onChange={e => setForm({ ...form, tgGroupUrl: e.target.value })}
-              placeholder="https://t.me/your_channel"
-            />
-          </div>
-          <div className="form-group">
-            <label className="checkbox-label" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-            }}>
-              <input
-                type="checkbox"
-                checked={form.isActive}
-                onChange={e => setForm({ ...form, isActive: e.target.checked })}
-                className="checkbox-input"
-                style={{ width: 'auto' }}
-              />
-              <span>Трансляция активна (показывать на сайте)</span>
-            </label>
-          </div>
-          <div className="form-actions" style={{
-            display: 'flex',
-            gap: '12px',
-            justifyContent: 'flex-end',
-            marginTop: '20px',
-            flexWrap: 'wrap',
+          Выберите матч
+        </label>
+        <select
+          className="glass-effect"
+          value={selectedMatchId}
+          onChange={(e) => setSelectedMatchId(e.target.value)}
+          style={{ width: "100%", padding: "12px" }}
+        >
+          <option value="">-- Выберите матч --</option>
+          
+          {liveMatches.length > 0 && (
+            <optgroup label="LIVE">
+              {liveMatches.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          
+          {scheduledMatches.length > 0 && (
+            <optgroup label="Запланированные">
+              {scheduledMatches.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          
+          {finishedMatches.length > 0 && (
+            <optgroup label="Завершённые">
+              {finishedMatches.slice(0, 20).map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
+                </option>
+              ))}
+            </optgroup>
+          )}
+        </select>
+      </div>
+
+      {/* Информация о выбранном матче */}
+      {selectedMatch && (
+        <div className="glass-effect" style={{ 
+          padding: "20px", 
+          marginBottom: "20px",
+          background: "rgba(59, 130, 246, 0.1)",
+          border: "1px solid rgba(59, 130, 246, 0.3)"
+        }}>
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px"
           }}>
-            <button 
-              type="button" 
-              className="btn btn-secondary glass-effect" 
-              onClick={onClose}
-              style={{ flex: '1 1 auto', minWidth: '120px' }}
+            <div>
+              <h4 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "var(--text-primary)" }}>
+                {selectedMatch.homeTeam.name} vs {selectedMatch.awayTeam.name}
+              </h4>
+              <div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+                {formatDate(selectedMatch.date)}
+                {selectedMatch.venue && <> • {selectedMatch.venue}</>}
+              </div>
+              {selectedMatch.score && (
+                <div style={{ 
+                  fontSize: "24px", 
+                  fontWeight: 700, 
+                  color: "var(--color-primary)",
+                  marginTop: "8px"
+                }}>
+                  {selectedMatch.score}
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {getStatusBadge(selectedMatch.status)}
+              {canManage && onDeleteMatch && (
+                <button
+                  onClick={() => onDeleteMatch(selectedMatch.id)}
+                  disabled={deletingId === selectedMatch.id}
+                  className="btn btn-danger"
+                  style={{ padding: "8px 16px", fontSize: "13px" }}
+                >
+                  {deletingId === selectedMatch.id ? "Удаление..." : "Удалить"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Кнопка добавления события */}
+      {selectedMatch && canManage && (
+        <div style={{ marginBottom: "16px" }}>
+          <button
+            onClick={() => setShowEventForm(!showEventForm)}
+            className="btn btn-primary glass-effect"
+            style={{ width: "100%", padding: "12px" }}
+          >
+            {showEventForm ? "✕ Отмена" : "+ Добавить событие"}
+          </button>
+        </div>
+      )}
+
+      {/* Форма добавления события */}
+      {showEventForm && selectedMatch && (
+        <form onSubmit={handleAddEvent} className="glass-effect" style={{ 
+          padding: "20px", 
+          marginBottom: "20px" 
+        }}>
+          {error && (
+            <div className="form-error" style={{ marginBottom: "12px" }}>
+              {error}
+            </div>
+          )}
+
+          <div className="form-group">
+            <label>Текст события</label>
+            <textarea
+              value={eventText}
+              onChange={(e) => setEventText(e.target.value)}
+              placeholder="Гол! Забил Иванов И.И."
+              required
+              rows={3}
+              maxLength={500}
+              className="glass-effect"
+              style={{ resize: "vertical", minHeight: "80px" }}
+            />
+            <small style={{ color: "var(--text-tertiary)", fontSize: "12px" }}>
+              {eventText.length}/500 символов
+            </small>
+          </div>
+
+          <div className="form-group">
+            <label>Минута (необязательно)</label>
+            <input
+              type="number"
+              value={eventMinute}
+              onChange={(e) => setEventMinute(e.target.value)}
+              placeholder="45"
+              min={0}
+              max={120}
+              className="glass-effect"
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowEventForm(false);
+                setEventText("");
+                setEventMinute("");
+                setError("");
+              }}
+              className="btn btn-secondary glass-effect"
             >
               Отмена
             </button>
-            <button 
-              type="submit" 
-              className="btn btn-primary glass-effect" 
-              disabled={saving}
-              style={{ flex: '2 1 auto', minWidth: '140px' }}
+            <button
+              type="submit"
+              disabled={submitting || !eventText.trim()}
+              className="btn btn-primary glass-effect"
             >
-              {saving ? "Сохранение..." : "Сохранить"}
+              {submitting ? "Добавление..." : "Добавить"}
             </button>
           </div>
         </form>
-      </div>
+      )}
+
+      {/* Список событий */}
+      {selectedMatch && (
+        <div className="events-list">
+          {loading ? (
+            <p className="empty-text">Загрузка событий...</p>
+          ) : events.length === 0 ? (
+            <div className="glass-effect" style={{ 
+              padding: "40px", 
+              textAlign: "center",
+              color: "var(--text-tertiary)"
+            }}>
+              <p style={{ margin: 0 }}>Событий пока нет</p>
+              {canManage && (
+                <p style={{ margin: "8px 0 0 0", fontSize: "14px" }}>
+                  Нажмите "+ Добавить событие" чтобы начать трансляцию
+                </p>
+              )}
+            </div>
+          ) : (
+            events.map((event) => (
+              <div key={event.id} className="event-card glass-effect">
+                {event.minute !== null && event.minute !== undefined && (
+                  <div className="event-minute">
+                    {event.minute}'
+                  </div>
+                )}
+                <div className="event-text">
+                  {event.text}
+                </div>
+                <div className="event-time">
+                  {new Date(event.createdAt).toLocaleTimeString("ru-RU", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+                {canManage && (
+                  <button
+                    onClick={() => handleDeleteEvent(event.id)}
+                    className="btn-icon glass-effect"
+                    title="Удалить"
+                    style={{ 
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      color: 'var(--color-danger)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      marginLeft: "8px"
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {!selectedMatch && (
+        <div className="glass-effect" style={{ 
+          padding: "60px 20px", 
+          textAlign: "center",
+          color: "var(--text-tertiary)"
+        }}>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>📝</div>
+          <h4 style={{ margin: "0 0 8px 0", color: "var(--text-secondary)" }}>
+            Выберите матч
+          </h4>
+          <p style={{ margin: 0 }}>
+            Выберите матч из списка выше, чтобы увидеть текстовую трансляцию
+          </p>
+        </div>
+      )}
+
+      <style jsx>{`
+        .status-badge {
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+          display: inline-block;
+        }
+        .status-live {
+          background: rgba(239, 68, 68, 0.2);
+          color: var(--color-danger);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          animation: pulse 2s infinite;
+        }
+        .status-scheduled {
+          background: rgba(59, 130, 246, 0.2);
+          color: var(--color-primary);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .status-finished {
+          background: rgba(16, 185, 129, 0.2);
+          color: var(--color-success);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-cancelled {
+          background: rgba(107, 114, 128, 0.2);
+          color: var(--text-tertiary);
+          border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }
