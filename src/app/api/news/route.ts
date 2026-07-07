@@ -6,9 +6,10 @@ import { Prisma } from "@prisma/client";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { redis } from "@/lib/redis";
+import sharp from "sharp";
 import { hasSqlInjection, hasXSS, validateLength, validatePayloadSize } from "@/lib/validate";
 
-const CACHE_TTL = 300; // 5 минут
+const CACHE_TTL = 300;
 
 async function invalidateNewsCache() {
   try {
@@ -34,8 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
   }
   
-  const userRole = session.user.role;
-  if (userRole !== "ADMIN" && userRole !== "EDITOR") {
+  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
     return NextResponse.json({ error: "Нет прав" }, { status: 403 });
   }
 
@@ -49,13 +49,43 @@ export async function POST(req: NextRequest) {
       title = formData.get("title") as string;
       content = formData.get("content") as string;
       const file = formData.get("image") as File | null;
+
       if (file && file.size > 0) {
+        if (!file.type.startsWith("image/")) {
+          return NextResponse.json({ error: "Только изображения" }, { status: 400 });
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          return NextResponse.json({ error: "Фото слишком большое (макс 10MB)" }, { status: 400 });
+        }
+
         const uploadDir = path.join(process.cwd(), "public", "uploads", "news");
         await mkdir(uploadDir, { recursive: true });
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const fileName = `news-${Date.now()}-${file.name.replace(/\s/g, "-")}`;
-        await writeFile(path.join(uploadDir, fileName), buffer);
+
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(2, 9);
+        const fileName = `news-${timestamp}-${randomStr}.jpg`;
+        const filePath = path.join(uploadDir, fileName);
+
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        const optimizedImage = await sharp(buffer)
+          .resize(1200, null, {
+            withoutEnlargement: true,
+            fit: 'inside'
+          })
+          .jpeg({
+            quality: 80,
+            progressive: true,
+            mozjpeg: true
+          })
+          .toBuffer();
+
+        await writeFile(filePath, optimizedImage);
         imageUrl = `/uploads/news/${fileName}`;
+
+        console.log(`Image optimized: ${(buffer.length / 1024 / 1024).toFixed(2)}MB → ${(optimizedImage.length / 1024 / 1024).toFixed(2)}MB`);
       }
     } else {
       const body = await req.json();
@@ -109,7 +139,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const query = searchParams.get("q") || "";
-    
+
     const cacheKey = `news:list:page:${page}:limit:${limit}:q:${query}`;
 
     try {
@@ -124,12 +154,25 @@ export async function GET(req: NextRequest) {
     }
 
     const skip = (page - 1) * limit;
-    const where = query
-      ? { OR: [{ title: { contains: query, mode: Prisma.QueryMode.insensitive } }, { content: { contains: query, mode: Prisma.QueryMode.insensitive } }], isPublished: true }
+
+    const where: Prisma.NewsPostWhereInput = query
+      ? {
+          OR: [
+            { title: { contains: query, mode: Prisma.QueryMode.insensitive } },
+            { content: { contains: query, mode: Prisma.QueryMode.insensitive } }
+          ],
+          isPublished: true
+        }
       : { isPublished: true };
 
     const [posts, total] = await Promise.all([
-      prisma.newsPost.findMany({ where, skip, take: limit, orderBy: { createdAt: "desc" }, include: { author: { select: { id: true, fullName: true, username: true } } } }),
+      prisma.newsPost.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: { author: { select: { id: true, fullName: true, username: true } } }
+      }),
       prisma.newsPost.count({ where }),
     ]);
 
@@ -150,11 +193,11 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user) {
     return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
   }
-  
+
   if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
     return NextResponse.json({ error: "Нет прав" }, { status: 403 });
   }

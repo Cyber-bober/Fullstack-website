@@ -1,4 +1,3 @@
-// src/components/ui/ImageCropper.tsx
 "use client";
 import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
@@ -91,33 +90,70 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
 
   return (
     <div 
-      className="modal-overlay" 
-      style={{ 
-        zIndex: 99999, 
-        background: 'rgba(0, 0, 0, 0.9)', 
-        overflow: 'auto',
-        padding: '20px 10px'
-      }}
+      className="modal-overlay"
       onKeyDown={(e) => { if (e.key === 'Enter') handleFinalSave(); }}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 10000,
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        overflowY: 'auto',
+      }}
     >
       <div 
-        className="image-cropper-modal"
+        className="image-cropper-modal glass-effect"
         style={{
           maxWidth: '800px',
           width: '100%',
-          margin: '10px',
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: '20px',
-          padding: '5px',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+          padding: '24px',
+          position: 'relative',
+          margin: 'auto',
         }}
       >
+        {/* Кнопка закрытия */}
+        <button
+          onClick={onCancel}
+          disabled={isProcessing}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            fontSize: '20px',
+            cursor: isProcessing ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            transition: 'all 0.2s',
+          }}
+        >
+          ×
+        </button>
+
         <h3 style={{ 
           color: '#fff', 
           marginBottom: '20px',
           fontSize: 'clamp(18px, 3vw, 24px)',
           fontWeight: 700,
-          textAlign: 'center'
+          textAlign: 'center',
+          paddingRight: '40px',
         }}>
           Настройка аватара
         </h3>
@@ -128,12 +164,12 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           style={{
             position: 'relative',
             width: '100%',
-            height: 'clamp(300px, 50vh, 500px)',
+            height: 'clamp(250px, 50vh, 500px)',
             background: '#0f0f1e',
             borderRadius: '16px',
             overflow: 'hidden',
             marginBottom: '24px',
-            boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.3)'
+            boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.3)',
           }}
         >
           <Cropper

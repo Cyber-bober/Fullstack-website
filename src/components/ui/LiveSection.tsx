@@ -1,266 +1,384 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import Card from "@/components/ui/Card";
-import { Match, MatchEvent } from "@/types/LiveSection";
-import ConfirmModal from "@/components/ui/ConfirmModal";
+import { useState, useEffect } from "react";
 
-interface Props {
-  matches: Match[];
-  userRole?: string | null;
-  onDeleteMatch?: (id: string) => void;
-  deletingId?: string | null;
+interface LiveStreamData {
+  isActive: boolean;
+  title: string;
+  vkVideoUrl: string;
+  vkGroupUrl: string;
+  tgGroupUrl: string;
 }
 
-const CustomMatchSelect = ({ 
-  matches, 
-  value, 
-  onChange 
-}: { 
-  matches: Match[]; 
-  value: string; 
-  onChange: (val: string) => void;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+interface Props {
+  userRole: string | null;
+}
 
-  const selectedMatch = matches.find(m => m.id === value);
+function extractVideoUrl(input: string): string {
+  if (!input) return "";
+  const trimmed = input.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  const iframeMatch = input.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+  if (iframeMatch && iframeMatch[1]) {
+    return iframeMatch[1];
+  }
+  return trimmed;
+}
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${day}.${month}.${year} ${hours}:${minutes}`;
-  };
+function isValidVideoUrl(url: string): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const isHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
+    if (!isHttp) return false;
+    const hostname = parsed.hostname.toLowerCase();
+    const isVK = hostname.includes("vk.com") || hostname.includes("vkvideo.ru") || hostname.includes("vk.ru");
+    if (!isVK) return false;
+    return parsed.pathname.includes("video_ext.php") || parsed.pathname.includes("/video") || parsed.pathname.includes("/embed");
+  } catch {
+    return false;
+  }
+}
+
+export function LiveStreamSection({ userRole }: Props) {
+  const [stream, setStream] = useState<LiveStreamData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    vkVideoUrl: "",
+    vkGroupUrl: "",
+    tgGroupUrl: "",
+    isActive: true,
+  });
+  const [saving, setSaving] = useState(false);
+  const [urlError, setUrlError] = useState("");
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    fetch("/api/livestream")
+      .then(res => res.json())
+      .then(data => {
+        setStream(data);
+        setForm({
+          title: data.title || "",
+          vkVideoUrl: data.vkVideoUrl || "",
+          vkGroupUrl: data.vkGroupUrl || "",
+          tgGroupUrl: data.tgGroupUrl || "",
+          isActive: data.isActive,
+        });
+        setIframeError(false);
+      })
+      .catch(err => console.error("Ошибка загрузки трансляции:", err))
+      .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <div className="custom-match-select" ref={containerRef}>
-      <div 
-        className="custom-match-select-trigger glass-effect"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span>
-          {selectedMatch 
-            ? `${selectedMatch.homeTeam.name} vs ${selectedMatch.awayTeam.name} — ${formatDate(selectedMatch.date)}`
-            : "Выберите матч"}
-        </span>
-        <span className={`arrow ${isOpen ? 'open' : ''}`}>▼</span>
-      </div>
-      
-      {isOpen && (
-        <div className="custom-match-dropdown glass-effect">
-          <div 
-            className="custom-match-option selected"
-            onClick={() => {
-              onChange("");
-              setIsOpen(false);
-            }}
-          >
-            Выберите матч
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUrlError("");
+
+    if (form.isActive && form.vkVideoUrl && !isValidVideoUrl(form.vkVideoUrl)) {
+      setUrlError("Неверный формат ссылки. Используйте ссылку вида: https://vk.com/video_ext.php?...");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/livestream", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStream(data);
+        setShowAdminPanel(false);
+        setIframeError(false);
+      } else {
+        const error = await res.json();
+        alert("Ошибка: " + (error.error || "Неизвестная ошибка"));
+      }
+    } catch (err) {
+      console.error("Ошибка сохранения:", err);
+      alert("Ошибка сети");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openSettings = () => setShowAdminPanel(true);
+  const closeSettings = () => {
+    setShowAdminPanel(false);
+    setUrlError("");
+  };
+
+  if (loading) {
+    return <p className="empty-text">Загрузка трансляции...</p>;
+  }
+
+  const urlValid = isValidVideoUrl(stream?.vkVideoUrl || "");
+
+  if (!stream || !stream.isActive || !urlValid) {
+    return (
+      <div className="livestream-container">
+        <div className="glass-effect stream-placeholder">
+          <h2 className="section-title">Прямая трансляция</h2>
+          <p className="empty-text">
+            {!stream?.isActive ? "Сейчас нет активной трансляции" : "Ссылка на видео не настроена или невалидна"}
+          </p>
+          <div className="stream-placeholder-links">
+            <a href={stream?.vkGroupUrl || "#"} target="_blank" rel="noopener noreferrer" className="btn glass-btn">
+              Наша группа ВК
+            </a>
+            <a href={stream?.tgGroupUrl || "#"} target="_blank" rel="noopener noreferrer" className="btn glass-btn">
+              Наш Telegram
+            </a>
           </div>
-          {matches.map((match) => (
-            <div
-              key={match.id}
-              className={`custom-match-option ${match.id === value ? 'selected' : ''}`}
-              onClick={() => {
-                onChange(match.id);
-                setIsOpen(false);
-              }}
-            >
-              <div className="match-option-teams">
-                <strong>{match.homeTeam.name}</strong> vs <strong>{match.awayTeam.name}</strong>
-              </div>
-              <div className="match-option-date">{formatDate(match.date)}</div>
-            </div>
-          ))}
+          {userRole === "ADMIN" && (
+            <button onClick={openSettings} className="btn btn-primary glass-effect stream-setup-btn">
+              Настроить трансляцию
+            </button>
+          )}
         </div>
+        {showAdminPanel && (
+          <AdminModal form={form} setForm={setForm} urlError={urlError} saving={saving} onSave={handleSave} onClose={closeSettings} />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="livestream-container">
+      <div className="livestream-header">
+        <h2 className="section-title livestream-title">{stream.title}</h2>
+        <div className="livestream-actions">
+          <span className="live-badge">
+            <span className="live-dot"></span>
+            LIVE
+          </span>
+          {userRole === "ADMIN" && (
+            <button onClick={openSettings} className="btn glass-btn settings-btn">
+              Настройки
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="glass-effect video-wrapper">
+        {iframeError ? (
+          <div className="video-error-overlay">
+            <div className="video-error-icon">!</div>
+            <h3 className="video-error-title">Видео недоступно</h3>
+            <p className="video-error-text">
+              Не удалось загрузить видео. Проверьте ссылку в настройках или зайдите позже.
+            </p>
+            {userRole === "ADMIN" && (
+              <button onClick={openSettings} className="btn btn-primary glass-effect video-error-btn">
+                Исправить ссылку
+              </button>
+            )}
+          </div>
+        ) : (
+          <iframe
+            src={stream.vkVideoUrl}
+            className="video-iframe"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture;"
+            allowFullScreen
+            title="VK Live Stream"
+            onLoad={() => setIframeError(false)}
+            onError={() => setIframeError(true)}
+          />
+        )}
+      </div>
+
+      <div className="social-links-row">
+        <a href={stream.vkGroupUrl} target="_blank" rel="noopener noreferrer" className="btn glass-btn social-link">
+          Группа ВК
+        </a>
+        <a href={stream.tgGroupUrl} target="_blank" rel="noopener noreferrer" className="btn glass-btn social-link">
+          Telegram канал
+        </a>
+      </div>
+
+      {showAdminPanel && (
+        <AdminModal form={form} setForm={setForm} urlError={urlError} saving={saving} onSave={handleSave} onClose={closeSettings} />
       )}
     </div>
   );
-};
+}
 
-export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Props) {
-  const [selectedMatchId, setSelectedMatchId] = useState<string>("");
-  const [events, setEvents] = useState<MatchEvent[]>([]);
-  const [newEvent, setNewEvent] = useState({ minute: "", text: "" });
-  const [loading, setLoading] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-
-  const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
-  const isAdmin = userRole === "ADMIN";
-
-  const loadEvents = async (matchId: string) => {
-    try {
-      const res = await fetch(`/api/match-events?matchId=${matchId}`);
-      if (res.ok) setEvents(await res.json());
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleMatchSelect = (matchId: string) => {
-    setSelectedMatchId(matchId);
-    setEvents([]);
-    if (matchId) loadEvents(matchId);
-  };
-
-  const handleAddEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedMatchId || !newEvent.text) return;
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/match-events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          matchId: selectedMatchId,
-          minute: newEvent.minute ? parseInt(newEvent.minute) : null,
-          text: newEvent.text,
-        }),
-      });
-      if (res.ok) {
-        const event = await res.json();
-        setEvents([...events, event]);
-        setNewEvent({ minute: "", text: "" });
-      } else {
-        alert("Ошибка добавления события");
-      }
-    } catch {
-      alert("Ошибка сети");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClear = () => {
-    if (!selectedMatchId) return;
-    setShowClearConfirm(true);
-  };
-
-  const confirmClear = async () => {
-    try {
-      const res = await fetch(`/api/match-events?matchId=${selectedMatchId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) setEvents([]);
-      else alert("Ошибка очистки");
-    } catch {
-      alert("Ошибка сети");
-    } finally {
-      setShowClearConfirm(false);
-    }
-  };
-
-  const activeMatches = matches.filter(
-    (m) => m.status === "SCHEDULED" || m.status === "LIVE"
-  );
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  };
-
+function AdminModal({
+  form,
+  setForm,
+  urlError,
+  saving,
+  onSave,
+  onClose,
+}: {
+  form: any;
+  setForm: (f: any) => void;
+  urlError: string;
+  saving: boolean;
+  onSave: (e: React.FormEvent) => void;
+  onClose: () => void;
+}) {
   return (
-    <div>
-      {activeMatches.length === 0 ? (
-        <p className="empty-text">Нет активных матчей для трансляции</p>
-      ) : (
-        <>
-          <div className="form-group" style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 24 }}>
-            <div style={{ flex: 1 }}>
-              <CustomMatchSelect
-                matches={activeMatches}
-                value={selectedMatchId}
-                onChange={handleMatchSelect}
-              />
-            </div>
+    <div 
+      className="modal-overlay"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 10000,
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        overflowY: 'auto',
+      }}
+    >
+      <div 
+        className="modal-content glass-effect"
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: '600px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          position: 'relative',
+          margin: 'auto',
+          padding: '24px',
+          borderRadius: '16px',
+        }}
+      >
+        {/* Кнопка закрытия */}
+        <button 
+          className="modal-close"
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            fontSize: '24px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            transition: 'all 0.2s',
+          }}
+        >
+          ×
+        </button>
+
+        <h3 className="section-title" style={{ 
+          paddingRight: '40px',
+          marginBottom: '20px',
+        }}>
+          Настройка трансляции
+        </h3>
+        <form onSubmit={onSave}>
+          <div className="form-group">
+            <label>Название</label>
+            <input
+              className="glass-effect"
+              type="text"
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+            />
           </div>
-
-          {selectedMatchId && canEdit && (
-            <Card className="form-card glass-effect">
-              <form onSubmit={handleAddEvent}>
-                <div style={{ display: "flex", gap: 12 }}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label>Минута (необязательно)</label>
-                    <input
-                      type="number"
-                      className="glass-effect"
-                      value={newEvent.minute}
-                      onChange={(e) => setNewEvent({ ...newEvent, minute: e.target.value })}
-                      placeholder="45"
-                      min="0"
-                      max="120"
-                    />
-                  </div>
-                  <div className="form-group" style={{ flex: 3 }}>
-                    <label>Текст события</label>
-                    <input
-                      type="text"
-                      className="glass-effect"
-                      value={newEvent.text}
-                      onChange={(e) => setNewEvent({ ...newEvent, text: e.target.value })}
-                      placeholder="Гол! Забивает..."
-                      required
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="btn btn-primary glass-effect" disabled={loading}>
-                  {loading ? "Добавление..." : "Добавить событие"}
-                </button>
-              </form>
-
-              {isAdmin && events.length > 0 && (
-                <button className="btn btn-danger glass-effect" onClick={handleClear} style={{ marginTop: 12 }}>
-                  Очистить трансляцию
-                </button>
-              )}
-            </Card>
-          )}
-
-          {events.length > 0 && (
-            <div className="events-list">
-              {events.map((event) => (
-                <Card key={event.id} className="event-card glass-effect">
-                  {event.minute && (
-                    <span className="event-minute glass-effect">{event.minute}'</span>
-                  )}
-                  <span className="event-text">{event.text}</span>
-                  <span className="event-time">
-                    {formatTime(event.createdAt)}
-                  </span>
-                </Card>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
-      <ConfirmModal
-        isOpen={showClearConfirm}
-        title="Очистить трансляцию?"
-        message="Все события текущей трансляции будут удалены. Это действие нельзя отменить."
-        confirmText="Очистить"
-        cancelText="Отмена"
-        variant="warning"
-        onConfirm={confirmClear}
-        onCancel={() => setShowClearConfirm(false)}
-      />
+          <div className="form-group">
+            <label>Ссылка на видео ВК (iframe src)</label>
+            <textarea
+              className="glass-effect form-textarea"
+              rows={3}
+              value={form.vkVideoUrl}
+              onChange={e => {
+                const extractedUrl = extractVideoUrl(e.target.value);
+                setForm({ ...form, vkVideoUrl: extractedUrl });
+              }}
+              placeholder="Вставь сюда код из ВК (начиная с <iframe...)"
+            />
+            <small className="form-hint">
+              ВК → Видео → Поделиться → Код для вставки → Скопируй весь код
+            </small>
+            {urlError && <small className="form-error">{urlError}</small>}
+          </div>
+          <div className="form-group">
+            <label>Ссылка на группу ВК</label>
+            <input
+              className="glass-effect"
+              type="text"
+              value={form.vkGroupUrl}
+              onChange={e => setForm({ ...form, vkGroupUrl: e.target.value })}
+              placeholder="https://vk.com/your_group"
+            />
+          </div>
+          <div className="form-group">
+            <label>Ссылка на Telegram</label>
+            <input
+              className="glass-effect"
+              type="text"
+              value={form.tgGroupUrl}
+              onChange={e => setForm({ ...form, tgGroupUrl: e.target.value })}
+              placeholder="https://t.me/your_channel"
+            />
+          </div>
+          <div className="form-group">
+            <label className="checkbox-label" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+            }}>
+              <input
+                type="checkbox"
+                checked={form.isActive}
+                onChange={e => setForm({ ...form, isActive: e.target.checked })}
+                className="checkbox-input"
+                style={{ width: 'auto' }}
+              />
+              <span>Трансляция активна (показывать на сайте)</span>
+            </label>
+          </div>
+          <div className="form-actions" style={{
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'flex-end',
+            marginTop: '20px',
+            flexWrap: 'wrap',
+          }}>
+            <button 
+              type="button" 
+              className="btn btn-secondary glass-effect" 
+              onClick={onClose}
+              style={{ flex: '1 1 auto', minWidth: '120px' }}
+            >
+              Отмена
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary glass-effect" 
+              disabled={saving}
+              style={{ flex: '2 1 auto', minWidth: '140px' }}
+            >
+              {saving ? "Сохранение..." : "Сохранить"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

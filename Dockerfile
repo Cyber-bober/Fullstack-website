@@ -1,5 +1,13 @@
 # ЭТАП 1: Установка зависимостей
 FROM node:20-alpine AS deps
+
+RUN apk add --no-cache \
+  vips-dev \
+  fftw-dev \
+  gcc \
+  g++ \
+  make \
+  libc6-compat
 RUN apk add --no-cache openssl3 python3 py3-pip
 RUN python3 -m venv /venv && /venv/bin/pip install pytest requests pytest-html
 WORKDIR /app

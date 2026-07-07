@@ -1,4 +1,3 @@
-// src/app/auth/signin/page.tsx
 "use client";
 import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
@@ -12,6 +11,7 @@ function SignInForm() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(errorParam === "CredentialsSignin" ? "Неверный логин или пароль" : "");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,13 +57,28 @@ function SignInForm() {
           </div>
           <div className="form-group">
             <label>Пароль</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-              disabled={isLoading}
-            />
+            <div className="password-input-wrapper glass-effect">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+                disabled={isLoading}
+                style={{ paddingRight: "48px" }}
+              />
+              <button 
+                type="button"
+                className="password-toggle-button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <img src="/uploads/svg/eye-off.svg" className="svg" alt="Скрыть"/>
+                ) : (
+                  <img src="/uploads/svg/eye-on.svg" className="svg" alt="Показать"/>
+                )}
+              </button>
+            </div>
           </div>
           {error && <p className="error-message">{error}</p>}
           <button 

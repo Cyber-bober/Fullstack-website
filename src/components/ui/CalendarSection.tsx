@@ -211,7 +211,6 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
           <div className="modal-content glass-effect" onClick={e => e.stopPropagation()}>
             <h3>Детали матча</h3>
             <p><strong>{selectedMatch.homeTeam.name}</strong> vs <strong>{selectedMatch.awayTeam.name}</strong></p>
-            {/* ✅ ИСПРАВЛЕНО: 24-часовой формат */}
             <p>Дата: {formatDateTime(selectedMatch.date)}</p>
             {selectedMatch.venue && <p>Место: {selectedMatch.venue}</p>}
             
@@ -238,7 +237,6 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
       {selectedDayMatches && (
         <div className="modal-overlay" onClick={() => setSelectedDayMatches(null)}>
           <div className="modal-content glass-effect" onClick={e => e.stopPropagation()}>
-            {/* ✅ ИСПРАВЛЕНО: Правильная дата из первого матча */}
             <h3>Матчи {selectedDayMatches.length > 0 ? new Date(selectedDayMatches[0].date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : ''}</h3>
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {selectedDayMatches.map((m) => (

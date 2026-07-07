@@ -169,7 +169,7 @@ export default function DatePicker({
     : placeholder;
 
   return (
-    <div className="datepicker-container" ref={containerRef}>
+    <div className="datepicker-container" ref={containerRef} style={{ position: 'relative' }}>
       {label && <label className="datepicker-label">{label}</label>}
       
       <button 
@@ -180,6 +180,7 @@ export default function DatePicker({
           setShowYearPicker(false);
           setShowMonthPicker(false);
         }}
+        style={{ width: '100%' }}
       >
         <span className="datepicker-value">{displayValue}</span>
         <svg className="datepicker-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -191,15 +192,19 @@ export default function DatePicker({
       </button>
 
       {isOpen && (
-        <div className={`datepicker-dropdown glass-effect ${dropdownPosition === 'top' ? 'dropdown-top' : 'dropdown-bottom'}`}>
+        <div 
+          className={`datepicker-dropdown glass-effect ${dropdownPosition === 'top' ? 'dropdown-top' : 'dropdown-bottom'}`}
+          style={{
+            position: 'absolute',
+            [dropdownPosition === 'top' ? 'bottom' : 'top']: 'calc(100% + 8px)',
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            minWidth: '280px',
+            maxWidth: '340px',
+          }}
+        >
           <div className="datepicker-header">
-            <button type="button" className="datepicker-nav-btn" onClick={goToPrevYear} title="Предыдущий год">
-              «
-            </button>
-            <button type="button" className="datepicker-nav-btn" onClick={goToPrevMonth} title="Предыдущий месяц">
-              ‹
-            </button>
-            
             <div className="datepicker-month-year">
               <button 
                 type="button"
@@ -216,13 +221,6 @@ export default function DatePicker({
                 {viewDate.year}
               </button>
             </div>
-
-            <button type="button" className="datepicker-nav-btn" onClick={goToNextMonth} title="Следующий месяц">
-              ›
-            </button>
-            <button type="button" className="datepicker-nav-btn" onClick={goToNextYear} title="Следующий год">
-              »
-            </button>
           </div>
 
           {showMonthPicker && (

@@ -31,6 +31,7 @@
     "react-dom": "^18.3.0",
     "react-easy-crop": "^6.0.2",
     "redis": "^6.1.0",
+    "sharp": "^0.33.5",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
   },
