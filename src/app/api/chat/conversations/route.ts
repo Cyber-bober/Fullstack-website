@@ -4,23 +4,23 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 
-const CACHE_TTL = 30; // 30 секунд
+const CACHE_TTL = 30;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+  }
 
   const userId = session.user.id;
   const cacheKey = `conversations:${userId}`;
 
-  // Пробуем кэш
   try {
     const cached = await redis.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: ${cacheKey}`);
       return NextResponse.json(JSON.parse(cached));
     }
-    console.log(`Cache miss: ${cacheKey}`);
   } catch (err) {
     console.error("Redis cache error:", err);
   }
@@ -53,7 +53,6 @@ export async function GET() {
 
   const result = Array.from(conversationsMap.values());
 
-  // Сохраняем в кэш
   try {
     await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result));
   } catch (err) {

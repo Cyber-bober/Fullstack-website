@@ -1,0 +1,2166 @@
+]633;E;{ echo "=== NEXT.JS API STRUCTURE ==="\x3b find src/app/api/ -type f -name "*.ts" -o -name "*.js" | sort 2>/dev/null || find app/api/ -type f -name "*.ts" -o -name "*.js" | sort 2>/dev/null\x3b echo ""\x3b echo "=== ALL API FILES ==="\x3b find src/app/api/ -type f \\( -name "*.ts" -o -name "*.js" \\) 2>/dev/null | while read file\x3b do echo "========== $file =========="\x3b cat "$file"\x3b echo ""\x3b done\x3b echo "=== AUTH CONFIG ==="\x3b find src/ -name "*auth*" -o -name "*Auth*" | grep -v node_modules | while read file\x3b do echo "========== $file =========="\x3b cat "$file" 2>/dev/null\x3b echo ""\x3b done\x3b echo "=== MIDDLEWARE ==="\x3b cat src/middleware.ts 2>/dev/null || echo "middleware.ts not found"\x3b } > output2.txt 2>&1;17b6d696-5b08-44f1-8917-cf67667fa4a7]633;C=== NEXT.JS API STRUCTURE ===
+src/app/api/admin/update-team-ratings/route.ts
+src/app/api/admin/users/[id]/reset-password/route.ts
+src/app/api/admin/users/route.ts
+src/app/api/auth/[...nextauth]/route.ts
+src/app/api/auth/register/route.ts
+src/app/api/chat/conversations/route.ts
+src/app/api/chat/messages/pin/route.ts
+src/app/api/chat/messages/read/route.ts
+src/app/api/chat/messages/route.ts
+src/app/api/chat/messages/search/route.ts
+src/app/api/livestream/route.ts
+src/app/api/match-events/route.ts
+src/app/api/matches/route.ts
+src/app/api/news/[id]/route.ts
+src/app/api/news/route.ts
+src/app/api/notifications/route.ts
+src/app/api/profile/[id]/route.ts
+src/app/api/profile/change-password/route.ts
+src/app/api/profile/me/route.ts
+src/app/api/profile/remove-photo/route.ts
+src/app/api/profile/route.ts
+src/app/api/profile/set-password/route.ts
+src/app/api/profile/update/route.ts
+src/app/api/profile/upload-photo/route.ts
+src/app/api/role-request/route.ts
+src/app/api/support/tickets/[id]/messages/route.ts
+src/app/api/support/tickets/[id]/route.ts
+src/app/api/support/tickets/route.ts
+src/app/api/teams/[id]/captain/route.ts
+src/app/api/teams/[id]/players/route.ts
+src/app/api/teams/[id]/route.ts
+src/app/api/teams/[id]/update/route.ts
+src/app/api/teams/[id]/upload/route.ts
+src/app/api/teams/create/route.ts
+src/app/api/teams/logo/remove/route.ts
+src/app/api/teams/logo/route.ts
+src/app/api/teams/route.ts
+src/app/api/users/[id]/role/route.ts
+src/app/api/users/search/route.ts
+
+=== ALL API FILES ===
+========== src/app/api/admin/users/route.ts ==========
+// src/app/api/admin/users/route.ts
+
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Доступ запрещен" }, { status: 403 });
+  }
+
+  const users = await prisma.user.findMany({
+    select: { id: true, username: true, fullName: true, role: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json(users);
+}
+========== src/app/api/admin/users/[id]/reset-password/route.ts ==========
+// src/app/api/admin/users/[id]/reset-password/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+
+// Генератор безопасного временного пароля
+function generateTempPassword() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+  let pass = "";
+  for (let i = 0; i < 10; i++) {
+    pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pass;
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Доступ запрещен" }, { status: 403 });
+  }
+
+  const tempPassword = generateTempPassword();
+  const passwordHash = await bcrypt.hash(tempPassword, 10);
+
+  try {
+    await prisma.user.update({
+      where: { id: params.id },
+      data: { passwordHash },
+    });
+
+    // Возвращаем временный пароль ТОЛЬКО админу в ответе
+    return NextResponse.json({ success: true, tempPassword });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Ошибка обновления БД" }, { status: 500 });
+  }
+}
+========== src/app/api/admin/update-team-ratings/route.ts ==========
+// src/app/api/admin/update-team-ratings/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только администратор" }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    const { ratings } = body; // { teamId1: 1500, teamId2: 1600, ... }
+
+    if (!ratings || typeof ratings !== 'object') {
+      return NextResponse.json({ error: "Неверные данные" }, { status: 400 });
+    }
+
+    // Обновляем все рейтинги в транзакции
+    const updates = Object.entries(ratings).map(([teamId, rating]) => 
+      prisma.team.update({
+        where: { id: teamId },
+        data: { rating: Number(rating) }
+      })
+    );
+
+    await prisma.$transaction(updates);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Ошибка обновления рейтингов:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/notifications/route.ts ==========
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ chat: 0, support: 0 });
+  const userId = session.user.id;
+  const unreadChat = await prisma.chatMessage.count({ where: { receiverId: userId, isRead: false } });
+  return NextResponse.json({ chat: unreadChat, support: 0 });
+}
+
+========== src/app/api/users/search/route.ts ==========
+// src/app/api/users/search/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const searchParams = req.nextUrl.searchParams;
+  const query = searchParams.get("q") || "";
+
+  if (!query.trim()) {
+    return NextResponse.json([]);
+  }
+  
+  const users = await prisma.user.findMany({
+    where: {
+      OR: [
+        { fullName: { contains: query, mode: "insensitive" } },
+        { username: { contains: query, mode: "insensitive" } },
+        { id: query }, 
+      ],
+    },
+    select: {
+      id: true,
+      fullName: true,
+      username: true,
+      photos: true,
+      teamId: true,
+    },
+    take: 10,
+  });
+
+  return NextResponse.json(users);
+}
+========== src/app/api/users/[id]/role/route.ts ==========
+// src/app/api/users/[id]/role/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  
+  // Проверка прав: только ADMIN может менять роли
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Доступ запрещен" }, { status: 403 });
+  }
+
+  const { role } = await req.json();
+
+  // Валидация роли
+  if (!["USER", "EDITOR", "ADMIN"].includes(role)) {
+    return NextResponse.json({ error: "Недопустимая роль" }, { status: 400 });
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: params.id },
+      data: { role },
+      select: { id: true, username: true, fullName: true, role: true }
+    });
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("Ошибка обновления роли:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/support/tickets/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const tickets = session.user.role === "ADMIN"
+    ? await prisma.supportTicket.findMany({
+        include: { messages: { orderBy: { createdAt: "asc" } }, user: { select: { fullName: true } } },
+        orderBy: { updatedAt: "desc" },
+      })
+    : await prisma.supportTicket.findMany({
+        where: { userId: session.user.id },
+        include: { messages: { orderBy: { createdAt: "asc" } } },
+        orderBy: { updatedAt: "desc" },
+      });
+
+  return NextResponse.json(tickets);
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { subject, text } = await req.json();
+  if (!subject || !text) return NextResponse.json({ error: "Тема и текст обязательны" }, { status: 400 });
+
+  const ticket = await prisma.$transaction(async (tx) => {
+    const t = await tx.supportTicket.create({
+      data: { userId: session.user.id, subject },
+    });
+    await tx.supportMessage.create({
+      data: { ticketId: t.id, senderId: session.user.id, text },
+    });
+    return t;
+  });
+
+  return NextResponse.json(ticket, { status: 201 });
+}
+
+========== src/app/api/support/tickets/[id]/messages/route.ts ==========
+// src/app/api/support/tickets/[id]/messages/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+// POST: Отправка сообщения в тикет
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  const { text } = await req.json();
+
+  // Валидация текста сообщения
+  if (!text || typeof text !== "string" || text.trim().length === 0 || text.length > 2000) {
+    return NextResponse.json({ error: "Сообщение должно быть от 1 до 2000 символов" }, { status: 400 });
+  }
+
+  try {
+    // Находим тикет
+    const ticket = await prisma.supportTicket.findUnique({ 
+      where: { id: params.id } 
+    });
+
+    if (!ticket) {
+      return NextResponse.json({ error: "Тикет не найден" }, { status: 404 });
+    }
+
+    const isAdmin = session.user.role === "ADMIN";
+
+    // Проверка прав доступа:
+    // Админ может писать в любой тикет
+    // Пользователь может писать только в свой тикет
+    if (!isAdmin && ticket.userId !== session.user.id) {
+      return NextResponse.json({ error: "Нет доступа к этому обращению" }, { status: 403 });
+    }
+
+    // Создаем сообщение и обновляем статус тикета транзакцией
+    const message = await prisma.$transaction(async (tx) => {
+      const newMessage = await tx.supportMessage.create({
+        data: {
+          ticketId: params.id,
+          senderId: session.user.id,
+          text: text.trim(),
+          isAdmin,
+        },
+        include: {
+          sender: { select: { id: true, fullName: true, username: true, role: true } }
+        }
+      });
+
+      // Если отвечает админ, меняем статус на "В работе"
+      // Если отвечает пользователь, оставляем "Открыт" или меняем на "Ожидает ответа"
+      await tx.supportTicket.update({
+        where: { id: params.id },
+        data: { 
+          updatedAt: new Date(),
+          status: isAdmin ? "IN_PROGRESS" : "OPEN" 
+        }
+      });
+
+      return newMessage;
+    });
+
+    return NextResponse.json(message, { status: 201 });
+  } catch (error) {
+    console.error("Ошибка отправки сообщения:", error);
+    return NextResponse.json({ error: "Ошибка сервера при отправке сообщения" }, { status: 500 });
+  }
+}
+
+// GET: Получение всех сообщений конкретного тикета
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  try {
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id: params.id },
+      include: {
+        user: { select: { id: true, username: true, fullName: true } },
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            sender: { select: { id: true, fullName: true, username: true, role: true } }
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return NextResponse.json({ error: "Тикет не найден" }, { status: 404 });
+    }
+
+    // Проверка прав доступа
+    const isAdmin = session.user.role === "ADMIN";
+    if (!isAdmin && ticket.userId !== session.user.id) {
+      return NextResponse.json({ error: "Нет доступа к этому обращению" }, { status: 403 });
+    }
+
+    return NextResponse.json(ticket);
+  } catch (error) {
+    console.error("Ошибка загрузки сообщений:", error);
+    return NextResponse.json({ error: "Ошибка сервера при загрузке сообщений" }, { status: 500 });
+  }
+}
+========== src/app/api/support/tickets/[id]/route.ts ==========
+// src/app/api/support/tickets/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  try {
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id: params.id },
+      include: {
+        user: { select: { id: true, username: true, fullName: true } },
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            sender: { select: { id: true, username: true, fullName: true, role: true } }
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return NextResponse.json({ error: "Тикет не найден" }, { status: 404 });
+    }
+
+    const isAdmin = session.user.role === "ADMIN";
+    if (!isAdmin && ticket.userId !== session.user.id) {
+      return NextResponse.json({ error: "Нет доступа к этому обращению" }, { status: 403 });
+    }
+
+    return NextResponse.json(ticket);
+  } catch (error) {
+    console.error("Ошибка загрузки тикета:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только администратор может менять статус" }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    const { status } = body;
+
+    const validStatuses = ["OPEN", "IN_PROGRESS", "CLOSED"];
+    if (!status || !validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Некорректный статус" }, { status: 400 });
+    }
+
+    const updatedTicket = await prisma.supportTicket.update({
+      where: { id: params.id },
+      data: { status }
+    });
+
+    return NextResponse.json(updatedTicket);
+  } catch (error) {
+    console.error("Ошибка обновления статуса:", error);
+    return NextResponse.json({ error: "Ошибка сервера при обновлении" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только администратор может удалять тикеты" }, { status: 403 });
+  }
+
+  try {
+    await prisma.supportTicket.delete({
+      where: { id: params.id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Ошибка удаления тикета:", error);
+    return NextResponse.json({ error: "Ошибка сервера при удалении" }, { status: 500 });
+  }
+}
+========== src/app/api/teams/logo/route.ts ==========
+// src/app/api/teams/logo/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { mkdir, writeFile, unlink } from "fs/promises";
+import path from "path";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  try {
+    // Находим команду пользователя
+    const user = await prisma.user.findUnique({ 
+      where: { id: session.user.id }, 
+      select: { teamId: true } 
+    });
+
+    if (!user?.teamId) {
+      return NextResponse.json({ error: "Вы не состоите в команде" }, { status: 404 });
+    }
+
+    const formData = await req.formData();
+    const file = formData.get("logo") as File;
+    
+    if (!file || file.size === 0) {
+      return NextResponse.json({ error: "Файл не выбран" }, { status: 400 });
+    }
+
+    // Удаляем старый логотип
+    const currentTeam = await prisma.team.findUnique({ 
+      where: { id: user.teamId }, 
+      select: { logoUrl: true } 
+    });
+    
+    if (currentTeam?.logoUrl) {
+      try {
+        const oldPath = path.join(process.cwd(), "public", currentTeam.logoUrl);
+        await unlink(oldPath);
+      } catch (err) { console.warn("Не удалось удалить старый лого:", err); }
+    }
+
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "teams");
+    await mkdir(uploadDir, { recursive: true });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const fileName = `team-${user.teamId}-${Date.now()}.png`;
+    await writeFile(path.join(uploadDir, fileName), buffer);
+
+    const logoUrl = `/uploads/teams/${fileName}`;
+
+    await prisma.team.update({
+      where: { id: user.teamId },
+      data: { logoUrl }
+    });
+
+    return NextResponse.json({ url: logoUrl });
+  } catch (error) {
+    console.error("Ошибка загрузки лого команды:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/teams/logo/remove/route.ts ==========
+// src/app/api/teams/logo/remove/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { unlink } from "fs/promises";
+import path from "path";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  try {
+    const user = await prisma.user.findUnique({ 
+      where: { id: session.user.id }, 
+      select: { teamId: true } 
+    });
+
+    if (!user?.teamId) {
+      return NextResponse.json({ error: "Вы не состоите в команде" }, { status: 404 });
+    }
+
+    const team = await prisma.team.findUnique({ 
+      where: { id: user.teamId }, 
+      select: { logoUrl: true } 
+    });
+
+    if (team?.logoUrl) {
+      try {
+        const fullPath = path.join(process.cwd(), "public", team.logoUrl);
+        await unlink(fullPath);
+        console.log(`Лого команды удален: ${team.logoUrl}`);
+      } catch (err) { console.error("Ошибка удаления файла лого:", err); }
+    }
+
+    await prisma.team.update({
+      where: { id: user.teamId },
+      data: { logoUrl: null }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Ошибка удаления лого команды:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/teams/create/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { hasXSS, hasSqlInjection } from "@/lib/validate";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только админ может создавать команды" }, { status: 403 });
+  }
+
+  const { name, logoUrl } = await req.json();
+
+  if (!name || name.length < 2 || name.length > 100) {
+    return NextResponse.json({ error: "Название: от 2 до 100 символов" }, { status: 400 });
+  }
+
+  if (hasXSS(name) || hasSqlInjection(name)) {
+    return NextResponse.json({ error: "Название содержит недопустимые символы" }, { status: 400 });
+  }
+
+  const team = await prisma.team.create({ data: { name, logoUrl: logoUrl || null } });
+  return NextResponse.json(team, { status: 201 });
+}
+
+========== src/app/api/teams/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { redis } from "@/lib/redis";
+
+const CACHE_TTL = 300; // 5 минут
+
+async function invalidateTeamsCache() {
+  try {
+    const keys = await redis.keys("teams:*");
+    if (keys.length > 0) {
+      await redis.del(keys);
+      console.log(`Invalidated ${keys.length} teams cache keys`);
+    }
+  } catch (err) {
+    console.error("Teams cache invalidation error:", err);
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+  const limit = parseInt(searchParams.get("limit") || "12");
+  const query = searchParams.get("q") || "";
+  const skip = (page - 1) * limit;
+
+  const cacheKey = `teams:list:page:${page}:limit:${limit}:q:${query}`;
+
+  // Пробуем кэш
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log(`Cache hit: ${cacheKey}`);
+      return NextResponse.json(JSON.parse(cached));
+    }
+    console.log(`Cache miss: ${cacheKey}`);
+  } catch (err) {
+    console.error("Redis cache error:", err);
+  }
+
+  const where = query 
+    ? { name: { contains: query, mode: Prisma.QueryMode.insensitive } } 
+    : {};
+
+  const allTeamsByRating = await prisma.team.findMany({
+    orderBy: [
+      { rating: "desc" },
+      { name: "asc" }
+    ],
+    select: { id: true }
+  });
+
+  const globalIndexMap = new Map<string, number>();
+  allTeamsByRating.forEach((t, i) => globalIndexMap.set(t.id, i + 1));
+
+  // Получаем команды для текущей страницы (с фильтром поиска)
+  const [teams, total] = await Promise.all([
+    prisma.team.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: [
+        { rating: "desc" },
+        { name: "asc" }
+      ],
+      include: {
+        captain: { select: { fullName: true } },
+        _count: { select: { players: true } }
+      }
+    }),
+    prisma.team.count({ where })
+  ]);
+
+  // Добавляем глобальные позиции
+  const data = teams.map(t => ({
+    ...t,
+    globalIndex: globalIndexMap.get(t.id) || 0
+  }));
+
+  const result = {
+    data,
+    meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+  };
+
+  // Сохраняем в кэш
+  try {
+    await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result));
+  } catch (err) {
+    console.error("Redis cache set error:", err);
+  }
+
+  return NextResponse.json(result);
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только админ" }, { status: 403 });
+  }
+  
+  const { name } = await req.json();
+  if (!name) return NextResponse.json({ error: "Название обязательно" }, { status: 400 });
+  
+  const team = await prisma.team.create({ data: { name, rating: 1500 } });
+  
+  // Инвалидируем кэш
+  await invalidateTeamsCache();
+  
+  return NextResponse.json(team, { status: 201 });
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только админ" }, { status: 403 });
+  }
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID обязателен" }, { status: 400 });
+  
+  await prisma.team.delete({ where: { id } });
+  
+  // Инвалидируем кэш
+  await invalidateTeamsCache();
+  
+  return NextResponse.json({ success: true });
+}
+========== src/app/api/teams/[id]/players/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const team = await prisma.team.findUnique({
+    where: { id: params.id },
+    include: { players: { select: { id: true, fullName: true, username: true, position: true, photos: true } } },
+  });
+  if (!team) return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
+  return NextResponse.json(team.players);
+}
+
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  const team = await prisma.team.findUnique({ where: { id: params.id }, include: { captain: true } });
+  if (!team) return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
+
+  const isCaptain = team.captainId === session.user.id;
+  const isAdmin = session.user.role === "ADMIN";
+  if (!isCaptain && !isAdmin) return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+
+  const { userId } = await req.json();
+  if (!userId) return NextResponse.json({ error: "ID пользователя обязателен" }, { status: 400 });
+
+  const targetUser = await prisma.user.findUnique({ where: { id: userId }, select: { teamId: true, fullName: true } });
+  if (!targetUser) return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+
+  if (targetUser.teamId === params.id) {
+    return NextResponse.json({ success: true, message: `${targetUser.fullName} уже в команде` });
+  }
+
+  if (targetUser.teamId && !isAdmin) {
+    return NextResponse.json({ error: "Игрок уже в другой команде. Только админ может переводить." }, { status: 400 });
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { teamId: params.id } });
+  return NextResponse.json({ success: true, message: `${targetUser.fullName} добавлен` });
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  const team = await prisma.team.findUnique({ where: { id: params.id }, include: { captain: true } });
+  if (!team) return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
+
+  const isCaptain = team.captainId === session.user.id;
+  const isAdmin = session.user.role === "ADMIN";
+  if (!isCaptain && !isAdmin) return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+
+  // Читаем userId из query-параметров (как в тесте: ?userId=...)
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
+  if (!userId) return NextResponse.json({ error: "userId обязателен" }, { status: 400 });
+
+  if (userId === team.captainId) {
+    return NextResponse.json({ error: "Нельзя удалить капитана" }, { status: 400 });
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { teamId: null } });
+  return NextResponse.json({ success: true });
+}
+
+========== src/app/api/teams/[id]/captain/route.ts ==========
+// src/app/api/teams/[id]/captain/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только админ может назначать капитана" }, { status: 403 });
+  }
+
+  const { userId } = await req.json();
+  if (!userId) return NextResponse.json({ error: "userId обязателен" }, { status: 400 });
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { teamId: true } });
+  if (!user) return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+  if (user.teamId !== params.id) return NextResponse.json({ error: "Пользователь не состоит в этой команде" }, { status: 400 });
+
+  // Сбросить капитана во всех командах, где он уже назначен
+  await prisma.team.updateMany({ where: { captainId: userId }, data: { captainId: null } });
+
+  // Назначить нового капитана
+  await prisma.team.update({ where: { id: params.id }, data: { captainId: userId } });
+
+  return NextResponse.json({ success: true });
+}
+
+========== src/app/api/teams/[id]/update/route.ts ==========
+// src/app/api/teams/[id]/update/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  
+  // Проверка авторизации и прав админа
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только администратор может изменять статистику" }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    
+    // Разрешаем обновлять только поле stats
+    const updateData: any = {};
+    if (body.stats !== undefined) updateData.stats = body.stats;
+
+    const updatedTeam = await prisma.team.update({
+      where: { id: params.id },
+      data: updateData,
+    });
+
+    return NextResponse.json(updatedTeam);
+  } catch (error) {
+    console.error("Ошибка обновления команды:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/teams/[id]/upload/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
+
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+  }
+
+  const contentType = req.headers.get("content-type") || "";
+  if (!contentType.includes("multipart/form-data")) {
+    return NextResponse.json({ error: "Ожидается multipart/form-data" }, { status: 400 });
+  }
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    if (!file || !file.size) {
+      return NextResponse.json({ error: "Файл не предоставлен" }, { status: 400 });
+    }
+
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+
+    const bytes = await file.arrayBuffer();
+    const ext = file.name.split(".").pop() || "jpg";
+    const fileName = `team-${params.id}-${Date.now()}.${ext}`;
+    await writeFile(path.join(uploadDir, fileName), Buffer.from(bytes));
+    const fileUrl = `/uploads/${fileName}`;
+
+    const type = formData.get("type") as string;
+    if (type === "logo") {
+      await prisma.team.update({ where: { id: params.id }, data: { logoUrl: fileUrl } });
+    } else {
+      const team = await prisma.team.findUnique({ where: { id: params.id }, select: { photos: true } });
+      if (team && team.photos.length >= 3) {
+        return NextResponse.json({ error: "Максимум 3 фото" }, { status: 400 });
+      }
+      await prisma.team.update({ where: { id: params.id }, data: { photos: { push: fileUrl } } });
+    }
+
+    return NextResponse.json({ url: fileUrl });
+  } catch (err) {
+    console.error("Upload error:", err);
+    return NextResponse.json({ error: "Ошибка загрузки" }, { status: 500 });
+  }
+}
+
+========== src/app/api/teams/[id]/route.ts ==========
+// src/app/api/teams/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const team = await prisma.team.findUnique({
+    where: { id: params.id },
+    include: {
+      players: {
+        select: {
+          id: true,
+          username: true,
+          fullName: true,
+          position: true,
+          photos: true,
+        },
+      },
+    },
+  });
+
+  if (!team) {
+    return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
+  }
+
+  return NextResponse.json(team);
+}
+========== src/app/api/role-request/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+const VALID_ROLES = ["EDITOR", "CAPTAIN"];
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { requestedRole } = await req.json();
+  
+  if (!requestedRole || !VALID_ROLES.includes(requestedRole)) {
+    return NextResponse.json({ error: "Invalid role. Must be EDITOR or CAPTAIN" }, { status: 400 });
+  }
+
+  const existing = await prisma.roleRequest.findFirst({
+    where: { userId: session.user.id, status: "PENDING" },
+  });
+  if (existing) return NextResponse.json({ error: "Already have pending request" }, { status: 400 });
+
+  await prisma.roleRequest.create({
+    data: { userId: session.user.id, requestedRole },
+  });
+
+  return NextResponse.json({ success: true }, { status: 201 });
+}
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Admin only" }, { status: 403 });
+  }
+  const requests = await prisma.roleRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { user: { select: { id: true, fullName: true, username: true } } },
+  });
+  return NextResponse.json(requests);
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Admin only" }, { status: 403 });
+  }
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  const { status } = await req.json();
+  const request = await prisma.roleRequest.update({ where: { id }, data: { status } });
+  if (status === "APPROVED") {
+    await prisma.user.update({ where: { id: request.userId }, data: { role: request.requestedRole } });
+  }
+  return NextResponse.json({ success: true });
+}
+
+========== src/app/api/matches/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { redis } from "@/lib/redis";
+
+const CACHE_TTL = 120; // 2 минуты
+
+async function invalidateMatchesCache() {
+  try {
+    const keys = await redis.keys("matches:*");
+    if (keys.length > 0) {
+      await redis.del(keys);
+      console.log(`Invalidated ${keys.length} matches cache keys`);
+    }
+  } catch (err) {
+    console.error("Matches cache invalidation error:", err);
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "50");
+  const status = searchParams.get("status");
+  const skip = (page - 1) * limit;
+
+  const cacheKey = `matches:list:page:${page}:limit:${limit}:status:${status || 'all'}`;
+
+  // Пробуем кэш
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log(`Cache hit: ${cacheKey}`);
+      const parsed = JSON.parse(cached);
+      return NextResponse.json(parsed.data || parsed);
+    }
+    console.log(`Cache miss: ${cacheKey}`);
+  } catch (err) {
+    console.error("Redis cache error:", err);
+  }
+
+  const where: any = {};
+  if (status === 'upcoming') { where.date = { gte: new Date() }; where.status = 'SCHEDULED'; }
+  else if (status === 'live') where.status = 'LIVE';
+  else if (status === 'finished') where.status = 'FINISHED';
+
+  const [matches, total] = await Promise.all([
+    prisma.match.findMany({
+      where, skip, take: limit, orderBy: { date: "desc" },
+      include: {
+        homeTeam: { select: { id: true, name: true, logoUrl: true } },
+        awayTeam: { select: { id: true, name: true, logoUrl: true } },
+      },
+    }),
+    prisma.match.count({ where }),
+  ]);
+
+  const cacheData = {
+    data: matches,
+    meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+  };
+
+  try {
+    await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(cacheData));
+  } catch (err) {
+    console.error("Redis cache set error:", err);
+  }
+
+  return NextResponse.json(matches);
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")) {
+    return NextResponse.json({ error: "Только редактор или админ" }, { status: 403 });
+  }
+  const { homeTeamId, awayTeamId, date, venue } = await req.json();
+  if (homeTeamId === awayTeamId) return NextResponse.json({ error: "Команда не может играть сама с собой" }, { status: 400 });
+  
+  const match = await prisma.match.create({ data: { homeTeamId, awayTeamId, date: new Date(date), venue } });
+  
+  await invalidateMatchesCache();
+  
+  return NextResponse.json(match, { status: 201 });
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только администратор" }, { status: 403 });
+  }
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID обязателен" }, { status: 400 });
+  
+  await prisma.match.delete({ where: { id } });
+  
+  await invalidateMatchesCache();
+  
+  return NextResponse.json({ success: true });
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")) {
+    return NextResponse.json({ error: "Только редактор или админ" }, { status: 403 });
+  }
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  
+  const data = await req.json();
+  const match = await prisma.match.update({ where: { id }, data });
+  
+  await invalidateMatchesCache();
+  
+  return NextResponse.json(match);
+}
+========== src/app/api/news/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
+import { redis } from "@/lib/redis";
+import { hasXSS, hasSqlInjection } from "@/lib/validate";
+
+const CACHE_TTL = 300;
+
+async function invalidateNewsCache() {
+  try {
+    const keys = await redis.keys("news:*");
+    if (keys.length > 0) await redis.del(keys);
+  } catch (err) { console.error("News cache invalidation error:", err); }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")) {
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+  }
+
+  try {
+    const contentType = req.headers.get("content-type") || "";
+    let title: string, content: string, imageUrl: string | null = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      title = formData.get("title") as string;
+      content = formData.get("content") as string;
+      const file = formData.get("image") as File | null;
+      if (file && file.size > 0) {
+        const uploadDir = path.join(process.cwd(), "public", "uploads", "news");
+        await mkdir(uploadDir, { recursive: true });
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const fileName = `news-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+        await writeFile(path.join(uploadDir, fileName), buffer);
+        imageUrl = `/uploads/news/${fileName}`;
+      }
+    } else {
+      const body = await req.json();
+      title = body.title;
+      content = body.content;
+    }
+
+    if (!title || title.length < 3 || title.length > 200) {
+      return NextResponse.json({ error: "Заголовок: от 3 до 200 символов" }, { status: 400 });
+    }
+    if (!content || content.length < 10 || content.length > 10000) {
+      return NextResponse.json({ error: "Содержание: от 10 до 10000 символов" }, { status: 400 });
+    }
+    if (hasXSS(title) || hasSqlInjection(title) || hasXSS(content) || hasSqlInjection(content)) {
+      return NextResponse.json({ error: "Текст содержит недопустимые символы" }, { status: 400 });
+    }
+
+    if (!session.user.id) return NextResponse.json({ error: "Ошибка сессии" }, { status: 500 });
+
+    const post = await prisma.newsPost.create({
+      data: { title, content, imageUrl, authorId: session.user.id, isPublished: true },
+      include: { author: { select: { id: true, fullName: true, username: true } } },
+    });
+
+    await invalidateNewsCache();
+    return NextResponse.json(post, { status: 201 });
+  } catch (error) {
+    console.error("News create error:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const query = (searchParams.get("q") || "").replace(/[<>"'`]/g, "").substring(0, 100);
+    const cacheKey = `news:list:page:${page}:limit:${limit}:q:${query}`;
+
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) return NextResponse.json(JSON.parse(cached));
+    } catch {}
+
+    const skip = (page - 1) * limit;
+    const where = query
+      ? { OR: [{ title: { contains: query, mode: Prisma.QueryMode.insensitive } }, { content: { contains: query, mode: Prisma.QueryMode.insensitive } }], isPublished: true }
+      : { isPublished: true };
+
+    const [posts, total] = await Promise.all([
+      prisma.newsPost.findMany({ where, skip, take: limit, orderBy: { createdAt: "desc" }, include: { author: { select: { id: true, fullName: true, username: true } } } }),
+      prisma.newsPost.count({ where }),
+    ]);
+
+    const result = { data: posts, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    try { await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result)); } catch {}
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("News load error:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+
+========== src/app/api/news/[id]/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { unlink, writeFile, mkdir } from "fs/promises";
+import path from "path";
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")) {
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+  }
+
+  try {
+    const contentType = req.headers.get("content-type") || "";
+    let title: string, content: string, imageUrl: string | undefined;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      title = formData.get("title") as string;
+      content = formData.get("content") as string;
+      const file = formData.get("image") as File | null;
+      if (file && file.size > 0) {
+        const uploadDir = path.join(process.cwd(), "public", "uploads", "news");
+        await mkdir(uploadDir, { recursive: true });
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const fileName = `news-${Date.now()}-${file.name.replace(/\s/g, "-")}`;
+        await writeFile(path.join(uploadDir, fileName), buffer);
+        imageUrl = `/uploads/news/${fileName}`;
+      }
+    } else {
+      const body = await req.json();
+      title = body.title;
+      content = body.content;
+    }
+
+    const updateData: any = {};
+    if (title) updateData.title = title;
+    if (content) updateData.content = content;
+    if (imageUrl) updateData.imageUrl = imageUrl;
+
+    const post = await prisma.newsPost.update({
+      where: { id: params.id },
+      data: updateData,
+      include: { author: { select: { id: true, fullName: true, username: true } } },
+    });
+
+    return NextResponse.json(post);
+  } catch (error) {
+    console.error("News update error:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  const post = await prisma.newsPost.findUnique({ where: { id: params.id } });
+  if (!post) return NextResponse.json({ error: "Не найдено" }, { status: 404 });
+
+  if (session.user.role !== "ADMIN" && post.authorId !== session.user.id) {
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+  }
+
+  if (post.imageUrl) {
+    try { await unlink(path.join(process.cwd(), "public", post.imageUrl)); } catch {}
+  }
+
+  await prisma.newsPost.delete({ where: { id: params.id } });
+  return NextResponse.json({ success: true });
+}
+
+========== src/app/api/profile/set-password/route.ts ==========
+//src/app/api/profile/set-password/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+  }
+
+  const { password } = await req.json();
+
+  if (!password || password.length < 6) {
+    return NextResponse.json(
+      { error: "Пароль должен быть минимум 6 символов" },
+      { status: 400 }
+    );
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { passwordHash },
+  });
+
+  return NextResponse.json({ success: true });
+}
+========== src/app/api/profile/upload-photo/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { mkdir, writeFile, unlink } from "fs/promises";
+import path from "path";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get("photo") as File;
+
+    if (!file || !file.size) {
+      return NextResponse.json({ error: "Файл не предоставлен" }, { status: 400 });
+    }
+
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
+    await mkdir(uploadDir, { recursive: true });
+
+    const bytes = await file.arrayBuffer();
+    const fileName = `avatar-${session.user.id}-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
+    await writeFile(path.join(uploadDir, fileName), Buffer.from(bytes));
+    const photoUrl = `/uploads/avatars/${fileName}`;
+
+    const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { photos: true } });
+    if (user && user.photos.length >= 10) {
+      return NextResponse.json({ error: "Максимум 10 фото" }, { status: 400 });
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { photos: { push: photoUrl } },
+    });
+
+    return NextResponse.json({ url: photoUrl }, { status: 200 });
+  } catch (err) {
+    console.error("Upload error:", err);
+    return NextResponse.json({ error: "Ошибка загрузки" }, { status: 500 });
+  }
+}
+
+========== src/app/api/profile/change-password/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const currentPassword = body.current || body.currentPassword;
+    const newPassword = body.new || body.newPassword;
+
+    if (!currentPassword || !newPassword) {
+      return NextResponse.json({ error: "Заполните все поля" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user) {
+      return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+    }
+
+    if (!user.passwordHash) {
+      return NextResponse.json({ error: "У аккаунта нет пароля. Возможно, вы вошли через Google." }, { status: 400 });
+    }
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) {
+      return NextResponse.json({ error: "Текущий пароль неверен" }, { status: 400 });
+    }
+
+    if (newPassword.length < 6) {
+      return NextResponse.json({ error: "Новый пароль должен быть минимум 6 символов" }, { status: 400 });
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { passwordHash: await bcrypt.hash(newPassword, 10) },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Ошибка смены пароля:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/profile/update/route.ts ==========
+// src/app/api/profile/update/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  
+  // Получаем текущий username из токена или из базы (на всякий случай)
+  let currentUsername = session.user.username;
+  if (!currentUsername) {
+    const dbUser = await prisma.user.findUnique({ 
+      where: { id: session.user.id }, 
+      select: { username: true } 
+    });
+    currentUsername = dbUser?.username;
+  }
+
+  // Проверяем уникальность только если ник реально изменился
+  if (body.username && body.username !== currentUsername) {
+    const existing = await prisma.user.findUnique({
+      where: { username: body.username },
+    });
+    
+    if (existing) {
+      return NextResponse.json(
+        { error: "Этот username уже занят другим пользователем" }, 
+        { status: 400 }
+      );
+    }
+  }
+
+  try {
+    const updateData: any = {
+      fullName: body.fullName,
+      username: body.username,
+      city: body.city || null,
+      position: body.position || null,
+      contacts: body.contacts || null,
+      stats: body.stats || null,
+    };
+
+    if (body.birthDate) {
+      const date = new Date(body.birthDate);
+      if (!isNaN(date.getTime())) updateData.birthDate = date;
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: updateData,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Ошибка обновления:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/profile/route.ts ==========
+//src/app/api/profile/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  return NextResponse.json(user);
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
+    const body = await req.json();
+
+    // Разрешаем обновлять ТОЛЬКО безопасные поля
+    const safeData: any = {};
+    if (body.fullName) safeData.fullName = body.fullName;
+    if (body.city) safeData.city = body.city;
+    if (body.position) safeData.position = body.position;
+    if (body.contacts) safeData.contacts = body.contacts;
+    if (body.stats) safeData.stats = body.stats;
+    if (body.birthDate) safeData.birthDate = new Date(body.birthDate);
+
+    // Обработка фото: принимаем массив URL
+    if (Array.isArray(body.photos)) {
+      // Проверим, что каждый элемент — строка (URL или base64)
+      const validPhotos = body.photos.filter((p: any) => typeof p === 'string');
+      if (validPhotos.length <= 3) { // Максимум 3 фото
+        safeData.photos = validPhotos;
+      } else {
+        return NextResponse.json({ error: "Максимум 3 фото" }, { status: 400 });
+      }
+    }
+
+    if (Object.keys(safeData).length === 0) {
+      return NextResponse.json({ error: "Нет данных для обновления" }, { status: 400 });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: safeData,
+    });
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("Ошибка обновления профиля:", error);
+    return NextResponse.json({ error: "Ошибка сервера при обновлении профиля" }, { status: 500 });
+  }
+}
+========== src/app/api/profile/[id]/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true,
+      username: true,
+      fullName: true,
+      city: true,
+      position: true,
+      contacts: true,
+      stats: true,
+      birthDate: true,
+      photos: true,
+      teamId: true,
+      team: { select: { id: true, name: true, logoUrl: true } },
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+  }
+
+  return NextResponse.json(user);
+}
+
+========== src/app/api/profile/remove-photo/route.ts ==========
+// src/app/api/profile/remove-photo/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { unlink } from "fs/promises";
+import path from "path";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+  try {
+    // Получаем текущее фото
+    const currentUser = await prisma.user.findUnique({ 
+      where: { id: session.user.id },
+      select: { photos: true }
+    });
+    
+    if (currentUser?.photos && currentUser.photos.length > 0) {
+      const oldPhotoPath = currentUser.photos[0];
+      
+      // Удаляем файл с диска
+      try {
+        const fullPath = path.join(process.cwd(), "public", oldPhotoPath);
+        await unlink(fullPath);
+        console.log(`🗑️ Фото удалено с диска по запросу пользователя: ${oldPhotoPath}`);
+      } catch (err: any) {
+        if (err.code !== 'ENOENT') {
+          console.error("Ошибка при удалении файла с диска:", err);
+        }
+      }
+    }
+
+    // Очищаем поле photos в базе данных
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { photos: [] },
+    });
+
+    console.log(`Фото удалено из профиля пользователя ${session.user.id}`);
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error("Ошибка удаления фото:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+========== src/app/api/profile/me/route.ts ==========
+// src/app/api/profile/me/route.ts
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      username: true,
+      fullName: true,
+      city: true,
+      position: true,
+      contacts: true,
+      stats: true,
+      birthDate: true,
+      photos: true,
+      teamId: true,
+      team: {
+        select: { name: true }
+      }
+    }
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+  }
+
+  return NextResponse.json(user);
+}
+========== src/app/api/auth/register/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { hasXSS, hasSqlInjection } from "@/lib/validate";
+
+export async function POST(req: NextRequest) {
+  const { username, fullName, password, city } = await req.json();
+
+  if (!username || !fullName || !password) {
+    return NextResponse.json({ error: "Все поля обязательны" }, { status: 400 });
+  }
+  if (username.length < 3 || username.length > 30) {
+    return NextResponse.json({ error: "Логин: 3-30 символов" }, { status: 400 });
+  }
+  if (password.length < 6) {
+  if (password.length > 128) return NextResponse.json({ error: "Пароль: максимум 128 символов" }, { status: 400 });
+    return NextResponse.json({ error: "Пароль минимум 6 символов" }, { status: 400 });
+  }
+  if (fullName.length < 2 || fullName.length > 100) {
+    return NextResponse.json({ error: "Имя: 2-100 символов" }, { status: 400 });
+  }
+  if (hasXSS(fullName) || hasSqlInjection(fullName) || hasXSS(username) || hasSqlInjection(username)) {
+    return NextResponse.json({ error: "Недопустимые символы" }, { status: 400 });
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { username } });
+  if (existingUser) {
+    return NextResponse.json({ error: "Username занят" }, { status: 400 });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({
+    data: { username, fullName, passwordHash, city: city || "", role: "USER", privacyAcceptedAt: new Date() },
+  });
+
+  return NextResponse.json({ id: user.id, username: user.username, fullName: user.fullName }, { status: 201 });
+}
+
+========== src/app/api/auth/[...nextauth]/route.ts ==========
+//src/app/api/auth/[...nextauth]/route.ts
+
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+
+========== src/app/api/livestream/route.ts ==========
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  try {
+    const stream = await prisma.liveStream.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    console.log("GET /api/livestream - найдена трансляция:", stream ? stream.id : "нет");
+
+    if (!stream) {
+      return NextResponse.json({
+        isActive: false,
+        title: "Прямая трансляция",
+        vkVideoUrl: process.env.VK_STREAM_URL || "",
+        vkGroupUrl: process.env.VK_GROUP_URL || "",
+        tgGroupUrl: process.env.TG_GROUP_URL || "",
+      });
+    }
+
+    return NextResponse.json(stream);
+  } catch (error) {
+    console.error("GET /api/livestream error:", error);
+    return NextResponse.json({ error: "Ошибка загрузки" }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+    
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Нет доступа" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    console.log("PATCH /api/livestream - данные:", body);
+
+    const { title, vkVideoUrl, vkGroupUrl, tgGroupUrl, isActive } = body;
+
+    await prisma.liveStream.updateMany({
+      where: { isActive: true },
+      data: { isActive: false },
+    });
+
+    const stream = await prisma.liveStream.create({
+      data: {
+        title: title || "Прямая трансляция",
+        vkVideoUrl: vkVideoUrl || "",
+        vkGroupUrl: vkGroupUrl || process.env.VK_GROUP_URL || "",
+        tgGroupUrl: tgGroupUrl || process.env.TG_GROUP_URL || "",
+        isActive: isActive !== false,
+      },
+    });
+
+    console.log("Создана трансляция:", stream.id);
+    return NextResponse.json(stream);
+  } catch (error) {
+    console.error("PATCH /api/livestream error:", error);
+    return NextResponse.json({ error: "Ошибка сохранения" }, { status: 500 });
+  }
+}
+========== src/app/api/match-events/route.ts ==========
+//src/app/api/match-events/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+// GET: Получить события матча
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const matchId = searchParams.get("matchId");
+
+  if (!matchId) {
+    return NextResponse.json({ error: "matchId required" }, { status: 400 });
+  }
+
+  const events = await prisma.matchEvent.findMany({
+    where: { matchId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return NextResponse.json(events);
+}
+
+// POST: Добавить событие (только EDITOR/ADMIN)
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")) {
+    return NextResponse.json({ error: "Только редактор или админ" }, { status: 403 });
+  }
+
+  const { matchId, minute, text } = await req.json();
+
+  if (!matchId || !text) {
+    return NextResponse.json({ error: "matchId и text обязательны" }, { status: 400 });
+  }
+
+  const event = await prisma.matchEvent.create({
+    data: { matchId, minute: minute ? parseInt(minute) : null, text },
+  });
+
+  return NextResponse.json(event, { status: 201 });
+}
+
+// DELETE: Очистить все события матча (только ADMIN)
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только админ" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const matchId = searchParams.get("matchId");
+
+  if (!matchId) {
+    return NextResponse.json({ error: "matchId required" }, { status: 400 });
+  }
+
+  await prisma.matchEvent.deleteMany({ where: { matchId } });
+
+  return NextResponse.json({ success: true });
+}
+========== src/app/api/chat/messages/read/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { senderId } = await req.json();
+  if (!senderId) return NextResponse.json({ error: "senderId required" }, { status: 400 });
+
+  await prisma.chatMessage.updateMany({
+    where: {
+      senderId,
+      receiverId: session.user.id,
+      isRead: false,
+    },
+    data: { isRead: true },
+  });
+
+  return NextResponse.json({ success: true });
+}
+
+========== src/app/api/chat/messages/search/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const q = req.nextUrl.searchParams.get("q") || "";
+  if (!q) return NextResponse.json([]);
+  const messages = await prisma.chatMessage.findMany({
+    where: { text: { contains: q, mode: "insensitive" }, OR: [{ senderId: session.user.id }, { receiverId: session.user.id }] },
+    include: { sender: { select: { fullName: true } } },
+    orderBy: { createdAt: "desc" }, take: 50,
+  });
+  return NextResponse.json(messages);
+}
+========== src/app/api/chat/messages/pin/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { messageId, isPinned } = await req.json();
+  await prisma.chatMessage.update({ where: { id: messageId }, data: { isPinned } });
+  return NextResponse.json({ success: true });
+}
+========== src/app/api/chat/messages/route.ts ==========
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const searchParams = req.nextUrl.searchParams;
+  const otherUserId = searchParams.get("userId");
+  const page = parseInt(searchParams.get("page") || "0");
+  const limit = parseInt(searchParams.get("limit") || "20");
+
+  if (!otherUserId) return NextResponse.json({ error: "userId required" }, { status: 400 });
+
+  const userId = session.user.id;
+  const messages = await prisma.chatMessage.findMany({
+    where: {
+      OR: [
+        { senderId: userId, receiverId: otherUserId },
+        { senderId: otherUserId, receiverId: userId },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+    skip: page * limit,
+    take: limit,
+    include: { sender: { select: { id: true, fullName: true } } },
+  });
+
+  return NextResponse.json({
+    messages: messages.reverse(),
+    hasMore: messages.length === limit,
+  });
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { receiverId, text } = await req.json();
+  if (!receiverId || !text) return NextResponse.json({ error: "receiverId and text required" }, { status: 400 });
+
+  const msg = await prisma.chatMessage.create({
+    data: { senderId: session.user.id, receiverId, text },
+    include: { sender: { select: { id: true, fullName: true } } },
+  });
+
+  return NextResponse.json(msg, { status: 201 });
+}
+
+========== src/app/api/chat/conversations/route.ts ==========
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { redis } from "@/lib/redis";
+
+const CACHE_TTL = 30; // 30 секунд
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const userId = session.user.id;
+  const cacheKey = `conversations:${userId}`;
+
+  // Пробуем кэш
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log(`Cache hit: ${cacheKey}`);
+      return NextResponse.json(JSON.parse(cached));
+    }
+    console.log(`Cache miss: ${cacheKey}`);
+  } catch (err) {
+    console.error("Redis cache error:", err);
+  }
+
+  const messages = await prisma.chatMessage.findMany({
+    where: {
+      OR: [{ senderId: userId }, { receiverId: userId }],
+    },
+    orderBy: { createdAt: "desc" },
+    include: {
+      sender: { select: { id: true, fullName: true, username: true, photos: true } },
+      receiver: { select: { id: true, fullName: true, username: true, photos: true } },
+    },
+  });
+
+  const conversationsMap = new Map();
+
+  messages.forEach((msg) => {
+    const otherUser = msg.senderId === userId ? msg.receiver : msg.sender;
+    if (!otherUser) return;
+    const otherUserId = otherUser.id;
+    if (!conversationsMap.has(otherUserId)) {
+      conversationsMap.set(otherUserId, {
+        user: otherUser,
+        lastMessage: msg,
+        unreadCount: 0,
+      });
+    }
+  });
+
+  const result = Array.from(conversationsMap.values());
+
+  // Сохраняем в кэш
+  try {
+    await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result));
+  } catch (err) {
+    console.error("Redis cache set error:", err);
+  }
+
+  return NextResponse.json(result);
+}
+=== AUTH CONFIG ===
+========== src/app/auth ==========
+
+========== src/app/api/auth ==========
+
+========== src/app/api/auth/[...nextauth] ==========
+
+========== src/types/next-auth.d.ts ==========
+// src/types/next-auth.d.ts
+
+import "next-auth";
+import "next-auth/jwt";
+
+declare module "next-auth" {
+  interface User {
+    id: string;
+    username?: string;
+    role?: string;
+  }
+
+  interface Session {
+    user: {
+      id: string;
+      username?: string;
+      role?: string;
+      name?: string | null;
+      email?: string | null;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    username?: string;
+    role?: string;
+  }
+}
+========== src/lib/auth.ts ==========
+// src/lib/auth.ts
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Логин", type: "text" },
+        password: { label: "Пароль", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) return null;
+        
+        const user = await prisma.user.findUnique({
+          where: { username: credentials.username }
+        });
+
+        if (!user || !user.passwordHash) return null;
+
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isValid) return null;
+
+        // Возвращаем объект, который попадет в JWT токен
+        return {
+          id: user.id,
+          name: user.fullName,
+          role: user.role,
+          username: user.username, 
+        };
+      }
+    })
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.username = user.username; // Сохраняем username в токен
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.username = token.username as string; // Передаем username в сессию
+      }
+      return session;
+    }
+  },
+  pages: {
+    signIn: "/auth/signin",
+  },
+  session: {
+    strategy: "jwt",
+  },
+};
+=== MIDDLEWARE ===
+middleware.ts not found

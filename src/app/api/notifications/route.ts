@@ -5,8 +5,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ chat: 0, support: 0 });
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   const userId = session.user.id;
-  const unreadChat = await prisma.chatMessage.count({ where: { receiverId: userId, isRead: false } });
+  const unreadChat = await prisma.chatMessage.count({ 
+    where: { receiverId: userId, isRead: false } 
+  });
+  
   return NextResponse.json({ chat: unreadChat, support: 0 });
 }

@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { redis } from "@/lib/redis";
+import { hasSqlInjection, hasXSS, validateLength, validatePayloadSize } from "@/lib/validate";
 
 const CACHE_TTL = 300; // 5 минут
 
@@ -14,7 +15,7 @@ async function invalidateNewsCache() {
     const keys = await redis.keys("news:*");
     if (keys.length > 0) {
       await redis.del(keys);
-      console.log(`🗑️ Invalidated ${keys.length} news cache keys`);
+      console.log(`Invalidated ${keys.length} news cache keys`);
     }
   } catch (err) {
     console.error("News cache invalidation error:", err);
@@ -22,9 +23,19 @@ async function invalidateNewsCache() {
 }
 
 export async function POST(req: NextRequest) {
+  const payloadError = validatePayloadSize(req, 10);
+  if (payloadError) {
+    return NextResponse.json({ error: payloadError }, { status: 413 });
+  }
+
   const session = await getServerSession(authOptions);
-  const userRole = session?.user?.role;
-  if (!session?.user || (userRole !== "ADMIN" && userRole !== "EDITOR")) {
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+  }
+  
+  const userRole = session.user.role;
+  if (userRole !== "ADMIN" && userRole !== "EDITOR") {
     return NextResponse.json({ error: "Нет прав" }, { status: 403 });
   }
 
@@ -52,16 +63,37 @@ export async function POST(req: NextRequest) {
       content = body.content;
     }
 
-    if (!title || !content) return NextResponse.json({ error: "Заголовок и контент обязательны" }, { status: 400 });
+    if (!title || !content) {
+      return NextResponse.json({ error: "Заголовок и контент обязательны" }, { status: 400 });
+    }
 
-    if (!session.user.id) return NextResponse.json({ error: "Ошибка сессии" }, { status: 500 });
+    if (hasSqlInjection(title) || hasSqlInjection(content)) {
+      return NextResponse.json({ error: "Обнаружены недопустимые символы" }, { status: 400 });
+    }
+
+    if (hasXSS(title) || hasXSS(content)) {
+      return NextResponse.json({ error: "Обнаружены недопустимые символы" }, { status: 400 });
+    }
+
+    const titleError = validateLength(title, 10, 200, "Заголовок");
+    if (titleError) {
+      return NextResponse.json({ error: titleError }, { status: 400 });
+    }
+
+    const contentError = validateLength(content, 10, 5000, "Контент");
+    if (contentError) {
+      return NextResponse.json({ error: contentError }, { status: 400 });
+    }
+
+    if (!session.user.id) {
+      return NextResponse.json({ error: "Ошибка сессии" }, { status: 500 });
+    }
 
     const post = await prisma.newsPost.create({
       data: { title, content, imageUrl, authorId: session.user.id, isPublished: true },
       include: { author: { select: { id: true, fullName: true, username: true } } },
     });
 
-    // Инвалидируем кэш после создания новости
     await invalidateNewsCache();
 
     return NextResponse.json(post, { status: 201 });
@@ -80,7 +112,6 @@ export async function GET(req: NextRequest) {
     
     const cacheKey = `news:list:page:${page}:limit:${limit}:q:${query}`;
 
-    // Пробуем кэш
     try {
       const cached = await redis.get(cacheKey);
       if (cached) {
@@ -104,7 +135,6 @@ export async function GET(req: NextRequest) {
 
     const result = { data: posts, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 
-    // Сохраняем в кэш
     try {
       await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result));
     } catch (err) {
@@ -114,6 +144,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("News load error:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+  }
+  
+  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID обязателен" }, { status: 400 });
+
+  try {
+    await prisma.newsPost.delete({ where: { id } });
+    await invalidateNewsCache();
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("News delete error:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

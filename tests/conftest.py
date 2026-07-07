@@ -1,22 +1,13 @@
-import pytest
-import requests
-import time
-
-BASE_URL = "http://localhost:3000"
-
-@pytest.fixture(scope="session", autouse=True)
-def warmup(api):
-    api.get(f"{BASE_URL}/api/teams")  # прогреть БД
-    time.sleep(1)
+import pytest, requests, time
+BASE = "http://localhost:3000"
 
 @pytest.fixture(scope="session")
 def api():
     for _ in range(30):
         try:
-            requests.get(f"{BASE_URL}/api/auth/session", timeout=2)
+            requests.get(f"{BASE}/api/auth/session", timeout=2)
             return requests.Session()
-        except:
-            time.sleep(2)
+        except: time.sleep(2)
     raise Exception("Server not running")
 
 @pytest.fixture
@@ -25,46 +16,46 @@ def unique_id():
 
 @pytest.fixture
 def registered_user(api, unique_id):
-    username = f"test_user_{unique_id}"
-    r = api.post(f"{BASE_URL}/api/auth/register", json={
-        "username": username, "password": "123456", "fullName": "Test User", "city": "Moscow",
-    })
-    assert r.status_code in [200, 201], f"Register failed: {r.text}"
+    username = f"t{unique_id}"
+    r = api.post(f"{BASE}/api/auth/register", json={"username": username, "password": "123456", "fullName": "Test", "city": "M"})
+    assert r.status_code == 201, f"Register failed: {r.text}"
     return {"username": username, "password": "123456"}
 
 @pytest.fixture
 def admin_session():
-    session = requests.Session()
-    csrf = session.get(f"{BASE_URL}/api/auth/csrf")
-    csrf_token = csrf.json().get("csrfToken", "")
-    r = session.post(f"{BASE_URL}/api/auth/callback/credentials", 
-        json={"username": "admin_vlad", "password": "admin123", "csrfToken": csrf_token},
-        headers={"Content-Type": "application/json"}
-    )
+    s = requests.Session()
+    csrf = s.get(f"{BASE}/api/auth/csrf").json()["csrfToken"]
+    r = s.post(f"{BASE}/api/auth/callback/credentials", json={"username": "admin_vlad", "password": "admin123", "csrfToken": csrf})
     assert r.status_code == 200, f"Admin login failed: {r.status_code}"
-    return session
+    return s
 
 @pytest.fixture
-def created_team(admin_session, unique_id):
-    """Создаёт команду и возвращает её ID"""
-    r = admin_session.post(f"{BASE_URL}/api/teams/create", json={"name": f"Team_{unique_id}"})
-    assert r.status_code in [201, 400], f"Create team failed: {r.text}"
-    if r.status_code == 201:
-        return r.json().get("id")
-    return None
+def team_to_delete(admin_session):
+    """Создаёт команду и авто-удаляет после теста"""
+    r = admin_session.post(f"{BASE}/api/teams/create", json={"name": f"cleanup_{int(time.time())}"})
+    team_id = r.json()["id"]
+    yield team_id
+    admin_session.delete(f"{BASE}/api/teams?id={team_id}")
 
 @pytest.fixture
-def created_match(admin_session, unique_id):
-    """Создаёт матч и возвращает его ID"""
-    teams = admin_session.get(f"{BASE_URL}/api/teams").json()
-    data = teams.get("data", [])
-    if len(data) >= 2:
-        r = admin_session.post(f"{BASE_URL}/api/matches", json={
-            "homeTeamId": data[0]["id"],
-            "awayTeamId": data[1]["id"],
-            "date": "2025-12-01T18:00:00.000Z",
-            "venue": f"Stadium_{unique_id}",
+def news_to_delete(admin_session):
+    """Создаёт новость и авто-удаляет после теста"""
+    r = admin_session.post(f"{BASE}/api/news", json={"title": f"cleanup_{int(time.time())}", "content": "Auto-delete test content"})
+    news_id = r.json()["id"]
+    yield news_id
+    admin_session.delete(f"{BASE}/api/news/{news_id}")
+
+@pytest.fixture
+def match_to_delete(admin_session):
+    """Создаёт матч и авто-удаляет после теста"""
+    teams = admin_session.get(f"{BASE}/api/teams").json()["data"]
+    if len(teams) >= 2:
+        r = admin_session.post(f"{BASE}/api/matches", json={
+            "homeTeamId": teams[0]["id"], "awayTeamId": teams[1]["id"],
+            "date": f"2025-07-01T18:00:00.000Z",
         })
-        if r.status_code == 201:
-            return r.json().get("id")
-    return None
+        match_id = r.json()["id"]
+        yield match_id
+        admin_session.delete(f"{BASE}/api/matches?id={match_id}")
+    else:
+        yield None

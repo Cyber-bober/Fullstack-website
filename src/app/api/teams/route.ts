@@ -1,10 +1,11 @@
-// src/app/api/teams/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { redis } from "@/lib/redis";
 
-const CACHE_TTL = 300;
+const CACHE_TTL = 300; // 5 минут
 
 async function invalidateTeamsCache() {
   try {
@@ -20,10 +21,10 @@ async function invalidateTeamsCache() {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  
-  const page = parseInt(searchParams.get("page") || "1");
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
   const limit = parseInt(searchParams.get("limit") || "12");
   const query = searchParams.get("q") || "";
+  const skip = (page - 1) * limit;
 
   const cacheKey = `teams:list:page:${page}:limit:${limit}:q:${query}`;
 
@@ -37,8 +38,6 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("Redis cache error:", err);
   }
-
-  const skip = (page - 1) * limit;
 
   const where = query 
     ? { name: { contains: query, mode: Prisma.QueryMode.insensitive } } 
@@ -91,13 +90,27 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(result);
 }
 
-export async function POST(req: NextRequest) {
-  const { name } = await req.json();
-  if (!name) return NextResponse.json({ error: "Название обязательно" }, { status: 400 });
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
   
-  const team = await prisma.team.create({ data: { name, rating: 1500 } });
+  if (!session?.user) {
+    return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+  }
   
-  await invalidateTeamsCache();
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Только админ" }, { status: 403 });
+  }
   
-  return NextResponse.json(team, { status: 201 });
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID обязателен" }, { status: 400 });
+  
+  try {
+    await prisma.team.delete({ where: { id } });
+    await invalidateTeamsCache();
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Team delete error:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
 }

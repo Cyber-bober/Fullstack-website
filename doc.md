@@ -97,6 +97,7 @@ docker-compose exec app npx tsx scripts/reset-db.ts
 После очистки сразу наполните базу:
 
 ```bash
+docker compose exec app npx tsx scripts/seed.ts #Через докер
 npx tsx scripts/seed.ts
 ```
 

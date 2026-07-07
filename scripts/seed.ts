@@ -61,6 +61,19 @@ async function main() {
     }),
   ]);
 
+  const captain = await prisma.user.upsert({
+    where: { username: 'captain' },
+    update: {},
+    create: {
+      username: 'captain',
+      fullName: 'Captain Test',
+      passwordHash: await bcrypt.hash('123456', 10),
+      role: 'CAPTAIN',
+      city: 'Москва',
+      privacyAcceptedAt: new Date(),
+    },
+  });
+  console.log(` Создан капитан: captain / 123456`);
   console.log(` Создано ${admins.length} админ(а/ов) и ${editors.length} редактор(а/ов)`);
 
   // ==========================================
@@ -183,7 +196,7 @@ async function main() {
 
   console.log('\n ЗАПОЛНЕНИЕ БАЗЫ ДАННЫХ УСПЕШНО ЗАВЕРШЕНО!');
   console.log('=============================================');
-  console.log('👤АДМИНЫ:');
+  console.log(' АДМИНЫ:');
   console.log('   admin_vlad / admin123');
   console.log('   admin_sergey / admin123');
   console.log('  РЕДАКТОРЫ:');

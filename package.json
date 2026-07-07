@@ -11,17 +11,20 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "node prisma/seed.js",
+    "prisma:seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/seed.ts",
+    "db:reset": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/reset-db.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "prisma": {
-    "schema": "src/lib/schema.prisma"
+    "schema": "src/lib/schema.prisma",
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "amqplib": "^2.0.1",
     "bcryptjs": "^2.4.3",
+    "helmet": "^8.2.0",
     "next": "^14.2.0",
     "next-auth": "^4.24.0",
     "react": "^18.3.0",
@@ -42,6 +45,7 @@
     "jest": "^30.4.2",
     "prisma": "^5.22.0",
     "ts-jest": "^29.4.11",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
   }
 }

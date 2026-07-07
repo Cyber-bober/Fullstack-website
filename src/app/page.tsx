@@ -48,13 +48,25 @@ function HomePageContent() {
       try {
         const [sessionRes, matchesRes, teamsRes] = await Promise.all([
           fetch("/api/auth/session"),
-          fetch("/api/matches"),
-          fetch("/api/teams?limit=100")
+          fetch("/api/matches", { cache: 'no-store' }),
+          fetch("/api/teams?limit=100", { cache: 'no-store' })
         ]);
-        if (sessionRes.ok) { const s = await sessionRes.json(); setUserRole(s?.user?.role || null); setCurrentUserId(s?.user?.id || null); }
-        if (matchesRes.ok) { const d = await matchesRes.json(); setMatches(Array.isArray(d) ? d : []); }
-        if (teamsRes.ok) { const t = await teamsRes.json(); setTeams(t.data || []); }
-      } catch (err) { console.error("Ошибка загрузки:", err); }
+        if (sessionRes.ok) { 
+          const s = await sessionRes.json(); 
+          setUserRole(s?.user?.role || null); 
+          setCurrentUserId(s?.user?.id || null); 
+        }
+        if (matchesRes.ok) { 
+          const d = await matchesRes.json(); 
+          setMatches(Array.isArray(d) ? d : []); 
+        }
+        if (teamsRes.ok) { 
+          const t = await teamsRes.json(); 
+          setTeams(t.data || []); 
+        }
+      } catch (err) { 
+        console.error("Ошибка загрузки:", err); 
+      }
     };
     loadData();
   }, []);
@@ -87,7 +99,7 @@ function HomePageContent() {
     const page = searchParams.get("page") || "1";
     const q = searchParams.get("q") || "";
     setLiveNewsQuery(q);
-    fetch(`/api/news?page=${page}&limit=10&q=${encodeURIComponent(q)}`)
+    fetch(`/api/news?page=${page}&limit=10&q=${encodeURIComponent(q)}`, { cache: 'no-store' })
       .then(res => { if (!res.ok) throw new Error("Ошибка сервера"); return res.json(); })
       .then(data => setNewsData(data))
       .catch(() => setToast({ msg: "Не удалось загрузить новости", type: "error" }));
@@ -118,17 +130,24 @@ function HomePageContent() {
     if (!confirmDeleteMatchId) return;
     setDeletingMatchId(confirmDeleteMatchId);
     try {
-      const res = await fetch(`/api/matches?id=${confirmDeleteMatchId}`, { method: "DELETE" });
+      const res = await fetch(`/api/matches?id=${confirmDeleteMatchId}`, { 
+        method: "DELETE",
+        cache: 'no-store'
+      });
       if (res.ok) {
         setToast({ msg: "Матч успешно удален!", type: "success" });
-        const mRes = await fetch("/api/matches");
-        if (mRes.ok) setMatches(await mRes.json());
+        const mRes = await fetch("/api/matches", { cache: 'no-store' });
+        if (mRes.ok) {
+          const d = await mRes.json();
+          setMatches(Array.isArray(d) ? d : []);
+        }
       } else {
         const err = await res.json();
         setToast({ msg: err.error || "Ошибка удаления", type: "error" });
       }
-    } catch { setToast({ msg: "Ошибка сети", type: "error" }); }
-    finally { 
+    } catch { 
+      setToast({ msg: "Ошибка сети", type: "error" }); 
+    } finally { 
       setDeletingMatchId(null); 
       setConfirmDeleteMatchId(null);
     }
@@ -186,7 +205,8 @@ function HomePageContent() {
       
       const res = await fetch("/api/matches", { 
         method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
+        headers: { "Content-Type": "application/json" },
+        cache: 'no-store',
         body: JSON.stringify({
           homeTeamId: matchForm.homeTeamId,
           awayTeamId: matchForm.awayTeamId,
@@ -198,8 +218,11 @@ function HomePageContent() {
       if (res.ok) {
         setToast({ msg: "Матч успешно создан!", type: "success" });
         setShowMatchModal(false);
-        const mRes = await fetch("/api/matches");
-        if (mRes.ok) setMatches(await mRes.json());
+        const mRes = await fetch("/api/matches", { cache: 'no-store' });
+        if (mRes.ok) {
+          const d = await mRes.json();
+          setMatches(Array.isArray(d) ? d : []);
+        }
         
         const now = new Date();
         const year = now.getFullYear();
@@ -313,11 +336,24 @@ function HomePageContent() {
         </>
       )}
       
-      {activeTab === "live" && <LiveSection matches={matches} userRole={userRole} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
+      {activeTab === "live" && (
+        <LiveSection 
+          matches={matches} 
+          userRole={userRole} 
+          onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} 
+          deletingId={deletingMatchId} 
+        />
+      )}
       
       {activeTab === "stream" && <LiveStreamSection userRole={userRole} />}
       
-      {activeTab === "calendar" && <CalendarSection matches={matches} onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} deletingId={deletingMatchId} />}
+      {activeTab === "calendar" && (
+        <CalendarSection 
+          matches={matches} 
+          onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} 
+          deletingId={deletingMatchId} 
+        />
+      )}
 
       {showMatchModal && (
         <div className="modal-overlay" onClick={() => setShowMatchModal(false)}>
