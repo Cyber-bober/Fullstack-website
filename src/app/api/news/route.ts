@@ -71,15 +71,8 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(bytes);
 
         const optimizedImage = await sharp(buffer)
-          .resize(1200, null, {
-            withoutEnlargement: true,
-            fit: 'inside'
-          })
-          .jpeg({
-            quality: 80,
-            progressive: true,
-            mozjpeg: true
-          })
+          .resize(1200, null, { withoutEnlargement: true, fit: 'inside' })
+          .jpeg({ quality: 80, progressive: true, mozjpeg: true })
           .toBuffer();
 
         await writeFile(filePath, optimizedImage);
@@ -212,86 +205,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("News delete error:", error);
-    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
-  }
-}
-
-export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
-  }
-
-  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
-    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
-  }
-
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "ID обязателен" }, { status: 400 });
-
-  try {
-    const formData = await req.formData();
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const image = formData.get("image") as File | null;
-
-    let imageUrl: string | null | undefined = undefined;
-
-    // Обработка нового фото
-    if (image && image.size > 0) {
-      if (!image.type.startsWith("image/")) {
-        return NextResponse.json({ error: "Только изображения" }, { status: 400 });
-      }
-
-      if (image.size > 10 * 1024 * 1024) {
-        return NextResponse.json({ error: "Фото слишком большое (макс 10MB)" }, { status: 400 });
-      }
-
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "news");
-      await mkdir(uploadDir, { recursive: true });
-
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(2, 9);
-      const fileName = `news-${timestamp}-${randomStr}.jpg`;
-      const filePath = path.join(uploadDir, fileName);
-
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const optimizedImage = await sharp(buffer)
-        .resize(1200, null, {
-          withoutEnlargement: true,
-          fit: 'inside'
-        })
-        .jpeg({
-          quality: 80,
-          progressive: true,
-          mozjpeg: true
-        })
-        .toBuffer();
-
-      await writeFile(filePath, optimizedImage);
-      imageUrl = `/uploads/news/${fileName}`;
-    }
-
-    const updateData: any = {};
-    if (title) updateData.title = title;
-    if (content) updateData.content = content;
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
-
-    const post = await prisma.newsPost.update({
-      where: { id },
-      data: updateData,
-      include: { author: { select: { id: true, fullName: true, username: true } } },
-    });
-
-    await invalidateNewsCache();
-
-    return NextResponse.json(post);
-  } catch (error) {
-    console.error("News update error:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

@@ -3,10 +3,85 @@ from jsonschema import validate
 BASE = "http://localhost:3000"
 
 SCHEMAS = {
-    "teams": {"type": "object", "required": ["data", "meta"], "properties": {"data": {"type": "array"}, "meta": {"type": "object", "required": ["total", "page", "limit", "totalPages"]}}},
-    "news": {"type": "object", "required": ["data", "meta"], "properties": {"data": {"type": "array"}, "meta": {"type": "object", "required": ["total", "page", "limit", "totalPages"]}}},
-    "matches": {"type": "object", "required": ["data", "meta"], "properties": {"data": {"type": "array"}, "meta": {"type": "object", "required": ["total", "page", "limit", "totalPages"]}}},
-    "profile": {"type": "object", "required": ["id", "username", "fullName"]},
+    "teams": {
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": {
+            "data": {"type": "array"},
+            "meta": {
+                "type": "object",
+                "required": ["total", "page", "limit", "totalPages"],
+                "properties": {
+                    "total": {"type": "integer"},
+                    "page": {"type": "integer"},
+                    "limit": {"type": "integer"},
+                    "totalPages": {"type": "integer"}
+                }
+            }
+        }
+    },
+    "news": {
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": {
+            "data": {"type": "array"},
+            "meta": {
+                "type": "object",
+                "required": ["total", "page", "limit", "totalPages"],
+                "properties": {
+                    "total": {"type": "integer"},
+                    "page": {"type": "integer"},
+                    "limit": {"type": "integer"},
+                    "totalPages": {"type": "integer"}
+                }
+            }
+        }
+    },
+    "matches": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "required": ["id", "homeTeamId", "awayTeamId", "date", "status", "homeTeam", "awayTeam"],
+            "properties": {
+                "id": {"type": "string"},
+                "homeTeamId": {"type": "string"},
+                "awayTeamId": {"type": "string"},
+                "date": {"type": "string"},
+                "status": {"type": "string"},
+                "score": {"type": ["string", "null"]},
+                "stats": {"type": ["string", "null"]},
+                "venue": {"type": ["string", "null"]},
+                "createdAt": {"type": "string"},
+                "homeTeam": {
+                    "type": "object",
+                    "required": ["id", "name"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "name": {"type": "string"},
+                        "logoUrl": {"type": ["string", "null"]}
+                    }
+                },
+                "awayTeam": {
+                    "type": "object",
+                    "required": ["id", "name"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "name": {"type": "string"},
+                        "logoUrl": {"type": ["string", "null"]}
+                    }
+                }
+            }
+        }
+    },
+    "profile": {
+        "type": "object",
+        "required": ["id", "username", "fullName"],
+        "properties": {
+            "id": {"type": "string"},
+            "username": {"type": "string"},
+            "fullName": {"type": "string"}
+        }
+    },
 }
 
 class TestContract:
@@ -23,7 +98,8 @@ class TestContract:
     def test_matches_schema_200(self):
         r = requests.get(f"{BASE}/api/matches")
         assert r.status_code == 200
-        validate(r.json(), SCHEMAS["matches"])
+        data = r.json()
+        validate(data, SCHEMAS["matches"])
 
     def test_profile_schema_200(self, admin_session):
         r = admin_session.get(f"{BASE}/api/profile/me")

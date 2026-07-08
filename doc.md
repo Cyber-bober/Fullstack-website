@@ -56,6 +56,13 @@ docker-compose up -d postgres
 
 # 2. Запустите seed локально
 npx tsx scripts/seed.ts
+
+или
+
+docker-compose exec app npm run prisma:seed
+
+очистить кеш
+docker-compose exec redis redis-cli FLUSHALL
 ```
 
 **Альтернатива через Docker** (если нет локального Node.js):

@@ -136,32 +136,38 @@ function HomePageContent() {
   };
 
   const handleSaveNews = async (formData: FormData) => {
-    const isEditing = editingNews !== null;
-    const url = isEditing ? `/api/news?id=${editingNews!.id}` : "/api/news";
-    const method = isEditing ? "PATCH" : "POST";
+  const isEditing = editingNews !== null;
+  
+  const url = isEditing ? `/api/news/${editingNews!.id}` : "/api/news";
+  const method = isEditing ? "PATCH" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      body: formData,
-    });
+  const res = await fetch(url, {
+    method,
+    body: formData,
+  });
 
-    if (!res.ok) {
+  if (!res.ok) {
+    let errorMessage = "Ошибка сохранения";
+    try {
       const err = await res.json();
-      throw new Error(err.error || "Ошибка сохранения");
+      errorMessage = err.error || errorMessage;
+    } catch {
+      // Если ответ не JSON
     }
+    throw new Error(errorMessage);
+  }
 
-    setToast({ 
-      msg: isEditing ? "Новость обновлена!" : "Новость создана!", 
-      type: "success" 
-    });
-    setShowNewsForm(false);
-    setEditingNews(null);
+  setToast({ 
+    msg: isEditing ? "Новость обновлена!" : "Новость создана!", 
+    type: "success" 
+  });
+  setShowNewsForm(false);
+  setEditingNews(null);
 
-    // Перезагружаем новости
-    const mRes = await fetch(`/api/news?page=1&limit=10`, { cache: 'no-store' });
-    if (mRes.ok) {
-      const data = await mRes.json();
-      setNewsData(data);
+  const mRes = await fetch(`/api/news?page=1&limit=10`, { cache: 'no-store' });
+  if (mRes.ok) {
+    const data = await mRes.json();
+    setNewsData(data);
     }
   };
 

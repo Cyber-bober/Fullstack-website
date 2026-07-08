@@ -297,19 +297,17 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   const isAdmin = userRole === "ADMIN";
   const canEdit = isCaptain || isAdmin;
 
-// Определяем неоновый класс по позиции команды
-const getTeamNeonClass = () => {
-  const pos = team.globalIndex;
-  
-  // Проверяем по позиции
-  if (pos === 1) return "neon-1st neon-border";
-  if (pos === 2) return "neon-2nd neon-border";
-  if (pos === 3) return "neon-3rd neon-border";
-  
-  return "";
-};
+  const getTeamNeonClass = () => {
+    const pos = team.globalIndex;
+    
+    if (pos === 1) return "neon-1st neon-border";
+    if (pos === 2) return "neon-2nd neon-border";
+    if (pos === 3) return "neon-3rd neon-border";
+    
+    return "";
+  };
 
-const headerClass = `team-header-card glass-effect ${getTeamNeonClass()}`;
+  const headerClass = `team-header-card glass-effect ${getTeamNeonClass()}`;
 
   let displayStats: TeamStats = {};
   try {
@@ -340,7 +338,11 @@ const headerClass = `team-header-card glass-effect ${getTeamNeonClass()}`;
                 onClick={() => isCaptain && fileInputRef.current?.click()}
               >
                 {displayLogo ? (
-                  <img src={displayLogo} alt="Team Logo" />
+                  <img
+                    src={displayLogo} 
+                    alt="Team Logo" 
+                    className="team-logo-img"
+                  />
                 ) : (
                   <div className="avatar-placeholder">?</div>
                 )}

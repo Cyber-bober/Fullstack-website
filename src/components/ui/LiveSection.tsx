@@ -41,9 +41,15 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
 
   const canManage = userRole === "ADMIN" || userRole === "EDITOR";
 
-  const liveMatches = matches.filter(m => m.status === "LIVE");
-  const scheduledMatches = matches.filter(m => m.status === "SCHEDULED");
-  const finishedMatches = matches.filter(m => m.status === "FINISHED");
+  // Сортировка: LIVE сверху, остальные по дате (новые сверху)
+  const sortedMatches = [...matches].sort((a, b) => {
+    // LIVE матчи всегда сверху
+    if (a.status === "LIVE" && b.status !== "LIVE") return -1;
+    if (a.status !== "LIVE" && b.status === "LIVE") return 1;
+    
+    // Остальные по дате (новые сверху)
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
 
   useEffect(() => {
     if (!selectedMatchId) {
@@ -175,35 +181,12 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
         >
           <option value="">-- Выберите матч --</option>
           
-          {liveMatches.length > 0 && (
-            <optgroup label="LIVE">
-              {liveMatches.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          
-          {scheduledMatches.length > 0 && (
-            <optgroup label="Запланированные">
-              {scheduledMatches.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          
-          {finishedMatches.length > 0 && (
-            <optgroup label="Завершённые">
-              {finishedMatches.slice(0, 20).map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
-                </option>
-              ))}
-            </optgroup>
-          )}
+          {sortedMatches.map(m => (
+            <option key={m.id} value={m.id}>
+              {m.status === "LIVE" ? "" : ""}
+              {m.homeTeam.name} vs {m.awayTeam.name} — {formatDate(m.date)}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -228,7 +211,7 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
               </h4>
               <div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
                 {formatDate(selectedMatch.date)}
-                {selectedMatch.venue && <> • {selectedMatch.venue}</>}
+                {selectedMatch.venue && <> {selectedMatch.venue}</>}
               </div>
               {selectedMatch.score && (
                 <div style={{ 
@@ -399,7 +382,7 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
           textAlign: "center",
           color: "var(--text-tertiary)"
         }}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>📝</div>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}></div>
           <h4 style={{ margin: "0 0 8px 0", color: "var(--text-secondary)" }}>
             Выберите матч
           </h4>

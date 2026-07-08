@@ -22,7 +22,12 @@ export default function PlayerCard({
       >
         <div className="player-avatar">
           {player.photos[0] ? (
-            <img src={player.photos[0]} alt={player.fullName} />
+            <img
+              src={player.photos[0]} 
+              alt={player.fullName} 
+              className="player-photo"
+              loading="lazy"
+            />
           ) : (
             <div className="player-avatar-placeholder" />
           )}

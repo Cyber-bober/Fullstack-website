@@ -11,14 +11,15 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/seed.ts",
-    "db:reset": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/reset-db.ts",
+    "prisma:seed": "tsx scripts/seed.ts",
+    "prisma:reset": "tsx scripts/reset-db.ts",
+    "db:reset": "tsx scripts/reset-db.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "prisma": {
     "schema": "src/lib/schema.prisma",
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -47,6 +48,7 @@
     "prisma": "^5.22.0",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.0",
     "typescript": "^5.0.0"
   }
 }

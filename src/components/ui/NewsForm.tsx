@@ -13,8 +13,18 @@ export default function NewsForm({ post, onSave, onCancel }: NewsFormProps) {
   const [content, setContent] = useState(post?.content || "");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(post?.imageUrl || null);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(post?.imageUrl || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setTitle(post?.title || "");
+    setContent(post?.content || "");
+    setImagePreview(post?.imageUrl || null);
+    setOriginalImageUrl(post?.imageUrl || null);
+    setImage(null);
+    setError("");
+  }, [post]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,11 +73,13 @@ export default function NewsForm({ post, onSave, onCancel }: NewsFormProps) {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", content);
+      
       if (image) {
         formData.append("image", image);
       }
-      if (post?.id) {
-        formData.append("id", post.id);
+      
+      if (post?.id && originalImageUrl && !imagePreview) {
+        formData.append("removeImage", "true");
       }
 
       await onSave(formData);
@@ -77,6 +89,9 @@ export default function NewsForm({ post, onSave, onCancel }: NewsFormProps) {
       setLoading(false);
     }
   };
+
+  const isImageRemoved = originalImageUrl && !imagePreview;
+  const isNewImage = image !== null;
 
   return (
     <div 
@@ -211,6 +226,7 @@ export default function NewsForm({ post, onSave, onCancel }: NewsFormProps) {
                 <button
                   type="button"
                   onClick={handleRemoveImage}
+                  title="Удалить фото"
                   style={{
                     position: 'absolute',
                     top: '8px',
@@ -230,6 +246,44 @@ export default function NewsForm({ post, onSave, onCancel }: NewsFormProps) {
                 >
                   ×
                 </button>
+              </div>
+            )}
+
+            {isImageRemoved && (
+              <div style={{
+                marginTop: '12px',
+                padding: '10px 14px',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                borderRadius: '8px',
+                color: 'var(--color-danger)',
+                fontSize: '13px',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '18px' }}></span>
+                Фото будет удалено при сохранении
+              </div>
+            )}
+
+            {isNewImage && (
+              <div style={{
+                marginTop: '12px',
+                padding: '10px 14px',
+                background: 'rgba(59, 130, 246, 0.15)',
+                border: '1px solid rgba(59, 130, 246, 0.4)',
+                borderRadius: '8px',
+                color: 'var(--color-primary)',
+                fontSize: '13px',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '18px' }}></span>
+                Новое фото будет загружено при сохранении
               </div>
             )}
           </div>

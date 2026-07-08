@@ -40,7 +40,7 @@ export function NewsSection({ news, userRole, currentUserId, setNews, onEdit, on
         )}
       </div>
 
-      {news.map((post) => {
+      {news.map((post, index) => {
         const canEdit = canManage || post.authorId === currentUserId;
 
         return (
@@ -52,7 +52,14 @@ export function NewsSection({ news, userRole, currentUserId, setNews, onEdit, on
                     src={post.imageUrl}
                     alt={post.title}
                     className="news-image"
-                    loading="lazy"
+                    loading={index < 3 ? "eager" : "lazy"}
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      const container = img.closest('.news-image-container') as HTMLElement | null;
+                      if (container) {
+                        container.style.display = 'none';
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -89,7 +96,7 @@ export function NewsSection({ news, userRole, currentUserId, setNews, onEdit, on
                         border: '1px solid rgba(59, 130, 246, 0.3)',
                       }}
                     >
-                      ✎
+                      
                     </button>
                   )}
                   <button
