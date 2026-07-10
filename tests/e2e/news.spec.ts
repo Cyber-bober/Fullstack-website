@@ -9,19 +9,17 @@ test.describe('Новости', () => {
   });
 
   test('админ может создать новость', async ({ page }) => {
-    // Вход
     await page.goto(`${BASE}/auth/signin`);
     await page.fill('input[type="text"]', 'admin_vlad');
     await page.fill('input[type="password"]', 'admin123');
     await page.click('button[type="submit"]');
     await page.waitForURL(BASE);
 
-    // Создание новости
     await page.click('button:has-text("Добавить новость")');
     await page.fill('input[placeholder*="заголовок"]', 'Тестовая новость');
     await page.fill('textarea[placeholder*="текст"]', 'Содержание тестовой новости для проверки');
     await page.click('button:has-text("Создать")');
     
-    await expect(page.locator('.news-title')).toContainText('Тестовая новость');
+    await expect(page.locator('.news-title').first()).toContainText('Тестовая новость');
   });
 });

@@ -2,22 +2,58 @@ import pytest, requests
 from jsonschema import validate
 BASE = "http://localhost:3000"
 
+META_SCHEMA = {
+    "type": "object",
+    "required": ["total", "page", "limit", "totalPages"],
+    "properties": {
+        "total": {"type": "integer"},
+        "page": {"type": "integer"},
+        "limit": {"type": "integer"},
+        "totalPages": {"type": "integer"}
+    }
+}
+
+MATCH_ITEM_SCHEMA = {
+    "type": "object",
+    "required": ["id", "homeTeamId", "awayTeamId", "date", "status", "homeTeam", "awayTeam"],
+    "properties": {
+        "id": {"type": "string"},
+        "homeTeamId": {"type": "string"},
+        "awayTeamId": {"type": "string"},
+        "date": {"type": "string"},
+        "status": {"type": "string"},
+        "score": {"type": ["string", "null"]},
+        "stats": {"type": ["string", "null"]},
+        "venue": {"type": ["string", "null"]},
+        "createdAt": {"type": "string"},
+        "homeTeam": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "logoUrl": {"type": ["string", "null"]}
+            }
+        },
+        "awayTeam": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "logoUrl": {"type": ["string", "null"]}
+            }
+        }
+    }
+}
+
 SCHEMAS = {
     "teams": {
         "type": "object",
         "required": ["data", "meta"],
         "properties": {
             "data": {"type": "array"},
-            "meta": {
-                "type": "object",
-                "required": ["total", "page", "limit", "totalPages"],
-                "properties": {
-                    "total": {"type": "integer"},
-                    "page": {"type": "integer"},
-                    "limit": {"type": "integer"},
-                    "totalPages": {"type": "integer"}
-                }
-            }
+            "meta": META_SCHEMA
         }
     },
     "news": {
@@ -25,52 +61,18 @@ SCHEMAS = {
         "required": ["data", "meta"],
         "properties": {
             "data": {"type": "array"},
-            "meta": {
-                "type": "object",
-                "required": ["total", "page", "limit", "totalPages"],
-                "properties": {
-                    "total": {"type": "integer"},
-                    "page": {"type": "integer"},
-                    "limit": {"type": "integer"},
-                    "totalPages": {"type": "integer"}
-                }
-            }
+            "meta": META_SCHEMA
         }
     },
     "matches": {
-        "type": "array",
-        "items": {
-            "type": "object",
-            "required": ["id", "homeTeamId", "awayTeamId", "date", "status", "homeTeam", "awayTeam"],
-            "properties": {
-                "id": {"type": "string"},
-                "homeTeamId": {"type": "string"},
-                "awayTeamId": {"type": "string"},
-                "date": {"type": "string"},
-                "status": {"type": "string"},
-                "score": {"type": ["string", "null"]},
-                "stats": {"type": ["string", "null"]},
-                "venue": {"type": ["string", "null"]},
-                "createdAt": {"type": "string"},
-                "homeTeam": {
-                    "type": "object",
-                    "required": ["id", "name"],
-                    "properties": {
-                        "id": {"type": "string"},
-                        "name": {"type": "string"},
-                        "logoUrl": {"type": ["string", "null"]}
-                    }
-                },
-                "awayTeam": {
-                    "type": "object",
-                    "required": ["id", "name"],
-                    "properties": {
-                        "id": {"type": "string"},
-                        "name": {"type": "string"},
-                        "logoUrl": {"type": ["string", "null"]}
-                    }
-                }
-            }
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": {
+            "data": {
+                "type": "array",
+                "items": MATCH_ITEM_SCHEMA
+            },
+            "meta": META_SCHEMA
         }
     },
     "profile": {
@@ -83,6 +85,7 @@ SCHEMAS = {
         }
     },
 }
+
 
 class TestContract:
     def test_teams_schema_200(self):
@@ -99,6 +102,10 @@ class TestContract:
         r = requests.get(f"{BASE}/api/matches")
         assert r.status_code == 200
         data = r.json()
+        assert isinstance(data, dict), f"Ожидался объект, получен {type(data)}"
+        assert "data" in data, "В ответе отсутствует поле 'data'"
+        assert "meta" in data, "В ответе отсутствует поле 'meta'"
+        assert isinstance(data["data"], list), f"Поле 'data' должно быть массивом, получен {type(data['data'])}"
         validate(data, SCHEMAS["matches"])
 
     def test_profile_schema_200(self, admin_session):
