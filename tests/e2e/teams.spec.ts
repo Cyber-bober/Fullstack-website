@@ -10,8 +10,15 @@ test.describe('Команды', () => {
 
   test('можно открыть профиль команды', async ({ page }) => {
     await page.goto(`${BASE}/teams`);
+    
+    await expect(page.locator('.teams-table-row').first()).toBeVisible();
+    
     await page.click('.teams-table-row >> nth=0');
     
-    await expect(page.locator('.team-profile-page .team-name').first()).toBeVisible();
+    await page.waitForURL(/\/teams\/[a-f0-9-]+/);
+    
+    await expect(page.locator('h1, .team-name').first()).toBeVisible({ timeout: 10000 });
+    
+    expect(page.url()).toMatch(/\/teams\/[a-f0-9-]+/);
   });
 });

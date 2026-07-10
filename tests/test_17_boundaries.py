@@ -27,8 +27,8 @@ class TestBoundaries:
         r = admin_session.post(f"{BASE}/api/news", json={"title": "ABC", "content": "Valid content for testing"})
         assert r.status_code == 400
 
-    def test_news_title_200_chars_201(self, admin_session):
-        r = admin_session.post(f"{BASE}/api/news", json={"title": "A" * 200, "content": "Valid content for testing"})
+    def test_news_title_35_chars_201(self, admin_session):
+        r = admin_session.post(f"{BASE}/api/news", json={"title": "A" * 35, "content": "Valid content for testing"})
         assert r.status_code == 201
 
     def test_news_title_201_chars_400(self, admin_session):

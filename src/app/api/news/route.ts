@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { redis } from "@/lib/redis";
-import sharp from "sharp";
 import { hasSqlInjection, hasXSS, validateLength, validatePayloadSize } from "@/lib/validate";
 
 const CACHE_TTL = 300;
@@ -59,6 +57,17 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Фото слишком большое (макс 10MB)" }, { status: 400 });
         }
 
+        let sharp: any;
+        try {
+          sharp = (await import("sharp")).default;
+        } catch (err) {
+          console.error("Sharp import error:", err);
+          return NextResponse.json(
+            { error: "Обработка изображений недоступна на сервере" },
+            { status: 503 }
+          );
+        }
+
         const uploadDir = path.join(process.cwd(), "public", "uploads", "news");
         await mkdir(uploadDir, { recursive: true });
 
@@ -98,7 +107,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Обнаружены недопустимые символы" }, { status: 400 });
     }
 
-    const titleError = validateLength(title, 10, 200, "Заголовок");
+    const titleError = validateLength(title, 10, 35, "Заголовок");
     if (titleError) {
       return NextResponse.json({ error: titleError }, { status: 400 });
     }
@@ -138,21 +147,19 @@ export async function GET(req: NextRequest) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached) {
-        console.log(`Cache hit: ${cacheKey}`);
         return NextResponse.json(JSON.parse(cached));
       }
-      console.log(`Cache miss: ${cacheKey}`);
     } catch (err) {
       console.error("Redis cache error:", err);
     }
 
     const skip = (page - 1) * limit;
 
-    const where: Prisma.NewsPostWhereInput = query
+    const where: any = query
       ? {
           OR: [
-            { title: { contains: query, mode: Prisma.QueryMode.insensitive } },
-            { content: { contains: query, mode: Prisma.QueryMode.insensitive } }
+            { title: { contains: query, mode: "insensitive" } },
+            { content: { contains: query, mode: "insensitive" } }
           ],
           isPublished: true
         }
@@ -169,7 +176,10 @@ export async function GET(req: NextRequest) {
       prisma.newsPost.count({ where }),
     ]);
 
-    const result = { data: posts, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    const result = { 
+      data: posts, 
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) } 
+    };
 
     try {
       await redis.setEx(cacheKey, CACHE_TTL, JSON.stringify(result));

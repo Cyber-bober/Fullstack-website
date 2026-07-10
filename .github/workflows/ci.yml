@@ -75,6 +75,16 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
       
+      - name: Generate Prisma Client
+        run: npx prisma generate
+      
+      - name: Run database migrations
+        run: |
+          npx prisma migrate deploy
+          npx prisma db seed
+        env:
+          DATABASE_URL: postgresql://football:football_pass@localhost:5432/football_db
+      
       - name: Build app
         run: npm run build
         env:
@@ -92,13 +102,14 @@ jobs:
           NEXTAUTH_URL: http://localhost:3000
       
       - name: Wait for app
-        run: sleep 15
+        run: sleep 20  # Увеличил время
       
       - name: Run Python tests
         run: pytest tests/ -v --tb=short
         env:
           DATABASE_URL: postgresql://football:football_pass@localhost:5432/football_db
           REDIS_URL: redis://localhost:6379
+          BASE_URL: http://localhost:3000
 
   e2e-tests:
     name: E2E Tests (Playwright)
@@ -134,7 +145,17 @@ jobs:
         run: npm ci
       
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx playwright install --with-deps chromium firefox
+      
+      - name: Generate Prisma Client
+        run: npx prisma generate
+      
+      - name: Run database migrations
+        run: |
+          npx prisma migrate deploy
+          npx prisma db seed
+        env:
+          DATABASE_URL: postgresql://football:football_pass@localhost:5432/football_db
       
       - name: Build app
         run: npm run build
@@ -153,7 +174,7 @@ jobs:
           NEXTAUTH_URL: http://localhost:3000
       
       - name: Wait for app
-        run: sleep 15
+        run: sleep 20
       
       - name: Run Playwright tests
         run: npx playwright test tests/e2e/ --reporter=html

@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
-import sharp from "sharp";
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -30,6 +29,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: "Файл слишком большой (макс 10MB)" }, { status: 400 });
+    }
+
+    let sharp: any;
+    try {
+      sharp = (await import("sharp")).default;
+    } catch (err) {
+      console.error("Sharp import error:", err);
+      return NextResponse.json(
+        { error: "Обработка изображений недоступна на сервере" },
+        { status: 503 }
+      );
     }
 
     const uploadDir = path.join(process.cwd(), "public", "uploads", "teams");
