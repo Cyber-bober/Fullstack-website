@@ -1,5 +1,5 @@
 // src/components/ui/Pagination.tsx
-
+/*
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -58,3 +58,4 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
     </div>
   );
 }
+*/

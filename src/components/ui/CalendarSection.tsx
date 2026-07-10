@@ -1,4 +1,3 @@
-// src/components/ui/CalendarSection.tsx
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Match } from "@/types/CalendarSection";
@@ -7,7 +6,7 @@ interface Props {
   matches: Match[];
   onDeleteMatch?: (id: string) => void;
   deletingId?: string | null;
-};
+}
 
 const formatTime = (dateString: string) => {
   if (!dateString) return "";

@@ -96,7 +96,7 @@ export function NewsSection({ news, userRole, currentUserId, setNews, onEdit, on
                         border: '1px solid rgba(59, 130, 246, 0.3)',
                       }}
                     >
-                      
+                      ✎
                     </button>
                   )}
                   <button

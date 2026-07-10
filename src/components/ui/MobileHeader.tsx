@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -17,8 +17,7 @@ export default function MobileHeader() {
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  // Загружаем данные пользователя
-  useState(() => {
+  useEffect(() => {
     if (session?.user?.id) {
       fetch("/api/profile/me")
         .then(res => res.json())
@@ -34,7 +33,7 @@ export default function MobileHeader() {
         })
         .catch(err => console.error("Ошибка загрузки профиля:", err));
     }
-  });
+  }, [session]);
 
   const userRole = userData?.role || session?.user?.role || null;
   const isAdmin = userRole === "ADMIN";
@@ -58,7 +57,6 @@ export default function MobileHeader() {
     { href: "/support", label: "Поддержка", icon: "/uploads/svg/info.svg" },
   ];
 
-  // Добавляем профиль команды если есть
   if (userData?.teamId || isAdmin) {
     menuItems.splice(2, 0, {
       href: "/teams/profile",
@@ -67,7 +65,6 @@ export default function MobileHeader() {
     });
   }
 
-  // Добавляем админку для админов
   if (isAdmin) {
     menuItems.push({
       href: "/admin",
@@ -78,10 +75,8 @@ export default function MobileHeader() {
 
   return (
     <>
-      {/* Мобильный хедер */}
       <header className="mobile-header">
         <div className="mobile-header-left">
-          {/* Кнопка бургер */}
           <button
             className="mobile-burger-btn"
             onClick={toggleMenu}
@@ -92,17 +87,14 @@ export default function MobileHeader() {
             <span className={`burger-line ${isMenuOpen ? "open" : ""}`}></span>
           </button>
 
-          {/* Название сайта */}
           <Link href="/" className="mobile-logo">
             <span className="mobile-logo-text">RTLive</span>
           </Link>
         </div>
 
         <div className="mobile-header-right">
-          {/* Кнопка добавить матч (только для админа/редактора) */}
           {canAddMatch && pathname === "/" && (
             <button className="mobile-add-match-btn" onClick={() => {
-              // Триггерим открытие модалки через кастомное событие
               window.dispatchEvent(new CustomEvent('openMatchModal'));
             }}>
               <span className="mobile-add-match-icon">+</span>
@@ -112,7 +104,6 @@ export default function MobileHeader() {
         </div>
       </header>
 
-      {/* Выдвижное меню */}
       <div className={`mobile-menu ${isMenuOpen ? "open" : ""}`}>
         <nav className="mobile-nav">
           {menuItems.map((item) => (
@@ -127,10 +118,8 @@ export default function MobileHeader() {
             </Link>
           ))}
 
-          {/* Разделитель */}
           <div className="mobile-nav-divider"></div>
 
-          {/* Выйти/Войти */}
           {status === "loading" ? (
             <div className="mobile-nav-item">
               <span>Загрузка...</span>
@@ -149,7 +138,6 @@ export default function MobileHeader() {
         </nav>
       </div>
 
-      {/* Затемнение фона */}
       {isMenuOpen && (
         <div className="mobile-menu-overlay" onClick={closeMenu}></div>
       )}

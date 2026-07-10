@@ -3,7 +3,6 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
-import Pagination from "@/components/ui/Pagination";
 
 type Team = {
   id: string;
@@ -96,6 +95,39 @@ function TeamsPageContent() {
     }
   };
 
+  // Функция рендеринга пагинации (как в новостях)
+  const renderPagination = () => {
+    if (!teamsData?.meta) return null;
+    const { page, totalPages } = teamsData.meta;
+    if (totalPages <= 1) return null;
+
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push("...");
+      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.push(i);
+      if (page < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 24, flexWrap: "wrap" }}>
+        <button className="btn glass-btn" disabled={page === 1} onClick={() => router.push(`?page=${page - 1}&q=${liveTeamQuery}`)}>
+          ← Назад
+        </button>
+        {pages.map((p, i) =>
+          p === "..." ? <span key={`dots-${i}`} style={{ padding: "0 4px" }}>…</span> :
+          <button key={p} className={`btn ${p === page ? "btn-primary" : "glass-btn"}`} style={{ minWidth: 36 }} onClick={() => router.push(`?page=${p}&q=${liveTeamQuery}`)}>{p}</button>
+        )}
+        <button className="btn glass-btn" disabled={page === totalPages} onClick={() => router.push(`?page=${page + 1}&q=${liveTeamQuery}`)}>
+          Вперёд →
+        </button>
+      </div>
+    );
+  };
+
   if (loading) return <p className="empty-text">Загрузка...</p>;
 
   return (
@@ -166,7 +198,6 @@ function TeamsPageContent() {
             {teamsData.data.map((team) => {
               const position = team.globalIndex || 0;
               
-              // Определяем неоновый класс по позиции
               let neonClass = "";
               if (position === 1) neonClass = "neon-1st neon-border";
               else if (position === 2) neonClass = "neon-2nd neon-border";
@@ -215,9 +246,8 @@ function TeamsPageContent() {
         </Card>
       )}
 
-      {teamsData?.meta && (
-        <Pagination currentPage={teamsData.meta.page} totalPages={teamsData.meta.totalPages} />
-      )}
+      {/* Пагинация */}
+      {renderPagination()}
     </div>
   );
 }

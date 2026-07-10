@@ -378,6 +378,9 @@ pytest tests/test_auth.py -v
 # E2E (браузерные)
 npx playwright test tests/e2e/ --reporter=html
 
+#all docker
+docker-compose exec app npx playwright test
+
 
 # Деактивировать виртуальное окружение
 deactivate

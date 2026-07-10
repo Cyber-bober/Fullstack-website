@@ -6317,7 +6317,7 @@ select option:hover {
   }
 }
 
-.lazy-image {
+/*.lazy-image {
   background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg"%3E%3C/svg%3E');
   background-size: cover;
   background-position: center;
@@ -6327,7 +6327,7 @@ select option:hover {
 .lazy-image.loaded {
   background-image: var(--image-url);
 }
-
+*/
 .breadcrumbs {
   padding: 12px 0;
   margin-bottom: 20px;
@@ -6428,4 +6428,1111 @@ select option:hover {
   justify-content: flex-end;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
+}
+
+
+@media (pointer: coarse) {
+  /* Основной контейнер календаря */
+  .datepicker-dropdown {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: calc(100% - 16px) !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 20px 16px !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 75vh;
+    overflow-y: auto;
+    animation: slideUpCalendar 0.3s ease !important;
+    z-index: 99999 !important;
+    box-sizing: border-box !important;
+  }
+  
+  @keyframes slideUpCalendar {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Шапка календаря */
+  .datepicker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+    padding: 0 4px !important;
+  }
+  
+  /* Кнопки навигации */
+  .datepicker-nav-btn {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 18px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Месяц и год */
+  .datepicker-month-year {
+    display: flex;
+    gap: 8px !important;
+    flex: 1 !important;
+    justify-content: center;
+    min-width: 0 !important;
+  }
+  
+  .datepicker-month-btn,
+  .datepicker-year-btn {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    min-width: 80px !important;
+    text-align: center !important;
+  }
+  
+  /* Сетка дней недели */
+  .datepicker-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 4px !important;
+    margin-bottom: 8px !important;
+    padding: 0 4px !important;
+  }
+  
+  .datepicker-weekday {
+    text-align: center !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--text-tertiary) !important;
+    padding: 8px 0 !important;
+    text-transform: uppercase !important;
+  }
+  
+  /* Сетка дней */
+  .datepicker-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 4px !important;
+    padding: 0 4px !important;
+  }
+  
+  .datepicker-day {
+    aspect-ratio: 1 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border-radius: 10px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Сетка месяцев */
+  .datepicker-month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+    padding: 0 4px !important;
+  }
+  
+  .datepicker-month-option {
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Сетка годов */
+  .datepicker-year-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 8px !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    margin-bottom: 12px !important;
+    padding: 0 4px !important;
+    padding-right: 8px !important;
+  }
+  
+  .datepicker-year-option {
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Футер */
+  .datepicker-footer {
+    margin-top: 16px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid var(--border-color) !important;
+  }
+  
+  .datepicker-today-btn {
+    padding: 14px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+  }
+  
+  /* Скроллбар */
+  .datepicker-dropdown::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .datepicker-dropdown::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+  }
+  
+  .datepicker-dropdown::-webkit-scrollbar-thumb {
+    background: var(--border-color-light);
+    border-radius: 3px;
+  }
+  
+  .datepicker-year-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .datepicker-year-grid::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+  }
+  
+  .datepicker-year-grid::-webkit-scrollbar-thumb {
+    background: var(--border-color-light);
+    border-radius: 3px;
+  }
+}
+
+@media (max-width: 360px) {
+  .datepicker-dropdown {
+    left: 4px !important;
+    right: 4px !important;
+    width: calc(100% - 8px) !important;
+    padding: 16px 12px !important;
+  }
+  
+  .datepicker-day {
+    font-size: 13px !important;
+  }
+  
+  .datepicker-weekday {
+    font-size: 11px !important;
+  }
+  
+  .datepicker-month-btn,
+  .datepicker-year-btn {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    min-width: 70px !important;
+  }
+}
+
+/* ============================================
+МОБИЛЬНАЯ АДАПТАЦИЯ - КОМАНДЫ И ПРОФИЛИ
+============================================ */
+
+@media (pointer: coarse) {
+  /* Таблица команд - компактный вид */
+  .teams-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  .teams-table-header {
+    display: none !important;
+  }
+  
+  .teams-table-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px !important;
+    gap: 12px;
+    border-radius: 12px !important;
+  }
+  
+  .table-col {
+    display: flex;
+    align-items: center;
+  }
+  
+  .table-col.position {
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 36px;
+    justify-content: flex-start;
+  }
+  
+  .table-col.team {
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+  }
+  
+  .team-logo-small {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+  
+  .team-name {
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .table-col.players {
+    display: none;
+  }
+  
+  .table-col.rating {
+    display: flex;
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 50px;
+    justify-content: flex-end;
+    color: var(--color-primary);
+  }
+  
+  /* Профиль команды - мобильная версия */
+  .team-profile-page {
+    padding: 12px;
+  }
+  
+  .team-header-card {
+    padding: 20px 16px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .team-header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px !important;
+  }
+  
+  .team-avatar-section .avatar-large {
+    width: 100px !important;
+    height: 100px !important;
+    margin: 0 auto;
+  }
+  
+  .team-profile-page .team-name {
+    font-size: 22px !important;
+    text-align: center;
+  }
+  
+  .team-players-count {
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .team-tabs {
+    flex-direction: row;
+    gap: 8px;
+    padding: 12px !important;
+  }
+  
+  .tab-btn {
+    flex: 1;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .team-actions {
+    margin-bottom: 16px !important;
+  }
+  
+  .team-actions .btn {
+    width: 100%;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+  
+  .section-title {
+    font-size: 18px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .team-players {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .team-player-card {
+    padding: 12px !important;
+  }
+  
+  .player-avatar img,
+  .player-avatar-placeholder {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  
+  .player-name {
+    font-size: 15px !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+  
+  /* Личный профиль - центрирование */
+  .profile-header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px !important;
+    padding: 20px 16px !important;
+  }
+  
+  .profile-avatar-section .avatar-large {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto;
+  }
+  
+  .profile-name {
+    font-size: 22px !important;
+    text-align: center !important;
+  }
+  
+  .profile-username {
+    text-align: center !important;
+  }
+  
+  .profile-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .detail-item {
+    padding: 14px !important;
+  }
+  
+  .detail-item .label {
+    font-size: 11px !important;
+  }
+  
+  .detail-item .value {
+    font-size: 16px !important;
+  }
+  
+  /* Кнопки на весь экран */
+  .btn {
+    width: 100%;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+  }
+  
+  /* Уменьшаем отступы */
+  .main-content {
+    padding: 12px 8px !important;
+  }
+  
+  .container {
+    padding: 0 4px !important;
+  }
+  
+  /* Хлебные крошки */
+  .breadcrumbs {
+    padding: 8px 12px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .breadcrumbs ol {
+    font-size: 13px !important;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+  .teams-table-row {
+    padding: 10px 12px !important;
+    gap: 8px;
+  }
+  
+  .table-col.position {
+    font-size: 16px;
+    min-width: 32px;
+  }
+  
+  .team-logo-small {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .team-name {
+    font-size: 13px;
+  }
+  
+  .table-col.rating {
+    font-size: 14px;
+    min-width: 44px;
+  }
+  
+  .profile-avatar-section .avatar-large,
+  .team-avatar-section .avatar-large {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  
+  .profile-name,
+  .team-profile-page .team-name {
+    font-size: 20px !important;
+  }
+}
+
+/* ============================================
+ИСПРАВЛЕНИЯ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ
+============================================ */
+@media (pointer: coarse) {
+  /* Название команды - делаем видимым */
+  .team-profile-page .team-name {
+    font-size: 22px !important;
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 16px 0 8px 0 !important;
+    word-break: break-word;
+  }
+  
+  /* Заголовок карточки команды */
+  .team-header-card {
+    padding: 20px 16px !important;
+  }
+  
+  .team-header-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 16px !important;
+  }
+  
+  /* Аватар команды - центрируем */
+  .team-avatar-section {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  
+  .team-avatar-section .avatar-large {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Информация о команде */
+  .team-info {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  
+  /* Количество игроков */
+  .team-players-count {
+    text-align: center !important;
+    font-size: 14px !important;
+    color: var(--text-secondary) !important;
+    margin-top: 8px !important;
+  }
+  
+  /* Кнопки управления лого */
+  .team-logo-controls {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
+  
+  .team-logo-controls .btn {
+    width: 100% !important;
+  }
+  
+  /* Табы */
+  .team-tabs {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    margin: 16px 0 !important;
+  }
+  
+  .tab-btn {
+    flex: 1 !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Кнопка добавить игрока */
+  .team-actions {
+    width: 100% !important;
+    margin: 16px 0 !important;
+  }
+  
+  .team-actions .btn {
+    width: 100% !important;
+  }
+  
+  /* Заголовок состава */
+  .section-title {
+    font-size: 18px !important;
+    text-align: center !important;
+    margin: 16px 0 !important;
+  }
+  
+  /* Карточки игроков */
+  .team-players {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 0 8px !important;
+  }
+  
+  .team-player-card {
+    padding: 12px !important;
+  }
+  
+  /* Статистика команды */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .stats-display {
+    padding: 0 8px !important;
+  }
+  
+  .stat-section,
+  .stat-item {
+    padding: 16px !important;
+  }
+}
+
+/* ============================================
+ПРОФИЛЬ ИГРОКА - ЦЕНТРИРОВАНИЕ
+============================================ */
+@media (pointer: coarse) {
+  /* Контейнер профиля */
+  .profile-page-container {
+    padding: 12px 8px !important;
+  }
+  
+  /* Карточка профиля */
+  .profile-header-card {
+    padding: 20px 16px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .profile-header-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 16px !important;
+  }
+  
+  /* Аватар - центрируем */
+  .profile-avatar-section {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  
+  .profile-avatar-section .avatar-large {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .profile-avatar-section .avatar-large img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+  
+  /* Информация */
+  .profile-info {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  
+  .profile-name {
+    font-size: 22px !important;
+    text-align: center !important;
+    margin: 8px 0 !important;
+  }
+  
+  .profile-username {
+    text-align: center !important;
+    margin-bottom: 12px !important;
+  }
+  
+  /* Детали профиля */
+  .profile-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 0 8px !important;
+  }
+  
+  .detail-item {
+    padding: 16px !important;
+    text-align: center !important;
+  }
+  
+  /* Кнопка редактировать */
+  .edit-profile-btn {
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
+}
+
+
+/* Убираем дублирование modal-overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 360px) {
+  .team-profile-page .team-name {
+    font-size: 18px !important;
+  }
+  
+  .team-avatar-section .avatar-large {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  
+  .profile-avatar-section .avatar-large {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  
+  .profile-name {
+    font-size: 18px !important;
+  }
+}
+
+/* ============================================
+ИСПРАВЛЕНИЕ БУРГЕРА В СВЕТЛОЙ ТЕМЕ
+============================================ */
+body[data-theme="light"] .mobile-burger-btn {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body[data-theme="light"] .mobile-burger-btn:hover {
+  background: transparent !important;
+}
+
+body[data-theme="light"] .burger-line {
+  background: var(--text-primary) !important;
+}
+
+/* ============================================
+ИСПРАВЛЕНИЕ КНОПОК В АДМИНКЕ
+============================================ */
+@media (pointer: coarse) {
+  .admin-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .admin-tabs .btn {
+    width: 100%;
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+    white-space: normal !important;
+    word-break: break-word;
+    text-align: center;
+  }
+}
+
+/* Для десктопа тоже адаптивность */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.admin-tabs .btn {
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  white-space: normal !important;
+  min-width: 140px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .admin-tabs {
+    flex-direction: column;
+  }
+  
+  .admin-tabs .btn {
+    width: 100%;
+    font-size: 15px !important;
+  }
+}
+
+/* ============================================
+ИСПРАВЛЕНИЕ НАЗВАНИЯ КОМАНДЫ
+============================================ */
+.team-profile-page .team-name {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  margin: 16px 0 8px 0 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  text-align: center !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+}
+
+.team-info {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  overflow: visible !important;
+}
+
+/* ============================================
+АДАПТАЦИЯ КНОПОК АДМИНКИ
+============================================ */
+@media (pointer: coarse) {
+  /* Кнопки в админке */
+  .admin-tabs,
+  .admin-section-tabs {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  
+  .admin-tabs .btn,
+  .admin-section-tabs .btn,
+  .admin-panel .btn {
+    width: 100% !important;
+    padding: 16px 20px !important;
+    font-size: 16px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+    min-height: 56px !important;
+  }
+  
+  /* Если кнопки в grid */
+  .admin-grid .btn,
+  .admin-buttons .btn {
+    width: 100% !important;
+    font-size: 15px !important;
+    padding: 14px 16px !important;
+  }
+}
+
+/* Для десктопа тоже адаптивность */
+.admin-tabs .btn,
+.admin-section-tabs .btn {
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  white-space: normal !important;
+  min-width: 140px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+@media (max-width: 480px) {
+  .admin-tabs .btn,
+  .admin-section-tabs .btn {
+    width: 100%;
+    font-size: 15px !important;
+    padding: 14px 16px !important;
+  }
+}
+
+/* ============================================
+ИСПРАВЛЕНИЕ БУРГЕРА В СВЕТЛОЙ ТЕМЕ
+============================================ */
+body[data-theme="light"] .mobile-burger-btn {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body[data-theme="light"] .burger-line {
+  background: var(--text-primary) !important;
+}
+
+/* ============================================
+ОПТИМИЗАЦИЯ ЧАТА И ПОДДЕРЖКИ ДЛЯ МОБИЛЬНЫХ
+============================================ */
+@media (pointer: coarse) {
+  /* Чат - адаптивный вид */
+  .chat-page {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+  
+  .chat-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    height: 100%;
+    position: relative;
+  }
+  
+  /* Левая панель со списком */
+  .chat-left {
+    width: 100% !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: transform 0.3s ease;
+    z-index: 1;
+  }
+  
+  .chat-left.hidden {
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  
+  .chat-search {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  
+  .chat-list-wrapper {
+    flex: 1;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  
+  .search-results-list,
+  .conversations-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  /* Правая панель с чатом */
+  .chat-right {
+    width: 100% !important;
+    height: 100%;
+    position: absolute;
+    right: -100%;
+    top: 0;
+    transition: transform 0.3s ease;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+  }
+  
+  .chat-right.active {
+    transform: translateX(-100%);
+    right: 0;
+  }
+  
+  .chat-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .chat-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  
+  .chat-input-form {
+    padding: 12px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+  }
+  
+  /* Поддержка - адаптивный вид */
+  .support-main {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+  
+  .support-left {
+    width: 100% !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: transform 0.3s ease;
+    z-index: 1;
+  }
+  
+  .support-left.hidden {
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  
+  .support-left-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  
+  .support-ticket-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  
+  .support-right {
+    width: 100% !important;
+    height: 100%;
+    position: absolute;
+    right: -100%;
+    top: 0;
+    transition: transform 0.3s ease;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .support-right.active {
+    transform: translateX(-100%);
+    right: 0;
+  }
+  
+  .support-chat-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .support-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  
+  .support-chat-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  
+  .support-right form {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  
+  .support-placeholder {
+    display: none;
+  }
 }
