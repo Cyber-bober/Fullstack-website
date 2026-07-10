@@ -1,11 +1,13 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
+
+type RedisClient = ReturnType<typeof createClient>;
 
 declare global {
   // eslint-disable-next-line no-var
-  var redisClient: RedisClientType | undefined;
+  var redisClient: RedisClient | undefined;
 }
 
-function getClient(): RedisClientType {
+function getClient(): RedisClient {
   if (global.redisClient) {
     return global.redisClient;
   }
