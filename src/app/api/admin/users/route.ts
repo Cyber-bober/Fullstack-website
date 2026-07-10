@@ -4,19 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 
-const CACHE_TTL = 30; // 30 секунд
-
-async function invalidateAdminUsersCache() {
-  try {
-    const keys = await redis.keys("admin:users:*");
-    if (keys.length > 0) {
-      await redis.del(keys);
-      console.log(`Invalidated ${keys.length} admin users cache keys`);
-    }
-  } catch (err) {
-    console.error("Admin users cache invalidation error:", err);
-  }
-}
+const CACHE_TTL = 30;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -55,5 +43,3 @@ export async function GET() {
 
   return NextResponse.json(users);
 }
-
-export { invalidateAdminUsersCache };
