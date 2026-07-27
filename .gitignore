@@ -38,3 +38,5 @@ public/uploads/team-*
 
 # Prisma migrations
 prisma/migrations/
+
+monitoring/grafana.env
