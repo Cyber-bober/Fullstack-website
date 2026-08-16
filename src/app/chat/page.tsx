@@ -38,10 +38,12 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length === 0 ? null : messages[0]?.id]);
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages[messages.length - 1]?.id]);
 
-  // Infinite Scroll
   const handleScroll = useCallback(() => {
     const container = messagesContainerRef.current;
     if (!container || !hasMore || loading) return;
@@ -59,7 +61,6 @@ export default function ChatPage() {
     }
   }, [handleScroll]);
 
-  // Read Receipts
   useEffect(() => {
     if (!selectedUser || !currentUserId) return;
     fetch("/api/chat/messages/read", {
@@ -134,20 +135,45 @@ export default function ChatPage() {
 
   const sendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newMessage.trim() || !selectedUser) return;
+    if (!newMessage.trim() || !selectedUser || !currentUserId) return;
+    
+    const tempId = `temp-${Date.now()}`;
+    
+    const optimisticMsg: ChatMessage = {
+      id: tempId,
+      senderId: currentUserId,
+      receiverId: selectedUser.id,
+      text: newMessage,
+      createdAt: new Date().toISOString(),
+      isRead: false,
+      sender: { 
+        id: currentUserId,
+        fullName: "Вы",
+        username: "me"
+      },
+    } as ChatMessage;
+    
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setNewMessage("");
+
     try {
       const res = await fetch("/api/chat/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ receiverId: selectedUser.id, text: newMessage }),
       });
+      
       if (res.ok) {
         const msg = await res.json();
-        setMessages((prev) => [...prev, msg]);
-        setNewMessage("");
+        setMessages((prev) => prev.map(m => m.id === tempId ? msg : m));
         await loadConversations();
+      } else {
+        setMessages((prev) => prev.filter(m => m.id !== tempId));
       }
-    } catch {}
+    } catch (err) {
+      console.error("Failed to send message", err);
+      setMessages((prev) => prev.filter(m => m.id !== tempId));
+    }
   };
 
   const formatTime = (dateStr: string | undefined | null) => {
@@ -160,28 +186,69 @@ export default function ChatPage() {
       <div className="chat-layout">
         <div className="chat-left">
           <div className="chat-search glass-effect">
-            <input type="text" className="search-input" placeholder="Поиск..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoComplete="off" />
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder="Поиск..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              autoComplete="off" 
+            />
           </div>
           <div className="chat-list-wrapper glass-effect">
             {isSearching && searchResults.length > 0 ? (
               <div className="search-results-list">
                 <div className="section-label">Найдено:</div>
                 {searchResults.map((user) => (
-                  <div key={user.id} className="conversation-item hoverable" onClick={() => selectUser(user)}>
-                    <div className="conversation-avatar">{user.photos?.[0] ? <img src={user.photos[0]} /> : <div className="avatar-placeholder">{user.fullName?.[0]}</div>}</div>
-                    <div className="conversation-info"><div className="conversation-name">{user.fullName}</div><div className="conversation-username">@{user.username}</div></div>
+                  <div 
+                    key={user.id} 
+                    className="conversation-item hoverable" 
+                    onClick={() => selectUser(user)}
+                  >
+                    <div className="conversation-avatar">
+                      {user.photos?.[0] ? (
+                        <img src={user.photos[0]} alt={user.fullName} />
+                      ) : (
+                        <div className="avatar-placeholder">{user.fullName?.[0]}</div>
+                      )}
+                    </div>
+                    <div className="conversation-info">
+                      <div className="conversation-name">{user.fullName}</div>
+                      <div className="conversation-username">@{user.username}</div>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="conversations-list">
-                {conversations.length === 0 ? <p className="empty-text">Нет диалогов</p> : conversations.map((conv) => (
-                  <div key={conv.user.id} className={`conversation-item ${selectedUser?.id === conv.user.id ? "active" : ""}`} onClick={() => selectUser(conv.user)}>
-                    <div className="conversation-avatar">{conv.user.photos?.[0] ? <img src={conv.user.photos[0]} /> : <div className="avatar-placeholder">{conv.user.fullName?.[0]}</div>}</div>
-                    <div className="conversation-info"><div className="conversation-name">{conv.user.fullName}</div><div className="conversation-last-message">{conv.lastMessage?.text || "Нет сообщений"}</div></div>
-                    <div className="conversation-time">{formatTime(conv.lastMessage?.createdAt)}</div>
-                  </div>
-                ))}
+                {conversations.length === 0 ? (
+                  <p className="empty-text">Нет диалогов</p>
+                ) : (
+                  conversations.map((conv) => (
+                    <div 
+                      key={conv.user.id} 
+                      className={`conversation-item ${selectedUser?.id === conv.user.id ? "active" : ""}`} 
+                      onClick={() => selectUser(conv.user)}
+                    >
+                      <div className="conversation-avatar">
+                        {conv.user.photos?.[0] ? (
+                          <img src={conv.user.photos[0]} alt={conv.user.fullName} />
+                        ) : (
+                          <div className="avatar-placeholder">{conv.user.fullName?.[0]}</div>
+                        )}
+                      </div>
+                      <div className="conversation-info">
+                        <div className="conversation-name">{conv.user.fullName}</div>
+                        <div className="conversation-last-message">
+                          {conv.lastMessage?.text || "Нет сообщений"}
+                        </div>
+                      </div>
+                      <div className="conversation-time">
+                        {formatTime(conv.lastMessage?.createdAt)}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -191,31 +258,61 @@ export default function ChatPage() {
           {selectedUser ? (
             <>
               <div className="chat-header glass-effect">
-                <div className="chat-header-avatar">{selectedUser.photos?.[0] ? <img src={selectedUser.photos[0]} /> : <div className="avatar-placeholder">{selectedUser.fullName?.[0]}</div>}</div>
-                <div><div className="chat-header-name">{selectedUser.fullName}</div><div className="chat-header-username">@{selectedUser.username}</div></div>
+                <div className="chat-header-avatar">
+                  {selectedUser.photos?.[0] ? (
+                    <img src={selectedUser.photos[0]} alt={selectedUser.fullName} />
+                  ) : (
+                    <div className="avatar-placeholder">{selectedUser.fullName?.[0]}</div>
+                  )}
+                </div>
+                <div>
+                  <div className="chat-header-name">{selectedUser.fullName}</div>
+                  <div className="chat-header-username">@{selectedUser.username}</div>
+                </div>
               </div>
+              
               <div className="chat-messages glass-effect" ref={messagesContainerRef}>
-                {loading && page === 0 ? <p className="empty-text">Загрузка...</p> :
-                 messages.length === 0 ? <p className="empty-text">Начните диалог!</p> :
-                 messages.map((msg) => {
-                  const isOwn = msg.senderId === currentUserId;
-                  return (
-                    <div key={msg.id} className={`chat-message ${isOwn ? "own" : "other"}`}>
-                      <div className="chat-message-bubble"><div>{msg.text}</div><div className="chat-message-time">{formatTime(msg.createdAt)}</div></div>
-                    </div>
-                  );
-                })}
+                {loading && page === 0 ? (
+                  <p className="empty-text">Загрузка...</p>
+                ) : messages.length === 0 ? (
+                  <p className="empty-text">Начните диалог!</p>
+                ) : (
+                  messages.map((msg) => {
+                    const isOwn = msg.senderId === currentUserId;
+                    return (
+                      <div key={msg.id} className={`chat-message ${isOwn ? "own" : "other"}`}>
+                        <div className="chat-message-bubble">
+                          <div>{msg.text}</div>
+                          <div className="chat-message-time">{formatTime(msg.createdAt)}</div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
                 <div ref={messagesEndRef} />
               </div>
+              
               <form className="chat-input-form" onSubmit={sendMessage}>
-                <input type="text" className="chat-input glass-effect" placeholder="Сообщение..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                <button type="submit" className="btn btn-primary glass-effect chat-send-btn" disabled={!newMessage.trim()}>
+                <input 
+                  type="text" 
+                  className="chat-input glass-effect" 
+                  placeholder="Сообщение..." 
+                  value={newMessage} 
+                  onChange={(e) => setNewMessage(e.target.value)} 
+                />
+                <button 
+                  type="submit" 
+                  className="btn btn-primary glass-effect chat-send-btn" 
+                  disabled={!newMessage.trim()}
+                >
                   <img src="/uploads/svg/send.svg" alt="Отправить" className="svg send-icon" />
                 </button>
               </form>
             </>
           ) : (
-            <div className="chat-empty"><p className="empty-text">Выберите собеседника</p></div>
+            <div className="chat-empty">
+              <p className="empty-text">Выберите собеседника</p>
+            </div>
           )}
         </div>
       </div>

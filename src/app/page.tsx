@@ -61,7 +61,7 @@ function HomePageContent() {
         }
         if (matchesRes.ok) { 
           const d = await matchesRes.json(); 
-          setMatches(Array.isArray(d) ? d : []); 
+          setMatches(d.data || []); 
         }
         if (teamsRes.ok) { 
           const t = await teamsRes.json(); 
@@ -91,10 +91,7 @@ function HomePageContent() {
     };
 
     window.addEventListener('openMatchModal', handleOpenMatchModal);
-    
-    return () => {
-      window.removeEventListener('openMatchModal', handleOpenMatchModal);
-    };
+    return () => window.removeEventListener('openMatchModal', handleOpenMatchModal);
   }, []);
 
   useEffect(() => {
@@ -136,38 +133,29 @@ function HomePageContent() {
   };
 
   const handleSaveNews = async (formData: FormData) => {
-  const isEditing = editingNews !== null;
-  
-  const url = isEditing ? `/api/news/${editingNews!.id}` : "/api/news";
-  const method = isEditing ? "PATCH" : "POST";
+    const isEditing = editingNews !== null;
+    const url = isEditing ? `/api/news/${editingNews!.id}` : "/api/news";
+    const method = isEditing ? "PATCH" : "POST";
 
-  const res = await fetch(url, {
-    method,
-    body: formData,
-  });
+    const res = await fetch(url, { method, body: formData });
 
-  if (!res.ok) {
-    let errorMessage = "Ошибка сохранения";
-    try {
-      const err = await res.json();
-      errorMessage = err.error || errorMessage;
-    } catch {
-      // Если ответ не JSON
+    if (!res.ok) {
+      let errorMessage = "Ошибка сохранения";
+      try {
+        const err = await res.json();
+        errorMessage = err.error || errorMessage;
+      } catch {}
+      throw new Error(errorMessage);
     }
-    throw new Error(errorMessage);
-  }
 
-  setToast({ 
-    msg: isEditing ? "Новость обновлена!" : "Новость создана!", 
-    type: "success" 
-  });
-  setShowNewsForm(false);
-  setEditingNews(null);
+    setToast({ msg: isEditing ? "Новость обновлена!" : "Новость создана!", type: "success" });
+    setShowNewsForm(false);
+    setEditingNews(null);
 
-  const mRes = await fetch(`/api/news?page=1&limit=10`, { cache: 'no-store' });
-  if (mRes.ok) {
-    const data = await mRes.json();
-    setNewsData(data);
+    const mRes = await fetch(`/api/news?page=1&limit=10`, { cache: 'no-store' });
+    if (mRes.ok) {
+      const data = await mRes.json();
+      setNewsData(data);
     }
   };
 
@@ -188,7 +176,7 @@ function HomePageContent() {
         const mRes = await fetch("/api/matches", { cache: 'no-store' });
         if (mRes.ok) {
           const d = await mRes.json();
-          setMatches(Array.isArray(d) ? d : []);
+          setMatches(d.data || []);
         }
       } else {
         const err = await res.json();
@@ -233,7 +221,6 @@ function HomePageContent() {
     setCreatingMatch(true);
     try {
       const dateStr = matchForm.date;
-      
       let localDate: Date;
       
       if (dateStr.includes('T')) {
@@ -270,7 +257,7 @@ function HomePageContent() {
         const mRes = await fetch("/api/matches", { cache: 'no-store' });
         if (mRes.ok) {
           const d = await mRes.json();
-          setMatches(Array.isArray(d) ? d : []);
+          setMatches(d.data || []);
         }
         
         const now = new Date();
@@ -316,16 +303,12 @@ function HomePageContent() {
 
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 24, flexWrap: "wrap" }}>
-        <button className="btn glass-btn" disabled={page === 1} onClick={() => router.push(`?page=${page - 1}&q=${liveNewsQuery}`)}>
-          ← Назад
-        </button>
+        <button className="btn glass-btn" disabled={page === 1} onClick={() => router.push(`?page=${page - 1}&q=${liveNewsQuery}`)}>← Назад</button>
         {pages.map((p, i) =>
           p === "..." ? <span key={`dots-${i}`} style={{ padding: "0 4px" }}>…</span> :
           <button key={p} className={`btn ${p === page ? "btn-primary" : "glass-btn"}`} style={{ minWidth: 36 }} onClick={() => router.push(`?page=${p}&q=${liveNewsQuery}`)}>{p}</button>
         )}
-        <button className="btn glass-btn" disabled={page === totalPages} onClick={() => router.push(`?page=${page + 1}&q=${liveNewsQuery}`)}>
-          Вперёд →
-        </button>
+        <button className="btn glass-btn" disabled={page === totalPages} onClick={() => router.push(`?page=${page + 1}&q=${liveNewsQuery}`)}>Вперёд →</button>
       </div>
     );
   };
@@ -333,15 +316,13 @@ function HomePageContent() {
   const getHours = () => {
     if (!matchForm.date) return '18';
     const timePart = matchForm.date.split('T')[1];
-    if (!timePart) return '18';
-    return timePart.split(':')[0] || '18';
+    return timePart ? timePart.split(':')[0] || '18' : '18';
   };
 
   const getMinutes = () => {
     if (!matchForm.date) return '00';
     const timePart = matchForm.date.split('T')[1];
-    if (!timePart) return '00';
-    return timePart.split(':')[1] || '00';
+    return timePart ? timePart.split(':')[1] || '00' : '00';
   };
 
   const getDatePart = () => {
@@ -359,12 +340,7 @@ function HomePageContent() {
       <div className="after-header">
         <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
         {canManageMatches && (
-          <button 
-            className="btn btn-primary glass-effect" 
-            onClick={openMatchModal}
-          >
-            Добавить матч
-          </button>
+          <button className="btn btn-primary glass-effect" onClick={openMatchModal}>Добавить матч</button>
         )}
       </div>
 
@@ -451,38 +427,12 @@ function HomePageContent() {
                 <div className="form-group">
                   <label>Время (24ч)</label>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <select 
-                      className="glass-effect" 
-                      value={getHours()}
-                      onChange={e => {
-                        const date = getDatePart();
-                        const minutes = getMinutes();
-                        setMatchForm({...matchForm, date: `${date}T${e.target.value}:${minutes}`});
-                      }}
-                      style={{ flex: 1, padding: '12px 8px' }}
-                    >
-                      {Array.from({length: 24}, (_, i) => (
-                        <option key={i} value={i.toString().padStart(2, '0')}>
-                          {i.toString().padStart(2, '0')}
-                        </option>
-                      ))}
+                    <select className="glass-effect" value={getHours()} onChange={e => setMatchForm({...matchForm, date: `${getDatePart()}T${e.target.value}:${getMinutes()}`})} style={{ flex: 1, padding: '12px 8px' }}>
+                      {Array.from({length: 24}, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
                     </select>
                     <span style={{ color: 'white', fontWeight: 'bold' }}>:</span>
-                    <select 
-                      className="glass-effect" 
-                      value={getMinutes()}
-                      onChange={e => {
-                        const date = getDatePart();
-                        const hours = getHours();
-                        setMatchForm({...matchForm, date: `${date}T${hours}:${e.target.value}`});
-                      }}
-                      style={{ flex: 1, padding: '12px 8px' }}
-                    >
-                      {Array.from({length: 60}, (_, i) => (
-                        <option key={i} value={i.toString().padStart(2, '0')}>
-                          {i.toString().padStart(2, '0')}
-                        </option>
-                      ))}
+                    <select className="glass-effect" value={getMinutes()} onChange={e => setMatchForm({...matchForm, date: `${getDatePart()}T${getHours()}:${e.target.value}`})} style={{ flex: 1, padding: '12px 8px' }}>
+                      {Array.from({length: 60}, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
                     </select>
                   </div>
                 </div>
@@ -505,10 +455,7 @@ function HomePageContent() {
         <NewsForm
           post={editingNews}
           onSave={handleSaveNews}
-          onCancel={() => {
-            setShowNewsForm(false);
-            setEditingNews(null);
-          }}
+          onCancel={() => { setShowNewsForm(false); setEditingNews(null); }}
         />
       )}
 

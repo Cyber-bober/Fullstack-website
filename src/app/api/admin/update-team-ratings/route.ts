@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redis } from "@/lib/redis";
+
+async function invalidateTeamsCache() {
+  try {
+    const keys = await redis.keys("teams:*");
+    if (keys.length > 0) {
+      for (const key of keys) {
+        await redis.del(key);
+      }
+      console.log(`Invalidated ${keys.length} teams cache keys`);
+    }
+  } catch (err) {
+    console.error("Teams cache invalidation error:", err);
+  }
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -30,6 +45,8 @@ export async function POST(req: NextRequest) {
     );
 
     await prisma.$transaction(updates);
+
+    await invalidateTeamsCache();
 
     return NextResponse.json({ success: true });
   } catch (error) {
