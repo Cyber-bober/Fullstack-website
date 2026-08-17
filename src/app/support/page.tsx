@@ -44,7 +44,7 @@ export default function SupportPage() {
       const res = await fetch(`/api/support/tickets/${ticketId}/messages`);
       if (res.ok) {
         const data = await res.json();
-        let msgs = Array.isArray(data) ? data : (data.messages || []);
+        const msgs = data.messages || [];
         setActiveTicket((prev: any) => prev ? { ...prev, messages: msgs } : null);
       }
     } catch {}
@@ -55,6 +55,12 @@ export default function SupportPage() {
     const interval = setInterval(() => loadMessages(activeTicket.id), 3000);
     return () => clearInterval(interval);
   }, [activeTicket?.id]);
+
+  useEffect(() => {
+    if (chatContainerRef.current && activeTicket?.messages) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [activeTicket?.messages]);
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();

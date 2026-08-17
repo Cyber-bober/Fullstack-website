@@ -5,15 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { unlink, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { redis } from "@/lib/redis";
-import sharp from "sharp";
-import { hasSqlInjection, hasXSS, validateLength } from "@/lib/validate";
+import { hasSqlInjection, hasXSS } from "@/lib/validate";
 
 async function invalidateNewsCache() {
   try {
     const keys = await redis.keys("news:*");
     if (keys.length > 0) {
       await redis.del(keys);
-      console.log(`Invalidated ${keys.length} news cache keys`);
     }
   } catch (err) {
     console.error("News cache invalidation error:", err);
@@ -47,7 +45,6 @@ export async function PATCH(
 ) {
   const session = await getServerSession(authOptions);
 
-  // Сначала проверка авторизации (401)
   if (!session?.user) {
     return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
   }
@@ -72,16 +69,17 @@ export async function PATCH(
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
-      title = formData.get("title") as string | undefined;
-      content = formData.get("content") as string | undefined;
+      const rawTitle = formData.get("title");
+      const rawContent = formData.get("content");
+      
+      title = rawTitle !== null ? String(rawTitle) : undefined;
+      content = rawContent !== null ? String(rawContent) : undefined;
+      
       const image = formData.get("image") as File | null;
       const removeImage = formData.get("removeImage") === "true";
 
       if (removeImage) {
         imageUrl = null;
-        console.log(`Removing image from news ${params.id}`);
-        
-        // Удаляем старый файл
         if (existingPost.imageUrl) {
           try {
             const oldFilePath = path.join(process.cwd(), "public", existingPost.imageUrl);
@@ -105,23 +103,16 @@ export async function PATCH(
 
         const timestamp = Date.now();
         const randomStr = Math.random().toString(36).substring(2, 9);
-        const fileName = `news-${timestamp}-${randomStr}.jpg`;
+        const ext = image.name.endsWith('.png') ? 'png' : 'jpg';
+        const fileName = `news-${timestamp}-${randomStr}.${ext}`;
         const filePath = path.join(uploadDir, fileName);
 
         const bytes = await image.arrayBuffer();
         const buffer = Buffer.from(bytes);
-
-        const optimizedImage = await sharp(buffer)
-          .resize(1200, null, { withoutEnlargement: true, fit: 'inside' })
-          .jpeg({ quality: 80, progressive: true, mozjpeg: true })
-          .toBuffer();
-
-        await writeFile(filePath, optimizedImage);
+        await writeFile(filePath, buffer);
+        
         imageUrl = `/uploads/news/${fileName}`;
 
-        console.log(`Image updated: ${(buffer.length / 1024 / 1024).toFixed(2)}MB → ${(optimizedImage.length / 1024 / 1024).toFixed(2)}MB`);
-
-        // Удаляем старое фото
         if (existingPost.imageUrl) {
           try {
             const oldFilePath = path.join(process.cwd(), "public", existingPost.imageUrl);
@@ -138,8 +129,8 @@ export async function PATCH(
     }
 
     if (title !== undefined) {
-      if (title.length < 10 || title.length > 200) {
-        return NextResponse.json({ error: "Заголовок должен быть от 10 до 200 символов" }, { status: 400 });
+      if (title.length < 10 || title.length > 35) {
+        return NextResponse.json({ error: "Заголовок должен быть от 10 до 35 символов" }, { status: 400 });
       }
       if (hasSqlInjection(title) || hasXSS(title)) {
         return NextResponse.json({ error: "Обнаружены недопустимые символы" }, { status: 400 });
@@ -181,7 +172,6 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
   
-  // Сначала проверка авторизации (401)
   if (!session?.user) {
     return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
   }
@@ -196,7 +186,6 @@ export async function DELETE(
   }
 
   try {
-    // Удаляем файл изображения
     if (post.imageUrl) {
       try {
         const filePath = path.join(process.cwd(), "public", post.imageUrl);

@@ -10,10 +10,13 @@ export async function GET() {
     return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
   }
 
+  const where = session.user.role === "ADMIN" ? {} : { userId: session.user.id };
+
   const tickets = await prisma.supportTicket.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
+    where,
+    orderBy: { updatedAt: "desc" },
     include: {
+      user: { select: { id: true, username: true, fullName: true } },
       messages: { orderBy: { createdAt: "asc" } },
     },
   });

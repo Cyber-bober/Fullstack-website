@@ -44,11 +44,12 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
     return new Promise<File | null>((resolve) => {
       canvas.toBlob((blob) => {
         if (blob) {
-          resolve(new File([blob], "avatar-cropped.png", { type: "image/png" }));
+          const timestamp = Date.now();
+          resolve(new File([blob], `news-${timestamp}.jpg`, { type: "image/jpeg" }));
         } else {
           resolve(null);
         }
-      }, "image/png", 0.95);
+      }, "image/jpeg", 0.92);
     });
   };
 
@@ -98,7 +99,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 10000,
+        zIndex: 10001,
         background: 'rgba(0, 0, 0, 0.85)',
         backdropFilter: 'blur(8px)',
         display: 'flex',
@@ -121,7 +122,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           margin: 'auto',
         }}
       >
-        {/* Кнопка закрытия */}
         <button
           onClick={onCancel}
           disabled={isProcessing}
@@ -141,7 +141,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 10,
-            transition: 'all 0.2s',
           }}
         >
           ×
@@ -155,10 +154,9 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           textAlign: 'center',
           paddingRight: '40px',
         }}>
-          Настройка аватара
+          Настройка фото новости
         </h3>
         
-        {/* Область кроппера - адаптивная высота */}
         <div 
           className="cropper-container"
           style={{
@@ -169,7 +167,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             borderRadius: '16px',
             overflow: 'hidden',
             marginBottom: '24px',
-            boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.3)',
           }}
         >
           <Cropper
@@ -177,8 +174,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={1}
-            cropShape="round"
+            aspect={16 / 9}
             showGrid={true}
             onCropChange={setCrop}
             onZoomChange={setZoom}
@@ -187,21 +183,10 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           />
         </div>
 
-        {/* Контролы - адаптивные */}
         <div className="cropper-controls" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Масштаб */}
           <div className="control-group">
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '10px'
-            }}>
-              <label style={{ 
-                fontSize: 'clamp(13px, 2vw, 15px)',
-                fontWeight: 600,
-                color: '#e0e0e0'
-              }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <label style={{ fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 600, color: '#e0e0e0' }}>
                 Масштаб
               </label>
               <span style={{
@@ -222,32 +207,13 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
               step={0.1} 
               value={zoom} 
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="range-slider"
-              style={{
-                width: '100%',
-                height: '6px',
-                borderRadius: '3px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                outline: 'none',
-                cursor: 'pointer',
-                WebkitAppearance: 'none'
-              }}
+              style={{ width: '100%', cursor: 'pointer' }}
             />
           </div>
 
-          {/* Поворот */}
           <div className="control-group">
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '10px'
-            }}>
-              <label style={{ 
-                fontSize: 'clamp(13px, 2vw, 15px)',
-                fontWeight: 600,
-                color: '#e0e0e0'
-              }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <label style={{ fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 600, color: '#e0e0e0' }}>
                 Поворот
               </label>
               <span style={{
@@ -268,28 +234,12 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
               step={1} 
               value={rotation} 
               onChange={(e) => setRotation(Number(e.target.value))}
-              className="range-slider"
-              style={{
-                width: '100%',
-                height: '6px',
-                borderRadius: '3px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                outline: 'none',
-                cursor: 'pointer',
-                WebkitAppearance: 'none'
-              }}
+              style={{ width: '100%', cursor: 'pointer' }}
             />
           </div>
         </div>
 
-        {/* Кнопки */}
-        <div style={{ 
-          display: "flex", 
-          gap: "12px", 
-          justifyContent: "flex-end",
-          marginTop: '28px',
-          flexWrap: 'wrap'
-        }}>
+        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: '28px', flexWrap: 'wrap' }}>
           <button 
             onClick={onCancel} 
             disabled={isProcessing}
@@ -304,8 +254,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
               fontSize: '15px',
               fontWeight: 600,
               cursor: isProcessing ? 'not-allowed' : 'pointer',
-              opacity: isProcessing ? 0.6 : 1,
-              transition: 'all 0.2s'
             }}
           >
             Отмена
@@ -325,8 +273,6 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
               fontWeight: 700,
               cursor: isProcessing || !pixelCrop ? 'not-allowed' : 'pointer',
               opacity: isProcessing || !pixelCrop ? 0.6 : 1,
-              transition: 'all 0.2s',
-              boxShadow: '0 4px 15px rgba(1, 96, 206, 0.4)'
             }}
           >
             {isProcessing ? "Обработка..." : "Сохранить"}

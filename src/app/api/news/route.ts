@@ -14,7 +14,6 @@ async function invalidateNewsCache() {
     const keys = await redis.keys("news:*");
     if (keys.length > 0) {
       await redis.del(keys);
-      console.log(`Invalidated ${keys.length} news cache keys`);
     }
   } catch (err) {
     console.error("News cache invalidation error:", err);
@@ -57,37 +56,21 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Фото слишком большое (макс 10MB)" }, { status: 400 });
         }
 
-        let sharp: any;
-        try {
-          sharp = (await import("sharp")).default;
-        } catch (err) {
-          console.error("Sharp import error:", err);
-          return NextResponse.json(
-            { error: "Обработка изображений недоступна на сервере" },
-            { status: 503 }
-          );
-        }
-
         const uploadDir = path.join(process.cwd(), "public", "uploads", "news");
         await mkdir(uploadDir, { recursive: true });
 
         const timestamp = Date.now();
         const randomStr = Math.random().toString(36).substring(2, 9);
-        const fileName = `news-${timestamp}-${randomStr}.jpg`;
+        const ext = file.name.endsWith('.png') ? 'png' : 'jpg';
+        const fileName = `news-${timestamp}-${randomStr}.${ext}`;
         const filePath = path.join(uploadDir, fileName);
 
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-
-        const optimizedImage = await sharp(buffer)
-          .resize(1200, null, { withoutEnlargement: true, fit: 'inside' })
-          .jpeg({ quality: 80, progressive: true, mozjpeg: true })
-          .toBuffer();
-
-        await writeFile(filePath, optimizedImage);
+        await writeFile(filePath, buffer);
+        
         imageUrl = `/uploads/news/${fileName}`;
-
-        console.log(`Image optimized: ${(buffer.length / 1024 / 1024).toFixed(2)}MB → ${(optimizedImage.length / 1024 / 1024).toFixed(2)}MB`);
+        console.log(`Image saved: ${fileName} (${(buffer.length / 1024).toFixed(1)}KB)`);
       }
     } else {
       const body = await req.json();
