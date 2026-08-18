@@ -1,9 +1,8 @@
-//src/app/api/profile/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redis } from "@/lib/redis";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -20,21 +19,32 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
+    const isAdmin = session.user.role === "ADMIN";
 
-    // Разрешаем обновлять ТОЛЬКО безопасные поля
+    const targetUserId = isAdmin && body.targetUserId ? body.targetUserId : session.user.id;
+
+    if (body.stats !== undefined && !isAdmin) {
+      return NextResponse.json(
+        { error: "Только администратор может изменять статистику" },
+        { status: 403 }
+      );
+    }
+
+    if (body.targetUserId && !isAdmin) {
+      return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+    }
+
     const safeData: any = {};
-    if (body.fullName) safeData.fullName = body.fullName;
-    if (body.city) safeData.city = body.city;
-    if (body.position) safeData.position = body.position;
-    if (body.contacts) safeData.contacts = body.contacts;
-    if (body.stats) safeData.stats = body.stats;
+    if (body.fullName !== undefined) safeData.fullName = body.fullName;
+    if (body.city !== undefined) safeData.city = body.city;
+    if (body.position !== undefined) safeData.position = body.position;
+    if (body.contacts !== undefined) safeData.contacts = body.contacts;
+    if (body.stats !== undefined) safeData.stats = body.stats;
     if (body.birthDate) safeData.birthDate = new Date(body.birthDate);
 
-    // Обработка фото: принимаем массив URL
     if (Array.isArray(body.photos)) {
-      // Проверим, что каждый элемент — строка (URL или base64)
       const validPhotos = body.photos.filter((p: any) => typeof p === 'string');
-      if (validPhotos.length <= 3) { // Максимум 3 фото
+      if (validPhotos.length <= 3) {
         safeData.photos = validPhotos;
       } else {
         return NextResponse.json({ error: "Максимум 3 фото" }, { status: 400 });
@@ -46,9 +56,18 @@ export async function PATCH(req: NextRequest) {
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: targetUserId },
       data: safeData,
     });
+
+    try {
+      const keys = await redis.keys(`profile:${targetUserId}*`);
+      if (keys.length > 0) {
+        await redis.del(keys);
+      }
+    } catch (err) {
+      console.error("Cache invalidation error:", err);
+    }
 
     return NextResponse.json(updatedUser);
   } catch (error) {

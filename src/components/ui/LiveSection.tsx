@@ -358,13 +358,27 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
                 {canManage && (
                   <button
                     onClick={() => handleDeleteEvent(event.id)}
-                    className="btn-icon glass-effect"
+                    className="delete-event-btn glass-effect"
                     title="Удалить"
                     style={{ 
+                      width: '32px',
+                      height: '32px',
+                      minWidth: '32px',
+                      maxWidth: '32px',
+                      padding: '0',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       background: 'rgba(239, 68, 68, 0.2)',
                       color: 'var(--color-danger)',
                       border: '1px solid rgba(239, 68, 68, 0.3)',
-                      marginLeft: "8px"
+                      borderRadius: '50%',
+                      marginLeft: "8px",
+                      flexShrink: 0,
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
                     }}
                   >
                     ×
@@ -393,6 +407,48 @@ export function LiveSection({ matches, userRole, onDeleteMatch, deletingId }: Pr
       )}
 
       <style jsx>{`
+        .status-badge {
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+          display: inline-block;
+        }
+        .status-live {
+          background: rgba(239, 68, 68, 0.2);
+          color: var(--color-danger);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          animation: pulse 2s infinite;
+        }
+        .status-scheduled {
+          background: rgba(59, 130, 246, 0.2);
+          color: var(--color-primary);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .status-finished {
+          background: rgba(16, 185, 129, 0.2);
+          color: var(--color-success);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-cancelled {
+          background: rgba(107, 114, 128, 0.2);
+          color: var(--text-tertiary);
+          border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+        
+        .delete-event-btn:hover {
+          background: rgba(239, 68, 68, 0.3) !important;
+          transform: scale(1.05);
+        }
+        
+        .delete-event-btn:active {
+          transform: scale(0.95);
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
         .status-badge {
           padding: 4px 12px;
           border-radius: 12px;

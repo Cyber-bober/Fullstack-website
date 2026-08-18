@@ -5,7 +5,6 @@ import Footer from "@/components/ui/Footer";
 import Providers from "@/components/ui/Providers";
 import CookieBanner from "@/components/ui/CookieBanner";
 import BreadCrumbs from "@/components/ui/BreadCrumbs";
-import { OrganizationJsonLd, JsonLd } from "@/components/ui/JsonLd";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import type { Metadata, Viewport } from "next";

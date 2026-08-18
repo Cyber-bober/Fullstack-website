@@ -6,14 +6,22 @@ import ImageModal from "@/components/ui/ImageModal";
 
 export default function ProfileClient({ 
   user, 
-  isOwnProfile 
+  isOwnProfile,
+  currentUserRole,
 }: { 
   user: any; 
-  isOwnProfile?: boolean 
+  isOwnProfile?: boolean;
+  currentUserRole?: string | null;
 }) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [editingStats, setEditingStats] = useState(false);
+  const [statsValue, setStatsValue] = useState(user.stats || "");
+  const [savingStats, setSavingStats] = useState(false);
+  const [statsError, setStatsError] = useState("");
+
   const photos = user.photos || [];
   const displayPhoto = photos[0] || null;
+  const isAdmin = currentUserRole === "ADMIN";
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,12 +48,37 @@ export default function ProfileClient({
     }
   };
 
+  const handleSaveStats = async () => {
+    setStatsError("");
+    setSavingStats(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stats: statsValue || null,
+          targetUserId: user.id,
+        }),
+      });
+
+      if (res.ok) {
+        setEditingStats(false);
+        window.location.reload();
+      } else {
+        const err = await res.json();
+        setStatsError(err.error || "Ошибка сохранения");
+      }
+    } catch {
+      setStatsError("Ошибка сети");
+    } finally {
+      setSavingStats(false);
+    }
+  };
+
   return (
     <div className="profile-container">
-      {/* Верхняя карточка с фото и основной информацией */}
       <Card className="profile-header-card">
         <div className="profile-header-content">
-          {/* Фото слева */}
           <div className="profile-avatar-section">
             <div 
               className="profile-avatar-large"
@@ -62,13 +95,11 @@ export default function ProfileClient({
             </div>
           </div>
 
-          {/* Информация справа */}
           <div className="profile-info-section">
             <div className="profile-header-info">
               <h1 className="profile-name-compact">{user.fullName}</h1>
               <p className="profile-username-compact">@{user.username}</p>
               
-              {/* Быстрая информация в одну строку */}
               <div className="profile-quick-info">
                 {user.position && (
                   <span className="quick-info-item">
@@ -88,7 +119,6 @@ export default function ProfileClient({
               </div>
             </div>
 
-            {/* Кнопка редактирования */}
             {isOwnProfile && (
               <Link href="/profile/edit" className="btn btn-primary edit-profile-btn">
                 Редактировать
@@ -98,7 +128,6 @@ export default function ProfileClient({
         </div>
       </Card>
 
-      {/* Детальная информация в сетке */}
       <div className="profile-details-grid">
         <Card className="detail-card">
           <div className="detail-label">Дата рождения</div>
@@ -129,15 +158,67 @@ export default function ProfileClient({
           </Card>
         )}
 
-        {user.stats && (
+        {(user.stats || isAdmin) && (
           <Card className="detail-card full-width">
-            <div className="detail-label">Статистика</div>
-            <div className="detail-value">{user.stats}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div className="detail-label">Статистика</div>
+              {isAdmin && !editingStats && (
+                <button
+                  type="button"
+                  className="btn btn-secondary glass-effect"
+                  onClick={() => {
+                    setStatsValue(user.stats || "");
+                    setEditingStats(true);
+                    setStatsError("");
+                  }}
+                  style={{ fontSize: "12px", padding: "4px 12px" }}
+                >
+                  {user.stats ? "Изменить" : "Добавить"}
+                </button>
+              )}
+            </div>
+
+            {editingStats ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <textarea
+                  className="glass-effect"
+                  value={statsValue}
+                  onChange={(e) => setStatsValue(e.target.value)}
+                  rows={4}
+                  placeholder="Голы: 15, Передачи: 8, Матчи: 42..."
+                  style={{ resize: "vertical", minHeight: "80px" }}
+                />
+                {statsError && (
+                  <small className="form-error" style={{ color: "#ef4444" }}>{statsError}</small>
+                )}
+                <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary glass-effect"
+                    onClick={() => setEditingStats(false)}
+                    disabled={savingStats}
+                    style={{ fontSize: "13px", padding: "6px 14px" }}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary glass-effect"
+                    onClick={handleSaveStats}
+                    disabled={savingStats}
+                    style={{ fontSize: "13px", padding: "6px 14px" }}
+                  >
+                    {savingStats ? "Сохранение..." : "Сохранить"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="detail-value">{user.stats || "Не указана"}</div>
+            )}
           </Card>
         )}
       </div>
 
-      {/* Блок установки пароля для OAuth-пользователей */}
       {isOwnProfile && !user.passwordHash && (
         <Card>
           <h3 className="section-title">Защита аккаунта</h3>

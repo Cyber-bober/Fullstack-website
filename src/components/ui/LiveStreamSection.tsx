@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { extractVkVideoUrl, isValidVkVideoUrl } from "@/lib/vk";
 
 interface LiveStreamData {
   isActive: boolean;
@@ -9,44 +10,23 @@ interface LiveStreamData {
   tgGroupUrl: string;
 }
 
+interface StreamFormState {
+  title: string;
+  vkVideoUrl: string;
+  vkGroupUrl: string;
+  tgGroupUrl: string;
+  isActive: boolean;
+}
+
 interface Props {
   userRole: string | null;
-}
-
-function extractVideoUrl(input: string): string {
-  if (!input) return "";
-  const trimmed = input.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed;
-  }
-  const iframeMatch = input.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-  if (iframeMatch && iframeMatch[1]) {
-    return iframeMatch[1];
-  }
-  return trimmed;
-}
-
-function isValidVideoUrl(url: string): boolean {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    const isHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
-    if (!isHttp) return false;
-    const hostname = parsed.hostname.toLowerCase();
-    const isVK = hostname.includes("vk.com") || hostname.includes("vkvideo.ru") || hostname.includes("vk.ru");
-    if (!isVK) return false;
-    return parsed.pathname.includes("video_ext.php") || parsed.pathname.includes("/video") || parsed.pathname.includes("/embed");
-  } catch {
-    return false;
-  }
 }
 
 export function LiveStreamSection({ userRole }: Props) {
   const [stream, setStream] = useState<LiveStreamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<StreamFormState>({
     title: "",
     vkVideoUrl: "",
     vkGroupUrl: "",
@@ -58,19 +38,18 @@ export function LiveStreamSection({ userRole }: Props) {
 
   useEffect(() => {
     fetch("/api/livestream")
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setStream(data);
         setForm({
           title: data.title || "",
-          vkVideoUrl: data.vkVideoUrl || "",
+          vkVideoUrl: extractVkVideoUrl(data.vkVideoUrl || ""),
           vkGroupUrl: data.vkGroupUrl || "",
           tgGroupUrl: data.tgGroupUrl || "",
           isActive: data.isActive,
         });
-        setIframeError(false);
       })
-      .catch(err => console.error("Ошибка загрузки трансляции:", err))
+      .catch((err) => console.error("Ошибка загрузки трансляции:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -78,8 +57,12 @@ export function LiveStreamSection({ userRole }: Props) {
     e.preventDefault();
     setUrlError("");
 
-    if (form.isActive && form.vkVideoUrl && !isValidVideoUrl(form.vkVideoUrl)) {
-      setUrlError("Неверный формат ссылки. Используйте ссылку вида: https://vk.com/video_ext.php?...");
+    const cleanVideoUrl = extractVkVideoUrl(form.vkVideoUrl);
+
+    if (form.isActive && cleanVideoUrl && !isValidVkVideoUrl(cleanVideoUrl)) {
+      setUrlError(
+        "Неверный формат ссылки. Используйте ссылку вида: https://vk.com/video_ext.php?..."
+      );
       return;
     }
 
@@ -88,13 +71,13 @@ export function LiveStreamSection({ userRole }: Props) {
       const res = await fetch("/api/livestream", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, vkVideoUrl: cleanVideoUrl }),
       });
       if (res.ok) {
         const data = await res.json();
         setStream(data);
+        setForm((f) => ({ ...f, vkVideoUrl: extractVkVideoUrl(data.vkVideoUrl || "") }));
         setShowAdminPanel(false);
-        setIframeError(false);
       } else {
         const error = await res.json();
         alert("Ошибка: " + (error.error || "Неизвестная ошибка"));
@@ -117,7 +100,8 @@ export function LiveStreamSection({ userRole }: Props) {
     return <p className="empty-text">Загрузка трансляции...</p>;
   }
 
-  const urlValid = isValidVideoUrl(stream?.vkVideoUrl || "");
+  const videoSrc = extractVkVideoUrl(stream?.vkVideoUrl || "");
+  const urlValid = isValidVkVideoUrl(videoSrc);
 
   if (!stream || !stream.isActive || !urlValid) {
     return (
@@ -125,13 +109,25 @@ export function LiveStreamSection({ userRole }: Props) {
         <div className="glass-effect stream-placeholder">
           <h2 className="section-title">Прямая трансляция</h2>
           <p className="empty-text">
-            {!stream?.isActive ? "Сейчас нет активной трансляции" : "Ссылка на видео не настроена или невалидна"}
+            {!stream?.isActive
+              ? "Сейчас нет активной трансляции"
+              : "Ссылка на видео не настроена или невалидна"}
           </p>
           <div className="stream-placeholder-links">
-            <a href={stream?.vkGroupUrl || "#"} target="_blank" rel="noopener noreferrer" className="btn glass-btn">
+            <a
+              href={stream?.vkGroupUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn glass-btn"
+            >
               Наша группа ВК
             </a>
-            <a href={stream?.tgGroupUrl || "#"} target="_blank" rel="noopener noreferrer" className="btn glass-btn">
+            <a
+              href={stream?.tgGroupUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn glass-btn"
+            >
               Наш Telegram
             </a>
           </div>
@@ -142,7 +138,14 @@ export function LiveStreamSection({ userRole }: Props) {
           )}
         </div>
         {showAdminPanel && (
-          <AdminModal form={form} setForm={setForm} urlError={urlError} saving={saving} onSave={handleSave} onClose={closeSettings} />
+          <AdminModal
+            form={form}
+            setForm={setForm}
+            urlError={urlError}
+            saving={saving}
+            onSave={handleSave}
+            onClose={closeSettings}
+          />
         )}
       </div>
     );
@@ -166,43 +169,50 @@ export function LiveStreamSection({ userRole }: Props) {
       </div>
 
       <div className="glass-effect video-wrapper">
-        {iframeError ? (
-          <div className="video-error-overlay">
-            <div className="video-error-icon">!</div>
-            <h3 className="video-error-title">Видео недоступно</h3>
-            <p className="video-error-text">
-              Не удалось загрузить видео. Проверьте ссылку в настройках или зайдите позже.
-            </p>
-            {userRole === "ADMIN" && (
-              <button onClick={openSettings} className="btn btn-primary glass-effect video-error-btn">
-                Исправить ссылку
-              </button>
-            )}
-          </div>
-        ) : (
-          <iframe
-            src={stream.vkVideoUrl}
-            className="video-iframe"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture;"
-            allowFullScreen
-            title="VK Live Stream"
-            onLoad={() => setIframeError(false)}
-            onError={() => setIframeError(true)}
-          />
-        )}
+        <iframe
+          src={videoSrc}
+          className="video-iframe"
+          style={{
+            width: "100%",
+            aspectRatio: "16 / 9",
+            border: "none",
+            display: "block",
+            background: "#000",
+          }}
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+          title="VK Live Stream"
+        />
       </div>
 
       <div className="social-links-row">
-        <a href={stream.vkGroupUrl} target="_blank" rel="noopener noreferrer" className="btn glass-btn social-link">
+        <a
+          href={stream.vkGroupUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn glass-btn social-link"
+        >
           Группа ВК
         </a>
-        <a href={stream.tgGroupUrl} target="_blank" rel="noopener noreferrer" className="btn glass-btn social-link">
+        <a
+          href={stream.tgGroupUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn glass-btn social-link"
+        >
           Telegram канал
         </a>
       </div>
 
       {showAdminPanel && (
-        <AdminModal form={form} setForm={setForm} urlError={urlError} saving={saving} onSave={handleSave} onClose={closeSettings} />
+        <AdminModal
+          form={form}
+          setForm={setForm}
+          urlError={urlError}
+          saving={saving}
+          onSave={handleSave}
+          onClose={closeSettings}
+        />
       )}
     </div>
   );
@@ -216,8 +226,8 @@ function AdminModal({
   onSave,
   onClose,
 }: {
-  form: any;
-  setForm: (f: any) => void;
+  form: StreamFormState;
+  setForm: (f: StreamFormState | ((prev: StreamFormState) => StreamFormState)) => void;
   urlError: string;
   saving: boolean;
   onSave: (e: React.FormEvent) => void;
@@ -225,7 +235,7 @@ function AdminModal({
 }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="glass-effect modal-content" onClick={e => e.stopPropagation()}>
+      <div className="glass-effect modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>
           ×
         </button>
@@ -237,23 +247,20 @@ function AdminModal({
               className="glass-effect"
               type="text"
               value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
           </div>
           <div className="form-group">
-            <label>Ссылка на видео ВК (iframe src)</label>
+            <label>Ссылка на видео ВК</label>
             <textarea
               className="glass-effect form-textarea"
               rows={3}
               value={form.vkVideoUrl}
-              onChange={e => {
-                const extractedUrl = extractVideoUrl(e.target.value);
-                setForm({ ...form, vkVideoUrl: extractedUrl });
-              }}
-              placeholder="Вставь сюда код из ВК (начиная с <iframe...)"
+              onChange={(e) => setForm({ ...form, vkVideoUrl: e.target.value })}
+              placeholder="Вставь весь код из ВК (начиная с <iframe...) или просто ссылку"
             />
             <small className="form-hint">
-              ВК → Видео → Поделиться → Код для вставки → Скопируй весь код
+              ВК → Видео → Поделиться → Код для вставки → Скопируй весь код (один раз, Ctrl+V)
             </small>
             {urlError && <small className="form-error">{urlError}</small>}
           </div>
@@ -263,7 +270,7 @@ function AdminModal({
               className="glass-effect"
               type="text"
               value={form.vkGroupUrl}
-              onChange={e => setForm({ ...form, vkGroupUrl: e.target.value })}
+              onChange={(e) => setForm({ ...form, vkGroupUrl: e.target.value })}
               placeholder="https://vk.com/your_group"
             />
           </div>
@@ -273,7 +280,7 @@ function AdminModal({
               className="glass-effect"
               type="text"
               value={form.tgGroupUrl}
-              onChange={e => setForm({ ...form, tgGroupUrl: e.target.value })}
+              onChange={(e) => setForm({ ...form, tgGroupUrl: e.target.value })}
               placeholder="https://t.me/your_channel"
             />
           </div>
@@ -282,7 +289,7 @@ function AdminModal({
               <input
                 type="checkbox"
                 checked={form.isActive}
-                onChange={e => setForm({ ...form, isActive: e.target.checked })}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
                 className="checkbox-input"
               />
               <span>Трансляция активна (показывать на сайте)</span>

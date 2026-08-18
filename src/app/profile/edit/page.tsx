@@ -19,18 +19,20 @@ export default function EditProfilePage() {
   const [authError, setAuthError] = useState(false);
 
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
-  
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
-  
   const [shouldDeleteAvatar, setShouldDeleteAvatar] = useState(false);
-  
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    fullName: "", username: "", city: "", position: "", contacts: "", stats: "", birthDate: "",
+    fullName: "",
+    username: "",
+    city: "",
+    position: "",
+    contacts: "",
+    birthDate: "",
   });
 
   useEffect(() => {
@@ -46,15 +48,16 @@ export default function EditProfilePage() {
       })
       .then((data) => {
         if (!data) return;
-        
+
         setFormData({
-          fullName: data.fullName || "", 
-          username: data.username || "", 
+          fullName: data.fullName || "",
+          username: data.username || "",
           city: data.city || "",
-          position: data.position || "", 
-          contacts: data.contacts || "", 
-          stats: data.stats || "",
-          birthDate: data.birthDate ? new Date(data.birthDate).toISOString().split("T")[0] : "",
+          position: data.position || "",
+          contacts: data.contacts || "",
+          birthDate: data.birthDate
+            ? new Date(data.birthDate).toISOString().split("T")[0]
+            : "",
         });
         setCurrentAvatar(data.photos?.[0] || null);
         setUsernameError("");
@@ -69,7 +72,7 @@ export default function EditProfilePage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (file.size > 5 * 1024 * 1024) {
       setToast({ message: "Файл слишком большой (макс 5MB)", type: "error" });
       e.target.value = "";
@@ -86,7 +89,7 @@ export default function EditProfilePage() {
     const previewUrl = URL.createObjectURL(croppedFile);
     setPendingAvatarPreview(previewUrl);
     setShouldDeleteAvatar(false);
-    
+
     setCropImageSrc(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -116,12 +119,12 @@ export default function EditProfilePage() {
       if (pendingAvatarFile) {
         const photoFormData = new FormData();
         photoFormData.append("photo", pendingAvatarFile);
-        
-        const uploadRes = await fetch("/api/profile/upload-photo", { 
-          method: "POST", 
-          body: photoFormData 
+
+        const uploadRes = await fetch("/api/profile/upload-photo", {
+          method: "POST",
+          body: photoFormData,
         });
-        
+
         if (uploadRes.ok) {
           const uploadData = await uploadRes.json();
           finalAvatarUrl = uploadData.url;
@@ -129,12 +132,11 @@ export default function EditProfilePage() {
           const err = await uploadRes.json();
           throw new Error(err.error || "Ошибка загрузки фото");
         }
-      } 
-      else if (shouldDeleteAvatar) {
-        const deleteRes = await fetch("/api/profile/remove-photo", { 
-          method: "POST" 
+      } else if (shouldDeleteAvatar) {
+        const deleteRes = await fetch("/api/profile/remove-photo", {
+          method: "POST",
         });
-        
+
         if (!deleteRes.ok) {
           const err = await deleteRes.json();
           console.error("Ошибка удаления фото:", err);
@@ -143,7 +145,7 @@ export default function EditProfilePage() {
       }
 
       const updateRes = await fetch("/api/profile/update", {
-        method: "POST", 
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
@@ -155,14 +157,20 @@ export default function EditProfilePage() {
         setPendingAvatarFile(null);
         setPendingAvatarPreview(null);
         setShouldDeleteAvatar(false);
-        
+
         setToast({ message: "Профиль успешно обновлен!", type: "success" });
         setTimeout(() => router.push("/profile"), 800);
       } else {
-        if (updateData.error && String(updateData.error).toLowerCase().includes("username")) {
+        if (
+          updateData.error &&
+          String(updateData.error).toLowerCase().includes("username")
+        ) {
           setUsernameError(updateData.error);
         } else {
-          setToast({ message: updateData.error || "Ошибка сохранения данных", type: "error" });
+          setToast({
+            message: updateData.error || "Ошибка сохранения данных",
+            type: "error",
+          });
         }
       }
     } catch (err: any) {
@@ -175,84 +183,134 @@ export default function EditProfilePage() {
 
   if (authError) {
     return (
-      <div className="container text-center" style={{ marginTop: '40px' }}>
+      <div className="container text-center" style={{ marginTop: "40px" }}>
         <Card>
           <h2>Доступ запрещен</h2>
           <p>Пожалуйста, войдите в систему.</p>
-          <button onClick={() => router.push("/auth/signin")} className="btn btn-primary mt-4">Войти</button>
+          <button
+            onClick={() => router.push("/auth/signin")}
+            className="btn btn-primary mt-4"
+          >
+            Войти
+          </button>
         </Card>
       </div>
     );
   }
 
-  if (loading) return <p className="empty-text" style={{ marginTop: '40px' }}>Загрузка...</p>;
+  if (loading)
+    return <p className="empty-text" style={{ marginTop: "40px" }}>Загрузка...</p>;
 
   const displayAvatar = pendingAvatarPreview || currentAvatar;
 
-  // Максимальная дата для даты рождения - сегодня
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <>
       {cropImageSrc && (
-        <ImageCropper 
-          imageSrc={cropImageSrc} 
-          onCropComplete={handleCropComplete} 
+        <ImageCropper
+          imageSrc={cropImageSrc}
+          onCropComplete={handleCropComplete}
           onCancel={() => {
             setCropImageSrc(null);
             if (fileInputRef.current) fileInputRef.current.value = "";
-          }} 
+          }}
         />
       )}
 
       <div className="container edit-profile-container glass-effect">
-        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
 
         <Card>
           <h1 className="home-title text-center">Редактирование профиля</h1>
 
           <div className="avatar-edit-section">
-            <div 
-              className="avatar-edit-wrapper" 
+            <div
+              className="avatar-edit-wrapper"
               onClick={() => !saving && fileInputRef.current?.click()}
-              style={{ opacity: saving ? 0.5 : 1, pointerEvents: saving ? 'none' : 'auto' }}
+              style={{
+                opacity: saving ? 0.5 : 1,
+                pointerEvents: saving ? "none" : "auto",
+              }}
             >
               <div className="avatar-large">
-                {displayAvatar ? <img src={displayAvatar} alt="Avatar" /> : formData.fullName?.[0]?.toUpperCase() || "?"}
+                {displayAvatar ? (
+                  <img src={displayAvatar} alt="Avatar" />
+                ) : (
+                  formData.fullName?.[0]?.toUpperCase() || "?"
+                )}
               </div>
               <div className="avatar-edit-overlay"> Изменить</div>
-              
+
               {(pendingAvatarFile || shouldDeleteAvatar) && (
-                <div style={{ 
-                  position: 'absolute', top: '-8px', right: '-8px', 
-                  background: shouldDeleteAvatar ? '#ef4444' : '#f59e0b', 
-                  color: 'white', borderRadius: '50%', 
-                  width: '24px', height: '24px', display: 'flex', alignItems: 'center', 
-                  justifyContent: 'center', fontSize: '14px', border: '2px solid white', zIndex: 10
-                }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-8px",
+                    right: "-8px",
+                    background: shouldDeleteAvatar ? "#ef4444" : "#f59e0b",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "24px",
+                    height: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "14px",
+                    border: "2px solid white",
+                    zIndex: 10,
+                  }}
+                >
+                  ✓
                 </div>
               )}
             </div>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileSelect} 
-              accept="image/*" 
-              className="hidden-input" 
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*"
+              className="hidden-input"
             />
-            
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
               <p className="avatar-upload-hint">
-                {pendingAvatarFile ? "Новое фото выбрано." : shouldDeleteAvatar ? "Фото будет удалено." : "Нажми на фото, чтобы загрузить"}
+                {pendingAvatarFile
+                  ? "Новое фото выбрано."
+                  : shouldDeleteAvatar
+                  ? "Фото будет удалено."
+                  : "Нажми на фото, чтобы загрузить"}
               </p>
-              
+
               {displayAvatar && !pendingAvatarFile && (
-                <button 
+                <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); handleRemovePhoto(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemovePhoto();
+                  }}
                   className="btn btn-secondary"
-                  style={{ fontSize: '12px', padding: '4px 12px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                  style={{
+                    fontSize: "12px",
+                    padding: "4px 12px",
+                    background: "#fee2e2",
+                    color: "#dc2626",
+                    border: "1px solid #fecaca",
+                  }}
                 >
                   Удалить фото
                 </button>
@@ -263,47 +321,67 @@ export default function EditProfilePage() {
           <form onSubmit={handleSubmit} className="edit-form">
             <div className="form-group">
               <label>@username</label>
-              <input 
-                type="text" 
-                value={formData.username} 
-                onChange={(e) => { 
-                  setFormData({ ...formData, username: e.target.value }); 
-                  setUsernameError(""); 
-                }} 
-                minLength={3} 
-                maxLength={30} 
-                pattern="[a-zA-Z0-9_]+" 
-                className={usernameError ? "input-error glass-effect" : "glass-effect"}
+              <input
+                type="text"
+                value={formData.username}
+                onChange={(e) => {
+                  setFormData({ ...formData, username: e.target.value });
+                  setUsernameError("");
+                }}
+                minLength={3}
+                maxLength={30}
+                pattern="[a-zA-Z0-9_]+"
+                className={
+                  usernameError ? "input-error glass-effect" : "glass-effect"
+                }
               />
-              {usernameError && <p className="form-error-text">{usernameError}</p>}
-              {!usernameError && <small className="text-gray">Только латиница, цифры и _</small>}
+              {usernameError && (
+                <p className="form-error-text">{usernameError}</p>
+              )}
+              {!usernameError && (
+                <small className="text-gray">Только латиница, цифры и _</small>
+              )}
             </div>
 
             <div className="form-group">
               <label>Полное имя</label>
-              <input 
-                type="text" 
-                className="glass-effect" 
-                value={formData.fullName} 
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+              <input
+                type="text"
+                className="glass-effect"
+                value={formData.fullName}
+                onChange={(e) =>
+                  setFormData({ ...formData, fullName: e.target.value })
+                }
               />
             </div>
 
             <div className="form-group">
               <label>Город</label>
-              <input 
-                type="text" 
-                className="glass-effect" 
-                value={formData.city} 
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
+              <input
+                type="text"
+                className="glass-effect"
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData({ ...formData, city: e.target.value })
+                }
               />
             </div>
 
             <div className="form-group">
               <label>Позиция</label>
-              <select value={formData.position || ""} className="glass-effect" onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
+              <select
+                value={formData.position || ""}
+                className="glass-effect"
+                onChange={(e) =>
+                  setFormData({ ...formData, position: e.target.value })
+                }
+              >
                 <option value="">Не выбрано</option>
-                {POSITIONS.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+                {POSITIONS.map((pos) => (
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -311,7 +389,9 @@ export default function EditProfilePage() {
               <DatePicker
                 label="Дата рождения"
                 value={formData.birthDate}
-                onChange={(date) => setFormData({ ...formData, birthDate: date })}
+                onChange={(date) =>
+                  setFormData({ ...formData, birthDate: date })
+                }
                 placeholder="Выберите дату рождения"
                 maxDate={today}
               />
@@ -319,42 +399,50 @@ export default function EditProfilePage() {
 
             <div className="form-group">
               <label>Контакты</label>
-              <textarea 
-                className="glass-effect" 
-                value={formData.contacts} 
-                onChange={(e) => setFormData({ ...formData, contacts: e.target.value })} 
-                rows={3} 
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Статистика</label>
-              <textarea 
-                className="glass-effect" 
-                value={formData.stats} 
-                onChange={(e) => setFormData({ ...formData, stats: e.target.value })} 
-                rows={3} 
+              <textarea
+                className="glass-effect"
+                value={formData.contacts}
+                onChange={(e) =>
+                  setFormData({ ...formData, contacts: e.target.value })
+                }
+                rows={3}
               />
             </div>
 
             <div className="pd-consent-wrapper">
-              <input 
-                type="checkbox" 
-                id="pd-consent-edit" 
-                checked={consentChecked} 
-                onChange={(e) => { 
-                  setConsentChecked(e.target.checked); 
-                  if (e.target.checked) setConsentError(false); 
-                }} 
-                className="pd-consent-checkbox" 
+              <input
+                type="checkbox"
+                id="pd-consent-edit"
+                checked={consentChecked}
+                onChange={(e) => {
+                  setConsentChecked(e.target.checked);
+                  if (e.target.checked) setConsentError(false);
+                }}
+                className="pd-consent-checkbox"
               />
               <label htmlFor="pd-consent-edit" className="pd-consent-label">
-                Я подтверждаю актуальность данных и согласен на обработку <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="pd-consent-link">персональных данных</a>
+                Я подтверждаю актуальность данных и согласен на обработку{" "}
+                <a
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pd-consent-link"
+                >
+                  персональных данных
+                </a>
               </label>
             </div>
-            {consentError && <span className="pd-consent-error visible">Необходимо подтвердить согласие</span>}
+            {consentError && (
+              <span className="pd-consent-error visible">
+                Необходимо подтвердить согласие
+              </span>
+            )}
 
-            <button type="submit" className="btn btn-primary glass-effect w-full" disabled={saving}>
+            <button
+              type="submit"
+              className="btn btn-primary glass-effect w-full"
+              disabled={saving}
+            >
               {saving ? "Сохранение..." : "Сохранить изменения"}
             </button>
           </form>

@@ -168,7 +168,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="container">
+    <div className="container admin-page">
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
       <h1 className="home-title">Панель администратора</h1>
       

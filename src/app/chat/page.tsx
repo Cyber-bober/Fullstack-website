@@ -10,15 +10,15 @@ export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ChatUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  
+
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const prevScrollHeightRef = useRef(0);
@@ -38,11 +38,11 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+    if (container && messages.length > 0) {
+      container.scrollTop = container.scrollHeight;
     }
-  }, [messages[messages.length - 1]?.id]);
+  }, [messages[messages.length - 1]?.id, selectedUser?.id]);
 
   const handleScroll = useCallback(() => {
     const container = messagesContainerRef.current;
@@ -104,6 +104,10 @@ export default function ChatPage() {
     await loadMessages(user.id, 0);
   };
 
+  const goBackToList = () => {
+    setSelectedUser(null);
+  };
+
   const loadMessages = async (userId: string, pageNum: number) => {
     setLoading(true);
     try {
@@ -136,23 +140,24 @@ export default function ChatPage() {
   const sendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newMessage.trim() || !selectedUser || !currentUserId) return;
-    
+
     const tempId = `temp-${Date.now()}`;
-    
+    const textToSend = newMessage;
+
     const optimisticMsg: ChatMessage = {
       id: tempId,
       senderId: currentUserId,
       receiverId: selectedUser.id,
-      text: newMessage,
+      text: textToSend,
       createdAt: new Date().toISOString(),
       isRead: false,
-      sender: { 
+      sender: {
         id: currentUserId,
         fullName: "Вы",
-        username: "me"
+        username: "me",
       },
     } as ChatMessage;
-    
+
     setMessages((prev) => [...prev, optimisticMsg]);
     setNewMessage("");
 
@@ -160,19 +165,19 @@ export default function ChatPage() {
       const res = await fetch("/api/chat/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ receiverId: selectedUser.id, text: newMessage }),
+        body: JSON.stringify({ receiverId: selectedUser.id, text: textToSend }),
       });
-      
+
       if (res.ok) {
         const msg = await res.json();
-        setMessages((prev) => prev.map(m => m.id === tempId ? msg : m));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? msg : m)));
         await loadConversations();
       } else {
-        setMessages((prev) => prev.filter(m => m.id !== tempId));
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
       }
     } catch (err) {
       console.error("Failed to send message", err);
-      setMessages((prev) => prev.filter(m => m.id !== tempId));
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
   };
 
@@ -184,15 +189,15 @@ export default function ChatPage() {
   return (
     <div className="chat-page">
       <div className="chat-layout">
-        <div className="chat-left">
+        <div className={`chat-left ${selectedUser ? "hidden" : ""}`}>
           <div className="chat-search glass-effect">
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="Поиск..." 
-              value={searchQuery} 
-              onChange={(e) => setSearchQuery(e.target.value)} 
-              autoComplete="off" 
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Поиск..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="chat-list-wrapper glass-effect">
@@ -200,9 +205,9 @@ export default function ChatPage() {
               <div className="search-results-list">
                 <div className="section-label">Найдено:</div>
                 {searchResults.map((user) => (
-                  <div 
-                    key={user.id} 
-                    className="conversation-item hoverable" 
+                  <div
+                    key={user.id}
+                    className="conversation-item hoverable"
                     onClick={() => selectUser(user)}
                   >
                     <div className="conversation-avatar">
@@ -225,9 +230,9 @@ export default function ChatPage() {
                   <p className="empty-text">Нет диалогов</p>
                 ) : (
                   conversations.map((conv) => (
-                    <div 
-                      key={conv.user.id} 
-                      className={`conversation-item ${selectedUser?.id === conv.user.id ? "active" : ""}`} 
+                    <div
+                      key={conv.user.id}
+                      className={`conversation-item ${selectedUser?.id === conv.user.id ? "active" : ""}`}
                       onClick={() => selectUser(conv.user)}
                     >
                       <div className="conversation-avatar">
@@ -254,10 +259,13 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="chat-right">
+        <div className={`chat-right ${selectedUser ? "active" : ""}`}>
           {selectedUser ? (
             <>
               <div className="chat-header glass-effect">
+                <button className="chat-back-btn" onClick={goBackToList} aria-label="Назад к списку чатов">
+                  ←
+                </button>
                 <div className="chat-header-avatar">
                   {selectedUser.photos?.[0] ? (
                     <img src={selectedUser.photos[0]} alt={selectedUser.fullName} />
@@ -270,7 +278,7 @@ export default function ChatPage() {
                   <div className="chat-header-username">@{selectedUser.username}</div>
                 </div>
               </div>
-              
+
               <div className="chat-messages glass-effect" ref={messagesContainerRef}>
                 {loading && page === 0 ? (
                   <p className="empty-text">Загрузка...</p>
@@ -291,18 +299,18 @@ export default function ChatPage() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-              
+
               <form className="chat-input-form" onSubmit={sendMessage}>
-                <input 
-                  type="text" 
-                  className="chat-input glass-effect" 
-                  placeholder="Сообщение..." 
-                  value={newMessage} 
-                  onChange={(e) => setNewMessage(e.target.value)} 
+                <input
+                  type="text"
+                  className="chat-input glass-effect"
+                  placeholder="Сообщение..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
                 />
-                <button 
-                  type="submit" 
-                  className="btn btn-primary glass-effect chat-send-btn" 
+                <button
+                  type="submit"
+                  className="btn btn-primary glass-effect chat-send-btn"
                   disabled={!newMessage.trim()}
                 >
                   <img src="/uploads/svg/send.svg" alt="Отправить" className="svg send-icon" />

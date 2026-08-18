@@ -1,5 +1,3 @@
-//src/app/profile/[id]/page.tsx
-
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -18,6 +16,13 @@ export default async function UserProfilePage({ params }: { params: { id: string
   if (!user) redirect("/");
 
   const isOwnProfile = params.id === session.user.id;
-  
-  return <ProfileClient user={user} isOwnProfile={isOwnProfile} />;
+  const currentUserRole = session.user.role || null;
+
+  return (
+    <ProfileClient
+      user={user}
+      isOwnProfile={isOwnProfile}
+      currentUserRole={currentUserRole}
+    />
+  );
 }
