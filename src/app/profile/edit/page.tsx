@@ -210,6 +210,10 @@ export default function EditProfilePage() {
       {cropImageSrc && (
         <ImageCropper
           imageSrc={cropImageSrc}
+          title="Настройка фото профиля"
+          shape="round"
+          aspect={1}
+          filePrefix="avatar"
           onCropComplete={handleCropComplete}
           onCancel={() => {
             setCropImageSrc(null);

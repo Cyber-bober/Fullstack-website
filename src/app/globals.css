@@ -1,14 +1,4 @@
-/* ============================================
-   FOOTBALL PROJECT - GLOBAL STYLES
-   Color Schemes: Deep Ocean & Summer Breeze
-   ============================================ */
-
-/* ============================================
-   CSS VARIABLES - COLOR SCHEMES
-   ============================================ */
-
 :root[data-theme="dark"] {
-  /* Deep Ocean Blue Palette */
   --color-primary: #0066cc;
   --color-primary-dark: #0052a3;
   --color-primary-light: #3385d6;
@@ -19,39 +9,32 @@
   --color-accent: #008080;
   --color-accent-dark: #006666;
   
-  /* Background colors */
   --bg-primary: #0a1628;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
   
-  /* Text colors */
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
   
-  /* Status colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
   
-  /* Glass effect */
   --glass-bg: rgba(30, 41, 59, 0.7);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: rgba(0, 0, 0, 0.3);
   --glass-hover: rgba(10, 21, 39, 0.5);
   
-  /* Borders */
   --border-color: rgba(255, 255, 255, 0.1);
   --border-color-light: rgba(255, 255, 255, 0.2);
   
-  /* Gradients */
   --gradient-primary: linear-gradient(135deg, #0066cc 0%, #663399 100%);
   --gradient-bg: linear-gradient(135deg, #0a1628 0%, #1e293b 100%);
 }
 
 :root[data-theme="light"] {
-  /* Summer Ocean Breeze Palette */
   --color-primary: #3b82f6;
   --color-primary-dark: #2563eb;
   --color-primary-light: #60a5fa;
@@ -62,40 +45,30 @@
   --color-accent: #14b8a6;
   --color-accent-dark: #0d9488;
   
-  /* Background colors */
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
   --bg-tertiary: #e2e8f0;
   
-  /* Text colors */
   --text-primary: #1e293b;
   --text-secondary: #475569;
   --text-tertiary: #64748b;
   
-  /* Status colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
   
-  /* Glass effect */
   --glass-bg: rgba(198, 198, 198, 0.7);
   --glass-border: rgba(0, 0, 0, 0.3);
   --glass-shadow: rgba(0, 0, 0, 0.1);
   --glass-hover: rgba(176, 176, 176, 0.6);
   
-  /* Borders */
   --border-color: rgba(0, 0, 0, 0.1);
   --border-color-light: rgba(0, 0, 0, 0.2);
   
-  /* Gradients */
   --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #f59e0b 100%);
   --gradient-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
 }
-
-/* ============================================
-   BASE STYLES
-   ============================================ */
 
 * {
   box-sizing: border-box;
@@ -124,7 +97,6 @@ body {
   color: var(--text-primary);
 }
 
-/* Блюр-оверлей поверх фото */
 body::before {
   content: '';
   position: fixed;
@@ -136,19 +108,13 @@ body::before {
   pointer-events: none;
 }
 
-/* Тёмная тема — тёмный блюр */
 body[data-theme="dark"]::before {
   background: rgba(10, 22, 40, 0.3);
 }
 
-/* Светлая тема — светлый блюр */
 body[data-theme="light"]::before {
   background: rgba(248, 250, 252, 0.3);
 }
-
-/* ============================================
-   LAYOUT
-   ============================================ */
 
 .main-wrapper {
   flex: 1;
@@ -237,9 +203,6 @@ button:disabled {
   background: #059669;
 }
 
-/* ============================================
-   FORMS
-   ============================================ */
 
 input, select, textarea {
   padding: 10px 12px;
@@ -272,9 +235,6 @@ input[type="date"], input[type="time"] {
   cursor: pointer;
 }
 
-/* ============================================
-   CARDS & GLASS EFFECT
-   ============================================ */
 
 .card {
   padding: 20px;
@@ -327,9 +287,6 @@ input[type="date"], input[type="time"] {
   box-shadow: 0 6px 20px var(--glass-shadow);
 }
 
-/* ============================================
-   HOME PAGE
-   ============================================ */
 
 .home-container {
   max-width: 900px;
@@ -381,9 +338,6 @@ input[type="date"], input[type="time"] {
   padding: 40px 0;
 }
 
-/* ============================================
-   NEWS SECTION
-   ============================================ */
 
 .news-card {
   margin-bottom: 20px;
@@ -504,10 +458,6 @@ input[type="date"], input[type="time"] {
   cursor: not-allowed;
 }
 
-/* ============================================
-   FORMS & INPUTS
-   ============================================ */
-
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -610,9 +560,6 @@ input[type="date"], input[type="time"] {
   white-space: nowrap;
 }
 
-/* ============================================
-   EVENTS & LIVE SECTION
-   ============================================ */
 
 .events-list {
   margin-top: 20px;
@@ -662,10 +609,6 @@ input[type="date"], input[type="time"] {
   font-family: monospace;
   white-space: nowrap;
 }
-
-/* ============================================
-   CALENDAR
-   ============================================ */
 
 .calendar-header {
   display: flex;
@@ -756,10 +699,6 @@ input[type="date"], input[type="time"] {
   background: var(--color-primary-dark);
 }
 
-/* ============================================
-   MODALS
-   ============================================ */
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -817,9 +756,6 @@ input[type="date"], input[type="time"] {
   color: var(--text-primary);
 }
 
-/* ============================================
-   CONFIRM MODAL
-   ============================================ */
 
 .confirm-modal {
   max-width: 450px;
@@ -855,9 +791,6 @@ input[type="date"], input[type="time"] {
   background: rgba(245, 158, 11, 0.5);
 }
 
-/* ============================================
-   TEAM STYLES
-   ============================================ */
 
 .team-logo {
   width: 60px; 
@@ -986,9 +919,6 @@ input[type="date"], input[type="time"] {
   color: var(--text-tertiary);
 }
 
-/* ============================================
-   NAVIGATION
-   ============================================ */
 
 .nav {
   background: inherit;
@@ -1049,9 +979,6 @@ input[type="date"], input[type="time"] {
   gap: 1rem;
 }
 
-/* ============================================
-   SIDEBAR
-   ============================================ */
 
 .app-layout {
   display: flex;
@@ -1202,9 +1129,6 @@ input[type="date"], input[type="time"] {
   color: var(--color-danger);
 }
 
-/* ============================================
-   FOOTER
-   ============================================ */
 
 footer {
   margin-top: auto;
@@ -1220,10 +1144,6 @@ footer {
 .footer .container {
   margin: 15px auto;
 }
-
-/* ============================================
-   CHAT SECTION
-   ============================================ */
 
 .chat-page {
   max-width: 1200px;
@@ -1520,9 +1440,6 @@ footer {
   color: var(--text-tertiary);
 }
 
-/* ============================================
-   SEARCH & PAGINATION
-   ============================================ */
 
 .search-bar {
   display: flex;
@@ -1593,9 +1510,6 @@ footer {
   flex-wrap: wrap;
 }
 
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
 
 .section-title {
   font-size: 1.5rem;
@@ -1665,9 +1579,6 @@ footer {
   padding: 1.5rem;
 }
 
-/* ============================================
-   PROFILE PAGE
-   ============================================ */
 
 .profile-container {
   max-width: 800px;
@@ -1847,9 +1758,6 @@ footer {
   cursor: not-allowed;
 }
 
-/* ============================================
-   ADMIN TABLE
-   ============================================ */
 
 .admin-table-wrapper {
   overflow-x: auto;
@@ -1938,9 +1846,6 @@ footer {
   color: var(--text-tertiary);
 }
 
-/* ============================================
-   AUTH PAGES
-   ============================================ */
 
 .signin-container {
   margin-top: 70px;
@@ -1960,9 +1865,6 @@ footer {
   border-radius: 8px;
 }
 
-/* ============================================
-   TOAST NOTIFICATIONS
-   ============================================ */
 
 .toast-container {
   position: absolute;
@@ -2025,10 +1927,6 @@ footer {
   opacity: 1;
 }
 
-/* ============================================
-   PASSWORD INPUT
-   ============================================ */
-
 .password-input-wrapper {
   position: relative;
   width: 100%;
@@ -2066,9 +1964,6 @@ footer {
   color: var(--color-primary);
 }
 
-/* ============================================
-   THEME SWITCHER
-   ============================================ */
 
 .theme-switcher {
   display: flex;
@@ -2101,9 +1996,6 @@ footer {
   background: var(--glass-border);
 }
 
-/* ============================================
-   CUSTOM SELECT & DROPDOWNS
-   ============================================ */
 
 .custom-select {
   position: relative;
@@ -2181,9 +2073,6 @@ footer {
   font-weight: 600;
 }
 
-/* ============================================
-   CUSTOM MATCH SELECT (LiveSection)
-   ============================================ */
 
 .custom-match-select {
   position: relative;
@@ -2288,9 +2177,6 @@ footer {
   color: var(--text-tertiary);
 }
 
-/* ============================================
-   MATCHES GRID & CALENDAR
-   ============================================ */
 
 .matches-container {
   margin-top: 4px;
@@ -2358,9 +2244,6 @@ footer {
   color: var(--text-secondary);
 }
 
-/* ============================================
-   TEAMS TABLE
-   ============================================ */
 
 .teams-table {
   display: flex;
@@ -2484,9 +2367,7 @@ footer {
   font-weight: 700;
   font-size: 16px;
 }
-/* ============================================
-RATING CONTROL
-============================================ */
+
 .rating-control {
   display: flex;
   align-items: center;
@@ -2701,9 +2582,6 @@ RATING CONTROL
   color: var(--color-primary);
 }
 
-/* ============================================
-   TEAM PROFILE PAGE
-   ============================================ */
 
 .team-profile-page {
   max-width: 1200px;
@@ -2945,9 +2823,6 @@ RATING CONTROL
   backdrop-filter: blur(10px);
 }
 
-/* ============================================
-   IMAGE CROPPER
-   ============================================ */
 
 .image-cropper-modal {
   animation: modalSlideIn 0.3s ease-out;
@@ -3104,9 +2979,6 @@ label.text {
   color: white;
 }
 
-/* ============================================
-   SUPPORT PAGE
-   ============================================ */
 
 .container.support {
   max-width: 100% !important;
@@ -3258,9 +3130,6 @@ label.text {
   background: var(--text-tertiary);
 }
 
-/* ============================================
-   LIVE STREAM SECTION
-   ============================================ */
 
 .livestream-container {
   width: 100%;
@@ -3399,9 +3268,6 @@ label.text {
   margin-top: 16px;
 }
 
-/* ============================================
-   SCROLLBARS
-   ============================================ */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -3421,9 +3287,6 @@ label.text {
   background: var(--text-tertiary);
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 
 @media (max-width: 768px) {
   .main-content {
@@ -3636,9 +3499,6 @@ label.text {
   }
 }
 
-/* ============================================
-   DATETIME INPUTS
-   ============================================ */
 
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
@@ -3673,9 +3533,6 @@ input[type="time"]::-webkit-datetime-edit-hour-field {
   padding-right: 0;
 }
 
-/* ============================================
-   PRIVACY CONSENT
-   ============================================ */
 
 .pd-consent-wrapper {
   display: flex;
@@ -3717,11 +3574,6 @@ input[type="time"]::-webkit-datetime-edit-hour-field {
   display: block;
 }
 
-/* ============================================
-   SVG ICONS - DARK/LIGHT THEME
-   ============================================ */
-
-/* Базовые стили для всех SVG */
 .svg,
 svg {
   fill: currentColor;
@@ -3729,7 +3581,6 @@ svg {
   transition: fill 0.2s, stroke 0.2s;
 }
 
-/* Тёмная тема - белые иконки */
 body[data-theme="dark"] .svg,
 body[data-theme="dark"] svg {
   color: #ffffff !important;
@@ -3737,7 +3588,6 @@ body[data-theme="dark"] svg {
   stroke: #ffffff !important;
 }
 
-/* Светлая тема - тёмные иконки */
 body[data-theme="light"] .svg,
 body[data-theme="light"] svg {
   color: #374151 !important;
@@ -3745,7 +3595,6 @@ body[data-theme="light"] svg {
   stroke: #374151 !important;
 }
 
-/* Исключения: иконки с классами цветов */
 .svg.text-primary,
 svg.text-primary {
   color: var(--color-primary) !important;
@@ -3760,7 +3609,6 @@ svg.text-danger {
   stroke: var(--color-danger) !important;
 }
 
-/* Специфичные места */
 body[data-theme="dark"] .sidebar .svg,
 body[data-theme="dark"] .sidebar svg,
 body[data-theme="dark"] .btn .svg,
@@ -3774,7 +3622,6 @@ body[data-theme="dark"] .nav svg {
   stroke: #ffffff !important;
 }
 
-/* Иконки кнопок действий */
 body[data-theme="dark"] .btn-icon .svg,
 body[data-theme="dark"] .btn-icon svg {
   color: #ffffff !important;
@@ -3782,7 +3629,6 @@ body[data-theme="dark"] .btn-icon svg {
   stroke: #ffffff !important;
 }
 
-/* Принудительно белые SVG в тёмной теме */
 [data-theme="dark"] img.svg,
 [data-theme="dark"] .sidebar-btn img.svg,
 [data-theme="dark"] .btn img.svg,
@@ -3790,7 +3636,6 @@ body[data-theme="dark"] .btn-icon svg {
   filter: brightness(0) invert(1) !important;
 }
 
-/* Profile Page Layout */
 .profile-page-container {
   max-width: 900px;
   margin: 0 auto;
@@ -3888,7 +3733,6 @@ body[data-theme="dark"] .btn-icon svg {
   color: var(--text-primary);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .profile-header-content {
     flex-direction: column;
@@ -3904,7 +3748,6 @@ body[data-theme="dark"] .btn-icon svg {
   }
 }
 
-/* Profile Edit Page - Fix Photo Size */
 .edit-profile-container {
   max-width: 600px;
   margin: 2rem auto;
@@ -3917,7 +3760,6 @@ body[data-theme="dark"] .btn-icon svg {
   gap: 1rem;
 }
 
-/* Ограничение размера фото в форме редактирования */
 .edit-profile-form img,
 .edit-profile-container img {
   max-width: 200px;
@@ -3928,7 +3770,6 @@ body[data-theme="dark"] .btn-icon svg {
   margin: 0 auto 16px auto;
 }
 
-/* Если фото в превью */
 .photo-preview-container img,
 .file-preview-container img {
   max-width: 200px;
@@ -3937,7 +3778,6 @@ body[data-theme="dark"] .btn-icon svg {
   object-fit: cover;
 }
 
-/* Аватар в форме редактирования */
 .avatar-preview {
   width: 150px;
   height: 150px;
@@ -3954,11 +3794,6 @@ body[data-theme="dark"] .btn-icon svg {
   margin: 0;
 }
 
-/* ============================================
-   SEND BUTTON ICON - БЕЛЫЕ ИКОНКИ
-   ============================================ */
-
-/* Базовые стили для иконок на кнопках */
 .btn .svg,
 .btn svg,
 button .svg,
@@ -3969,7 +3804,6 @@ button svg {
   vertical-align: middle;
 }
 
-/* Белые иконки на всех цветных кнопках */
 .btn-primary .svg,
 .btn-primary svg,
 .btn-danger .svg,
@@ -3983,7 +3817,6 @@ button svg {
   filter: brightness(0) invert(1) !important;
 }
 
-/* Если SVG inline (не img), используем fill/stroke */
 .btn-primary svg,
 .btn-danger svg,
 .btn-success svg,
@@ -3994,7 +3827,6 @@ button svg {
   color: white !important;
 }
 
-/* Для светлой темы — иконки тоже белые на цветных кнопках */
 body[data-theme="light"] .btn-primary .svg,
 body[data-theme="light"] .btn-primary svg,
 body[data-theme="light"] .chat-send-btn .svg,
@@ -4009,7 +3841,6 @@ body[data-theme="light"] .support-send-btn svg {
   stroke: white !important;
 }
 
-/* Иконка send должна быть по центру */
 .chat-send-btn,
 .support-send-btn {
   display: flex;
@@ -4022,28 +3853,20 @@ body[data-theme="light"] .support-send-btn svg {
   margin: 0;
 }
 
-/* ============================================
-   SVG ИКОНКИ - ТЕМА
-   ============================================ */
-
-/* Все SVG по умолчанию наследуют цвет текста */
 .svg {
   color: inherit;
   fill: currentColor;
   stroke: currentColor;
 }
 
-/* Тёмная тема — белые иконки */
 body[data-theme="dark"] .svg {
   color: #ffffff !important;
 }
 
-/* Светлая тема — тёмные иконки */
 body[data-theme="light"] .svg {
   color: #374151 !important;
 }
 
-/* ИСКЛЮЧЕНИЯ: иконки на цветных кнопках всегда белые */
 .btn-primary .svg,
 .btn-danger .svg,
 .btn-success .svg,
@@ -4053,7 +3876,6 @@ body[data-theme="light"] .svg {
   filter: brightness(0) invert(1) !important;
 }
 
-/* Если SVG inline */
 .btn-primary svg,
 .btn-danger svg,
 .btn-success svg,
@@ -4063,9 +3885,6 @@ body[data-theme="light"] .svg {
   stroke: #ffffff !important;
 }
 
-/* ============================================
-   NEON BORDER
-   ============================================ */
 
 .neon-border {
   position: relative;
@@ -4094,7 +3913,6 @@ body[data-theme="light"] .svg {
     0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* Анимация */
 @keyframes neon-pulse {
   0%, 100% {
     opacity: 0.9;
@@ -4107,10 +3925,6 @@ body[data-theme="light"] .svg {
 .neon-border {
   animation: neon-pulse 2s ease-in-out infinite;
 }
-
-/* ============================================
-   ЦВЕТА
-   ============================================ */
 
 .neon-1st::before {
   background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
@@ -4154,9 +3968,6 @@ body[data-theme="light"] .svg {
     0 0 10px rgba(0, 102, 255, 0.5);
 }
 
-/* ============================================
-   ДЛЯ ТАБЛИЦЫ КОМАНД
-   ============================================ */
 
 .teams-table-row.neon-1st,
 .teams-table-row.neon-2nd,
@@ -4184,10 +3995,6 @@ body[data-theme="light"] .svg {
   z-index: 1;
 }
 
-/* ============================================
-   ДЛЯ ПРОФИЛЯ КОМАНДЫ
-   ============================================ */
-
 .team-header-card.neon-1st,
 .team-header-card.neon-2nd,
 .team-header-card.neon-3rd {
@@ -4214,9 +4021,6 @@ body[data-theme="light"] .svg {
   z-index: 1;
 }
 
-/* ============================================
-   ДЛЯ ПРОФИЛЯ ИГРОКА
-   ============================================ */
 
 .profile-header-card.neon-admin,
 .profile-header-card.neon-editor,
@@ -4244,9 +4048,6 @@ body[data-theme="light"] .svg {
   z-index: 1;
 }
 
-/* ============================================
-   ДЛЯ КАРТОЧКИ ИГРОКА-КАПИТАНА
-   ============================================ */
 
 .team-player-card.neon-captain {
   position: relative;
@@ -4274,11 +4075,6 @@ body[data-theme="light"] .svg {
     0 0 10px rgba(255, 165, 0, 0.5);
 }
 
-/* ============================================
-   MOBILE MENU & HAMBURGER BUTTON
-   ============================================ */
-
-/* Кнопка бургер */
 .mobile-menu-btn {
   display: none;
   align-items: center;
@@ -4326,15 +4122,15 @@ body[data-theme="light"] .svg {
 .mobile-menu {
   position: fixed;
   top: 0;
-  left: -100%; /* ← было: right: -100% */
+  left: -100%;
   width: 280px;
   height: 100dvh;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: 1000;
-  transition: left 0.3s ease-in-out; /* ← было: right */
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5); /* ← тень справа от меню */
+  transition: left 0.3s ease-in-out;
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
 }
 
@@ -4379,7 +4175,6 @@ body[data-theme="light"] .svg {
   flex-shrink: 0;
 }
 
-/* Кнопка выхода */
 .mobile-nav-logout {
   color: #ff4444;
   border-color: rgba(255, 68, 68, 0.3);
@@ -4390,7 +4185,6 @@ body[data-theme="light"] .svg {
   background: rgba(255, 68, 68, 0.1);
 }
 
-/* Кнопка входа */
 .mobile-nav-login {
   color: #00FF88;
   border-color: rgba(0, 255, 136, 0.3);
@@ -4401,7 +4195,6 @@ body[data-theme="light"] .svg {
   background: rgba(0, 255, 136, 0.1);
 }
 
-/* Затемнение фона */
 .mobile-menu-overlay {
   position: fixed;
   top: 0;
@@ -4423,7 +4216,6 @@ body[data-theme="light"] .svg {
   }
 }
 
-/* Показываем бургер только на мобильных */
 @media (pointer: coarse) {
   .mobile-menu-btn {
     display: flex;
@@ -4437,13 +4229,11 @@ body[data-theme="light"] .svg {
     display: block;
   }
 
-  /* Уменьшаем blur для производительности */
   .glass-effect {
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
   }
 
-  /* Отключаем тяжёлые анимации */
   .neon-border {
     animation: none !important;
   }
@@ -4453,9 +4243,6 @@ body[data-theme="light"] .svg {
   }
 }
 
-/* ============================================
-   MOBILE HEADER
-   ============================================ */
 
 .mobile-header {
   display: none;
@@ -4488,7 +4275,6 @@ body[data-theme="light"] .svg {
   gap: 8px;
 }
 
-/* Кнопка бургер */
 .mobile-burger-btn {
   display: flex;
   flex-direction: column;
@@ -4525,7 +4311,6 @@ body[data-theme="light"] .svg {
   transform: translateY(-9px) rotate(-45deg);
 }
 
-/* Логотип */
 .mobile-logo {
   text-decoration: none;
   color: #00FF88;
@@ -4541,7 +4326,6 @@ body[data-theme="light"] .svg {
   background-clip: text;
 }
 
-/* Кнопка добавить матч */
 .mobile-add-match-btn {
   display: flex;
   align-items: center;
@@ -4573,7 +4357,6 @@ body[data-theme="light"] .svg {
   font-size: 13px;
 }
 
-/* Мобильное меню */
 .mobile-menu {
   position: fixed;
   top: 0;
@@ -4659,7 +4442,6 @@ body[data-theme="light"] .svg {
   background: rgba(0, 255, 136, 0.1);
 }
 
-/* Затемнение фона */
 .mobile-menu-overlay {
   position: fixed;
   top: 0;
@@ -4677,26 +4459,19 @@ body[data-theme="light"] .svg {
   to { opacity: 1; }
 }
 
-/* Показываем хедер только на мобильных */
 @media (pointer: coarse) {
   .mobile-header {
     display: flex;
   }
 
-  /* Скрываем обычный сайдбар */
   .sidebar {
     display: none !important;
   }
 
-  /* Добавляем отступ сверху для контента */
   .main-content {
     padding-top: 60px !important;
   }
 }
-
-/* ============================================
-   DATEPICKER - КАСТОМНЫЙ КАЛЕНДАРЬ
-   ============================================ */
 
 .datepicker-container {
   position: relative;
@@ -4757,7 +4532,6 @@ body[data-theme="light"] .svg {
   margin-left: 8px;
 }
 
-/* Выпадающий календарь */
 .datepicker-dropdown {
   position: absolute;
   left: 0;
@@ -4786,17 +4560,14 @@ body[data-theme="light"] .svg {
   }
 }
 
-/* Позиционирование снизу (по умолчанию) */
 .datepicker-dropdown.dropdown-bottom {
   top: calc(100% + 8px);
 }
 
-/* Позиционирование сверху (если не хватает места снизу) */
 .datepicker-dropdown.dropdown-top {
   bottom: calc(100% + 8px);
 }
 
-/* Шапка */
 .datepicker-header {
   display: flex;
   align-items: center;
@@ -4857,7 +4628,6 @@ body[data-theme="light"] .svg {
   color: #00FF88;
 }
 
-/* Сетка месяцев */
 .datepicker-month-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -4890,7 +4660,6 @@ body[data-theme="light"] .svg {
   font-weight: 600;
 }
 
-/* Сетка годов */
 .datepicker-year-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -4940,7 +4709,6 @@ body[data-theme="light"] .svg {
   font-weight: 600;
 }
 
-/* Дни недели */
 .datepicker-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -4957,7 +4725,6 @@ body[data-theme="light"] .svg {
   text-transform: uppercase;
 }
 
-/* Дни */
 .datepicker-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -5011,7 +4778,6 @@ body[data-theme="light"] .svg {
   cursor: not-allowed;
 }
 
-/* Футер */
 .datepicker-footer {
   margin-top: 12px;
   padding-top: 12px;
@@ -5036,9 +4802,6 @@ body[data-theme="light"] .svg {
   border-color: #00FF88;
 }
 
-/* ============================================
-   МОБИЛЬНАЯ АДАПТАЦИЯ
-   ============================================ */
 
 @media (pointer: coarse) {
   .datepicker-dropdown {
@@ -5069,7 +4832,6 @@ body[data-theme="light"] .svg {
     }
   }
 
-  /* Увеличиваем размеры для удобства на тач-устройствах */
   .datepicker-day {
     font-size: 14px;
   }
@@ -5113,11 +4875,6 @@ body[data-theme="light"] .svg {
   }
 }
 
-/* ============================================
-   ИСПРАВЛЕНИЯ ДЛЯ МОДАЛЬНЫХ ОКОН
-   ============================================ */
-
-/* Модалка должна позволять показывать dropdown */
 .modal-content {
   overflow: visible !important;
   position: relative;
@@ -5127,7 +4884,6 @@ body[data-theme="light"] .svg {
   z-index: 1000;
 }
 
-/* На мобильных модалка снизу */
 @media (pointer: coarse) {
   .modal-overlay {
     align-items: flex-end !important;
@@ -5151,9 +4907,6 @@ body[data-theme="light"] .svg {
   }
 }
 
-/* ============================================
-   АДАПТАЦИЯ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ
-   ============================================ */
 
 @media (pointer: coarse) {
   .datepicker-header {
@@ -5221,7 +4974,6 @@ input:-webkit-autofill:active {
   visibility: hidden;
 }
 
-/* Компактный профиль игрока (как у команды) */
 .profile-header-card {
   margin-bottom: 20px;
 }
@@ -5314,7 +5066,6 @@ input:-webkit-autofill:active {
   padding: 10px 24px;
 }
 
-/* Сетка детальной информации */
 .profile-details-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -5348,7 +5099,6 @@ input:-webkit-autofill:active {
   font-weight: 500;
 }
 
-/* Адаптивность для мобильных */
 @media (max-width: 768px) {
   .profile-header-content {
     flex-direction: column;
@@ -5384,9 +5134,6 @@ input:-webkit-autofill:active {
   }
 }
 
-/* ============================================
-MODALS
-============================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -5470,9 +5217,6 @@ MODALS
   background: var(--bg-tertiary);
 }
 
-/* ============================================
-МОБИЛЬНАЯ АДАПТАЦИЯ МОДАЛОК
-============================================ */
 @media (max-width: 768px) {
   .modal-overlay {
     padding: 0;
@@ -5503,9 +5247,6 @@ MODALS
   }
 }
 
-/* ============================================
-DATEPICKER STYLES
-============================================ */
 .datepicker-container {
   position: relative;
   width: 100%;
@@ -5543,7 +5284,6 @@ DATEPICKER STYLES
   }
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
   .datepicker-dropdown {
     position: fixed !important;
@@ -5568,9 +5308,6 @@ DATEPICKER STYLES
   }
 }
 
-/* ============================================
-MODALS
-============================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -5654,9 +5391,6 @@ MODALS
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* ============================================
-МОБИЛЬНАЯ АДАПТАЦИЯ МОДАЛОК
-============================================ */
 @media (pointer: coarse) {
   .modal-overlay {
     padding: 0;
@@ -5755,9 +5489,6 @@ MODALS
   }
 }
 
-/* ============================================
-RATING CONTROL
-============================================ */
 .rating-control {
   display: flex;
   align-items: center;
@@ -6072,9 +5803,6 @@ body[data-theme="light"] .sidebar-btn:hover {
   color: var(--color-primary) !important;
 }
 
-/* ============================================
-SIDEBAR
-============================================ */
 .app-layout {
   display: flex;
   min-height: 100dvh;
@@ -6105,20 +5833,17 @@ SIDEBAR
   padding: 24px;
 }
 
-/* ✅ Оверлей через :has() — блюрит ВЕСЬ сайт при наведении на сайдбар */
 body:has(.sidebar:hover)::before {
   opacity: 1 !important;
   z-index: 40 !important;
 }
 
-/* Тёмная тема — затемнение с блюром */
 body[data-theme="dark"]:has(.sidebar:hover)::before {
   background: rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: blur(5px) !important;
   -webkit-backdrop-filter: blur(5px) !important;
 }
 
-/* Светлая тема — осветление с блюром */
 body[data-theme="light"]:has(.sidebar:hover)::before {
   background: rgba(255, 255, 255, 0.4) !important;
   backdrop-filter: blur(5px) !important;
@@ -6244,9 +5969,6 @@ body[data-theme="light"]:has(.sidebar:hover)::before {
   color: var(--color-danger);
 }
 
-/* ============================================
-CUSTOM SELECT STYLING
-============================================ */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -6275,7 +5997,6 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Стили для options (ограничены браузером) */
 select option {
   padding: 8px 12px;
   background: var(--bg-secondary);
@@ -6286,7 +6007,6 @@ select option:hover {
   background: var(--glass-border);
 }
 
-/* Для LiveSection select */
 .match-selector select {
   width: 100%;
   padding: 12px 36px 12px 12px !important;
@@ -6294,25 +6014,13 @@ select option:hover {
   font-weight: 500;
 }
 
-/* Для мобильных */
 @media (pointer: coarse) {
   select {
-    font-size: 16px !important; /* Предотвращает зум на iOS */
+    font-size: 16px !important;
     padding: 14px 36px 14px 14px !important;
   }
 }
 
-/*.lazy-image {
-  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg"%3E%3C/svg%3E');
-  background-size: cover;
-  background-position: center;
-  min-height: 200px;
-}
-
-.lazy-image.loaded {
-  background-image: var(--image-url);
-}
-*/
 .breadcrumbs {
   padding: 12px 0;
   margin-bottom: 20px;
@@ -6355,7 +6063,6 @@ select option:hover {
   font-weight: 500;
 }
 
-/* Новости — изображения */
 .news-image-container {
   margin-bottom: 16px;
   overflow: hidden;
@@ -6416,7 +6123,6 @@ select option:hover {
 
 
 @media (pointer: coarse) {
-  /* Основной контейнер календаря */
   .datepicker-dropdown {
     position: fixed !important;
     left: 8px !important;
@@ -6446,7 +6152,6 @@ select option:hover {
     }
   }
   
-  /* Шапка календаря */
   .datepicker-header {
     display: flex;
     align-items: center;
@@ -6456,7 +6161,6 @@ select option:hover {
     padding: 0 4px !important;
   }
   
-  /* Кнопки навигации */
   .datepicker-nav-btn {
     width: 40px !important;
     height: 40px !important;
@@ -6464,7 +6168,6 @@ select option:hover {
     flex-shrink: 0 !important;
   }
   
-  /* Месяц и год */
   .datepicker-month-year {
     display: flex;
     gap: 8px !important;
@@ -6482,7 +6185,6 @@ select option:hover {
     text-align: center !important;
   }
   
-  /* Сетка дней недели */
   .datepicker-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr) !important;
@@ -6500,7 +6202,6 @@ select option:hover {
     text-transform: uppercase !important;
   }
   
-  /* Сетка дней */
   .datepicker-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr) !important;
@@ -6519,7 +6220,6 @@ select option:hover {
     justify-content: center !important;
   }
   
-  /* Сетка месяцев */
   .datepicker-month-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr) !important;
@@ -6535,7 +6235,6 @@ select option:hover {
     border-radius: 10px !important;
   }
   
-  /* Сетка годов */
   .datepicker-year-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr) !important;
@@ -6554,7 +6253,6 @@ select option:hover {
     border-radius: 10px !important;
   }
   
-  /* Футер */
   .datepicker-footer {
     margin-top: 16px !important;
     padding-top: 16px !important;
@@ -6568,7 +6266,6 @@ select option:hover {
     border-radius: 12px !important;
   }
   
-  /* Скроллбар */
   .datepicker-dropdown::-webkit-scrollbar {
     width: 6px;
   }
@@ -6622,12 +6319,8 @@ select option:hover {
   }
 }
 
-/* ============================================
-МОБИЛЬНАЯ АДАПТАЦИЯ - КОМАНДЫ И ПРОФИЛИ
-============================================ */
 
 @media (pointer: coarse) {
-  /* Таблица команд - компактный вид */
   .teams-table {
     display: flex;
     flex-direction: column;
@@ -6694,7 +6387,6 @@ select option:hover {
     color: var(--color-primary);
   }
   
-  /* Профиль команды - мобильная версия */
   .team-profile-page {
     padding: 12px;
   }
@@ -6784,7 +6476,6 @@ select option:hover {
     padding: 10px 12px !important;
   }
   
-  /* Личный профиль - центрирование */
   .profile-header-content {
     flex-direction: column;
     text-align: center;
@@ -6832,7 +6523,6 @@ select option:hover {
     font-size: 15px !important;
   }
   
-  /* Уменьшаем отступы */
   .main-content {
     padding: 12px 8px !important;
   }
@@ -6841,7 +6531,6 @@ select option:hover {
     padding: 0 4px !important;
   }
   
-  /* Хлебные крошки */
   .breadcrumbs {
     padding: 8px 12px !important;
     margin-bottom: 12px !important;
@@ -6852,7 +6541,6 @@ select option:hover {
   }
 }
 
-/* Очень маленькие экраны */
 @media (max-width: 360px) {
   .teams-table-row {
     padding: 10px 12px !important;
@@ -6890,11 +6578,7 @@ select option:hover {
   }
 }
 
-/* ============================================
-ИСПРАВЛЕНИЯ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ
-============================================ */
 @media (pointer: coarse) {
-  /* Название команды - делаем видимым */
   .team-profile-page .team-name {
     font-size: 22px !important;
     color: var(--text-primary) !important;
@@ -6907,7 +6591,6 @@ select option:hover {
     word-break: break-word;
   }
   
-  /* Заголовок карточки команды */
   .team-header-card {
     padding: 20px 16px !important;
   }
@@ -6919,7 +6602,6 @@ select option:hover {
     gap: 16px !important;
   }
   
-  /* Аватар команды - центрируем */
   .team-avatar-section {
     display: flex !important;
     justify-content: center !important;
@@ -6936,7 +6618,6 @@ select option:hover {
     justify-content: center !important;
   }
   
-  /* Информация о команде */
   .team-info {
     width: 100% !important;
     display: flex !important;
@@ -6945,7 +6626,6 @@ select option:hover {
     text-align: center !important;
   }
   
-  /* Количество игроков */
   .team-players-count {
     text-align: center !important;
     font-size: 14px !important;
@@ -6953,7 +6633,6 @@ select option:hover {
     margin-top: 8px !important;
   }
   
-  /* Кнопки управления лого */
   .team-logo-controls {
     display: flex !important;
     flex-direction: column !important;
@@ -6966,7 +6645,6 @@ select option:hover {
     width: 100% !important;
   }
   
-  /* Табы */
   .team-tabs {
     display: flex !important;
     flex-direction: row !important;
@@ -6981,7 +6659,6 @@ select option:hover {
     font-size: 14px !important;
   }
   
-  /* Кнопка добавить игрока */
   .team-actions {
     width: 100% !important;
     margin: 16px 0 !important;
@@ -6991,14 +6668,12 @@ select option:hover {
     width: 100% !important;
   }
   
-  /* Заголовок состава */
   .section-title {
     font-size: 18px !important;
     text-align: center !important;
     margin: 16px 0 !important;
   }
   
-  /* Карточки игроков */
   .team-players {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
@@ -7009,7 +6684,6 @@ select option:hover {
     padding: 12px !important;
   }
   
-  /* Статистика команды */
   .stats-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
@@ -7026,12 +6700,10 @@ select option:hover {
 }
 
 @media (pointer: coarse) {
-  /* Контейнер профиля */
   .profile-page-container {
     padding: 12px 8px !important;
   }
   
-  /* Карточка профиля */
   .profile-header-card {
     padding: 20px 16px !important;
     margin-bottom: 16px !important;
@@ -7044,7 +6716,6 @@ select option:hover {
     gap: 16px !important;
   }
   
-  /* Аватар - центрируем */
   .profile-avatar-section {
     display: flex !important;
     justify-content: center !important;
@@ -7068,7 +6739,6 @@ select option:hover {
     border-radius: 50% !important;
   }
   
-  /* Информация */
   .profile-info {
     width: 100% !important;
     display: flex !important;
@@ -7088,7 +6758,6 @@ select option:hover {
     margin-bottom: 12px !important;
   }
   
-  /* Детали профиля */
   .profile-details-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
@@ -7100,15 +6769,12 @@ select option:hover {
     text-align: center !important;
   }
   
-  /* Кнопка редактировать */
   .edit-profile-btn {
     width: 100% !important;
     margin-top: 16px !important;
   }
 }
 
-
-/* Убираем дублирование modal-overlay */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -7125,7 +6791,6 @@ select option:hover {
   overflow-y: auto;
 }
 
-/* Для очень маленьких экранов */
 @media (max-width: 360px) {
   .team-profile-page .team-name {
     font-size: 18px !important;
@@ -7146,9 +6811,6 @@ select option:hover {
   }
 }
 
-/* ============================================
-ИСПРАВЛЕНИЕ БУРГЕРА В СВЕТЛОЙ ТЕМЕ
-============================================ */
 body[data-theme="light"] .mobile-burger-btn {
   background: transparent !important;
   border: none !important;
@@ -7164,9 +6826,6 @@ body[data-theme="light"] .burger-line {
   background: var(--text-primary) !important;
 }
 
-/* ============================================
-ИСПРАВЛЕНИЕ КНОПОК В АДМИНКЕ
-============================================ */
 @media (pointer: coarse) {
   .admin-tabs {
     display: flex;
@@ -7185,7 +6844,6 @@ body[data-theme="light"] .burger-line {
   }
 }
 
-/* Для десктопа тоже адаптивность */
 .admin-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -7237,11 +6895,7 @@ body[data-theme="light"] .burger-line {
   overflow: visible !important;
 }
 
-/* ============================================
-АДАПТАЦИЯ КНОПОК АДМИНКИ
-============================================ */
 @media (pointer: coarse) {
-  /* Кнопки в админке */
   .admin-tabs,
   .admin-section-tabs {
     display: flex !important;
@@ -7263,7 +6917,6 @@ body[data-theme="light"] .burger-line {
     min-height: 56px !important;
   }
   
-  /* Если кнопки в grid */
   .admin-grid .btn,
   .admin-buttons .btn {
     width: 100% !important;
@@ -7272,7 +6925,6 @@ body[data-theme="light"] .burger-line {
   }
 }
 
-/* Для десктопа тоже адаптивность */
 .admin-tabs .btn,
 .admin-section-tabs .btn {
   padding: 12px 20px !important;
@@ -7304,7 +6956,6 @@ body[data-theme="light"] .burger-line {
 }
 
 @media (pointer: coarse) {
-  /* Чат - адаптивный вид */
   .chat-page {
     max-width: 100% !important;
     margin: 0 !important;
@@ -7321,7 +6972,6 @@ body[data-theme="light"] .burger-line {
     position: relative;
   }
   
-  /* Левая панель со списком */
   .chat-left {
     width: 100% !important;
     height: 100%;
@@ -7358,7 +7008,6 @@ body[data-theme="light"] .burger-line {
     overflow-y: auto;
   }
   
-  /* Правая панель с чатом */
   .chat-right {
     width: 100% !important;
     height: 100%;
@@ -7412,7 +7061,6 @@ body[data-theme="light"] .burger-line {
     flex-shrink: 0;
   }
   
-  /* Поддержка - адаптивный вид */
   .support-main {
     display: flex;
     flex-direction: row;
@@ -7740,10 +7388,6 @@ body > div:first-child {
   text-align: center;
 }
 
-/* ============================================
-ФИКС 1: ИМЯ КОМАНДЫ ГОРИЗОНТАЛЬНО
-============================================ */
-/* Корень проблемы — дети main-content сжимались по контенту */
 .main-content > * {
   width: 100%;
 }
@@ -7764,7 +7408,7 @@ body > div:first-child {
   display: block !important;
   width: 100% !important;
   white-space: normal !important;
-  word-break: normal !important;      /* ← убирает «столбик» из букв */
+  word-break: normal !important;
   overflow-wrap: break-word !important;
   writing-mode: horizontal-tb !important;
   text-orientation: mixed !important;
@@ -7773,10 +7417,6 @@ body > div:first-child {
   text-align: center !important;
 }
 
-/* ============================================
-ФИКС 2: КАЛЕНДАРЬ — УБИРАЕМ ТОРМОЗА + ВРЕМЯ
-============================================ */
-/* На тач-устройствах отключаем тяжёлый blur и анимации */
 @media (pointer: coarse) {
   .calendar-grid,
   .calendar-day,
@@ -7796,7 +7436,6 @@ body > div:first-child {
   }
 }
 
-/* Время матча умещается в узких ячейках */
 @media (max-width: 640px) {
   .calendar-grid {
     gap: 2px;
@@ -7819,9 +7458,6 @@ body > div:first-child {
   }
 }
 
-/* ============================================
-ФИКС 3: МОБИЛЬНАЯ ШАПКА В СВЕТЛОЙ ТЕМЕ
-============================================ */
 body[data-theme="light"] .mobile-header {
   background: rgba(248, 250, 252, 0.95);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -8446,7 +8082,6 @@ body[data-theme="light"] .mobile-add-match-btn {
 }
 
 @media (pointer: coarse) {
-  /* Страницы ровно по экрану */
   .main-content:has(.chat-page),
   .main-content:has(.container.support) {
     padding: 60px 0 0 0 !important;
@@ -8852,4 +8487,130 @@ body[data-theme="light"] .mobile-add-match-btn {
     border-radius: 0 !important;
     padding: 8px 12px !important;
   }
+}
+
+.support-chat-header {
+  gap: 12px !important;
+  padding: 16px 20px !important;
+  align-items: center !important;
+}
+
+.support-back-btn {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  font-size: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+}
+
+@media (min-width: 769px) {
+  .support-chat-main {
+    padding: 20px !important;
+  }
+  .support-chat-message {
+    width: fit-content !important;
+    max-width: 70% !important;
+    min-width: 0 !important;
+    padding: 10px 14px !important;
+    box-sizing: border-box !important;
+  }
+  .support-chat-message p {
+    margin: 0 !important;
+    font-size: 14px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+  .support-chat-message small {
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    text-align: right !important;
+  }
+}
+
+@media (min-width: 769px) and (pointer: fine) {
+  .support-main {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .support-left {
+    position: static !important;
+    transform: none !important;
+    width: 380px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .support-left-header {
+    flex-shrink: 0 !important;
+    border-radius: 16px !important;
+  }
+
+  .support-ticket-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    border-radius: 16px !important;
+  }
+
+  .support-right {
+    position: static !important;
+    transform: none !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+}
+
+.calendar-grid {
+  padding: 10px 10px 10px 10px !important;
+  margin-bottom: 4px;
+}
+
+.chat-input-form textarea.chat-input,
+.support-right form textarea {
+  resize: none !important;
+  min-height: 44px !important;
+  max-height: 140px !important;
+  overflow-y: auto !important;
+  line-height: 1.4 !important;
+  padding: 10px 14px !important;
+  font-family: inherit !important;
+  field-sizing: content;
+}
+
+@media (pointer: coarse) {
+  .chat-input-form textarea.chat-input,
+  .support-right form textarea {
+    font-size: 16px !important;
+  }
+}
+
+.chat-message-bubble > div:first-child,
+.support-chat-message p {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
 }

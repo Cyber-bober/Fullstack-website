@@ -87,8 +87,8 @@ export default function SupportPage() {
     }
   };
 
-  const handleSendReply = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendReply = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!activeTicket || !replyText.trim()) return;
     setSending(true);
     try {
@@ -305,23 +305,31 @@ export default function SupportPage() {
               </div>
 
               <form onSubmit={handleSendReply} style={{ display: "flex", gap: 12 }}>
-                <input
-                  className="glass-effect"
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Сообщение..."
-                  required
-                  style={{ flex: 1, padding: "12px 16px", fontSize: 14 }}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary glass-effect support-send-btn"
-                  style={{ padding: "0 24px" }}
-                  disabled={sending}
-                >
-                  {sending ? "..." : "➤"}
-                </button>
-              </form>
+              <textarea
+                className="glass-effect"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={(e) => {
+                  const isMobile = window.matchMedia("(pointer: coarse)").matches;
+                  if (e.key === "Enter" && !isMobile && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendReply();
+                  }
+                }}
+                placeholder="Сообщение..."
+                required
+                rows={1}
+                style={{ flex: 1, padding: "12px 16px", fontSize: 14, resize: "none", maxHeight: 120, lineHeight: 1.4 }}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary glass-effect support-send-btn"
+                style={{ padding: "0 24px" }}
+                disabled={sending}
+              >
+                {sending ? "..." : "➤"}
+              </button>
+            </form>
             </>
           ) : (
             <div className="support-placeholder">

@@ -301,12 +301,19 @@ export default function ChatPage() {
               </div>
 
               <form className="chat-input-form" onSubmit={sendMessage}>
-                <input
-                  type="text"
+                <textarea
                   className="chat-input glass-effect"
                   placeholder="Сообщение..."
                   value={newMessage}
+                  rows={1}
                   onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+                    if (e.key === "Enter" && !isMobile && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
                 />
                 <button
                   type="submit"

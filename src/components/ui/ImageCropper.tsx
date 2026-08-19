@@ -7,9 +7,21 @@ interface ImageCropperProps {
   imageSrc: string;
   onCropComplete: (croppedImage: File) => void;
   onCancel: () => void;
+  title?: string;
+  shape?: "rect" | "round";
+  aspect?: number;
+  filePrefix?: string;
 }
 
-export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCropperProps) {
+export default function ImageCropper({
+  imageSrc,
+  onCropComplete,
+  onCancel,
+  title = "Настройка фото новости",
+  shape = "rect",
+  aspect = 16 / 9,
+  filePrefix = "news",
+}: ImageCropperProps) {
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -33,7 +45,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
     const image = await createImage(imageSrc);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    
+
     if (!ctx) return null;
 
     canvas.width = pixelCrop.width;
@@ -45,7 +57,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
       canvas.toBlob((blob) => {
         if (blob) {
           const timestamp = Date.now();
-          resolve(new File([blob], `news-${timestamp}.jpg`, { type: "image/jpeg" }));
+          resolve(new File([blob], `${filePrefix}-${timestamp}.jpg`, { type: "image/jpeg" }));
         } else {
           resolve(null);
         }
@@ -56,16 +68,16 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
   const drawRotatedImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, crop: Area, rotation: number) => {
     const { width, height } = image;
     const { x, y, width: cropWidth, height: cropHeight } = crop;
-    
+
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = width;
     tempCanvas.height = height;
     const tempCtx = tempCanvas.getContext("2d")!;
-    
+
     tempCtx.translate(width / 2, height / 2);
     tempCtx.rotate((rotation * Math.PI) / 180);
     tempCtx.drawImage(image, -width / 2, -height / 2);
-    
+
     ctx.drawImage(
       tempCanvas,
       x, y, cropWidth, cropHeight,
@@ -76,7 +88,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
   const handleFinalSave = useCallback(async () => {
     if (!pixelCrop || isProcessing) return;
     setIsProcessing(true);
-    
+
     try {
       const croppedFile = await getCroppedImg(imageSrc, pixelCrop, rotation);
       if (croppedFile) {
@@ -90,7 +102,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
   }, [imageSrc, rotation, pixelCrop, onCropComplete, isProcessing]);
 
   return (
-    <div 
+    <div
       className="modal-overlay"
       onKeyDown={(e) => { if (e.key === 'Enter') handleFinalSave(); }}
       style={{
@@ -109,7 +121,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
         overflowY: 'auto',
       }}
     >
-      <div 
+      <div
         className="image-cropper-modal glass-effect"
         style={{
           maxWidth: '800px',
@@ -129,9 +141,9 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             position: 'absolute',
             top: '16px',
             right: '16px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            color: '#fff',
+            background: 'var(--bg-tertiary)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-secondary)',
             width: '36px',
             height: '36px',
             borderRadius: '50%',
@@ -146,18 +158,18 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           ×
         </button>
 
-        <h3 style={{ 
-          color: '#fff', 
+        <h3 style={{
+          color: 'var(--text-primary)',
           marginBottom: '20px',
           fontSize: 'clamp(18px, 3vw, 24px)',
           fontWeight: 700,
           textAlign: 'center',
           paddingRight: '40px',
         }}>
-          Настройка фото новости
+          {title}
         </h3>
-        
-        <div 
+
+        <div
           className="cropper-container"
           style={{
             position: 'relative',
@@ -174,7 +186,8 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={16 / 9}
+            aspect={aspect}
+            cropShape={shape}
             showGrid={true}
             onCropChange={setCrop}
             onZoomChange={setZoom}
@@ -186,39 +199,39 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
         <div className="cropper-controls" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="control-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <label style={{ fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 600, color: '#e0e0e0' }}>
+              <label style={{ fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Масштаб
               </label>
               <span style={{
                 fontSize: 'clamp(12px, 2vw, 14px)',
-                color: '#0160ce',
+                color: 'var(--color-primary)',
                 fontWeight: 700,
-                background: 'rgba(1, 96, 206, 0.15)',
+                background: 'rgba(59, 130, 246, 0.15)',
                 padding: '4px 12px',
                 borderRadius: '12px'
               }}>
                 {Math.round(zoom * 100)}%
               </span>
             </div>
-            <input 
-              type="range" 
-              min={1} 
-              max={3} 
-              step={0.1} 
-              value={zoom} 
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.1}
+              value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              style={{ width: '100%', cursor: 'pointer' }}
+              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
             />
           </div>
 
           <div className="control-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <label style={{ fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 600, color: '#e0e0e0' }}>
+              <label style={{ fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Поворот
               </label>
               <span style={{
                 fontSize: 'clamp(12px, 2vw, 14px)',
-                color: '#10b981',
+                color: 'var(--color-success)',
                 fontWeight: 700,
                 background: 'rgba(16, 185, 129, 0.15)',
                 padding: '4px 12px',
@@ -227,28 +240,28 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
                 {rotation}°
               </span>
             </div>
-            <input 
-              type="range" 
-              min={0} 
-              max={360} 
-              step={1} 
-              value={rotation} 
+            <input
+              type="range"
+              min={0}
+              max={360}
+              step={1}
+              value={rotation}
               onChange={(e) => setRotation(Number(e.target.value))}
-              style={{ width: '100%', cursor: 'pointer' }}
+              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-success)' }}
             />
           </div>
         </div>
 
         <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: '28px', flexWrap: 'wrap' }}>
-          <button 
-            onClick={onCancel} 
+          <button
+            onClick={onCancel}
             disabled={isProcessing}
             style={{
               flex: '1 1 auto',
               minWidth: '120px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: '#fff',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              background: 'var(--bg-tertiary)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
               padding: '12px 24px',
               borderRadius: '10px',
               fontSize: '15px',
@@ -258,13 +271,13 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
           >
             Отмена
           </button>
-          <button 
-            onClick={handleFinalSave} 
+          <button
+            onClick={handleFinalSave}
             disabled={isProcessing || !pixelCrop}
             style={{
               flex: '2 1 auto',
               minWidth: '140px',
-              background: 'linear-gradient(135deg, #0160ce 0%, #0059c8 100%)',
+              background: 'var(--color-primary)',
               color: '#fff',
               border: 'none',
               padding: '12px 24px',
