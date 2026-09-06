@@ -5,19 +5,12 @@
 
 ---
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+<p align="left">
   <img src="https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go" />
-  <img src="https://img.shields.io/badge/TypeScript-5.0-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Kafka" />
   <img src="https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Docker-24.0-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=for-the-badge" alt="License" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/github/repo-size/Cyber-bober/Fullstack-website?style=for-the-badge&color=00FF88" alt="Repository Size" />
-  <img src="https://img.shields.io/github/languages/count/Cyber-bober/Fullstack-website?style=for-the-badge&color=00FF88" alt="Languages" />
-  <img src="https://img.shields.io/github/last-commit/Cyber-bober/Fullstack-website?style=for-the-badge&color=00FF88" alt="Last Commit" />
+  <img src="https://img.shields.io/badge/Docker-24-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
 </p>
 
 ---
@@ -109,8 +102,11 @@
 ### Backend Development
 
 <p align="left">
+  <img src="https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go" />
   <img src="https://img.shields.io/badge/Node.js-20-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Kafka" />
   <img src="https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
   <img src="https://img.shields.io/badge/Prisma-5-3982CE?style=for-the-badge&logo=Prisma&logoColor=white" alt="Prisma" />
   <img src="https://img.shields.io/badge/NextAuth.js-4-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="NextAuth" />
 </p>
@@ -125,6 +121,29 @@
   <img src="https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm" />
 </p>
 
+### Testing & Quality Assurance
+
+<p align="left">
+  <img src="https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white" alt="Playwright" />
+  <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" />
+  <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white" alt="Postman" />
+  <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger" />
+  <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest" />
+  <img src="https://img.shields.io/badge/JUnit-25A162?style=for-the-badge&logo=junit5&logoColor=white" alt="JUnit" />
+</p>
+---
+
+## Быстрый старт
+
+```bash
+# Клонировать репозиторий
+git clone https://github.com/Cyber-bober/Fullstack-website.git
+cd Fullstack-website
+
+# Запустить через Docker
+docker-compose up -d
+```
+
 ---
 
 ## Авторы
@@ -138,7 +157,7 @@
       <br />
       <b>Vladislav (Cyber-bober)</b>
       <br />
-      <small>Fullstack Developer</small>
+      <small><b>Backend Developer (Go, Kafka, PostgreSQL)</b></small>
       <br />
       <a href="https://github.com/Cyber-bober">
         <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
@@ -151,7 +170,7 @@
       <br />
       <b>DanisimoQ2</b>
       <br />
-      <small>Frontend Developer</small>
+      <small><b>Frontend Developer (Next.js, TypeScript)</b></small>
       <br />
       <a href="https://github.com/DanisimoQ2">
         <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
