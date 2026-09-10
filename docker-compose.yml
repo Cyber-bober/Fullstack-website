@@ -2,20 +2,20 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: football-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: football
-      POSTGRES_PASSWORD: football_pass
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-football_pass}
       POSTGRES_DB: football_db
-    ports:
-      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U football -d football_db"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    networks:
+      - football_network
     logging:
       driver: "json-file"
       options:
@@ -25,56 +25,282 @@ services:
   redis:
     image: redis:7-alpine
     container_name: football-redis
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_secret} --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_secret}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    networks:
+      - football_network
     logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "3"
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: football-app
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./scripts:/app/scripts
-      - ./prisma:/app/prisma
-      - ./package.json:/app/package.json
-      - ./tsconfig.seed.json:/app/tsconfig.seed.json
-      - ./node_modules:/app/node_modules
-    environment:
-      - DATABASE_URL=postgresql://football:football_pass@postgres:5432/football_db?schema=public
-      - REDIS_URL=redis://redis:6379
-      - NEXTAUTH_SECRET=Y9D8Rw+pOe8aaGyYi97xlYN43FXN/BcwSHVFUjLD1Pk=
-      - NEXTAUTH_URL=http://localhost:3000
-      - WATCHPACK_POLLING=true
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  mongo:
+    image: mongo:7.0
+    container_name: football-mongo
     restart: unless-stopped
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - football_network
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
+  mongo-init:
+    image: mongo:7.0
+    container_name: football-mongo-init
+    depends_on:
+      mongo:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mongosh --host mongo --quiet --eval '
+          try {
+            rs.status();
+            print("Replica set already initialized");
+          } catch(e) {
+            rs.initiate({_id:"rs0", members:[{_id:0, host:"mongo:27017"}]});
+            print("Replica set initialized");
+          }
+        '
+    networks:
+      - football_network
+    restart: "no"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: football-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - football_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile
+    container_name: football-chat-service
+    restart: unless-stopped
+    environment:
+      PORT: "8081"
+      MONGO_URL: "mongodb://mongo:27017/?replicaSet=rs0"
+      MONGO_DB: "chat_db"
+      KAFKA_BROKER: "kafka:9092"
+      REDIS_URL: "redis://:${REDIS_PASSWORD:-redis_secret}@redis:6379"
+      INTERNAL_KEY: ${INTERNAL_KEY:-change_me_in_production_please}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - football_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: football-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://football:${POSTGRES_PASSWORD:-football_pass}@postgres:5432/football_db?schema=public"
+      REDIS_URL: "redis://:${REDIS_PASSWORD:-redis_secret}@redis:6379"
+      MONGO_URL: "mongodb://mongo:27017/?replicaSet=rs0"
+      MONGO_DB: "chat_db"
+      KAFKA_BROKER: "kafka:9092"
+      CHAT_SERVICE_URL: "http://chat-service:8081"
+      INTERNAL_KEY: ${INTERNAL_KEY:-change_me_in_production_please}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-Y9D8Rw+pOe8aaGyYi97xlYN43FXN/BcwSHVFUjLD1Pk=}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NODE_ENV: "production"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - football_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - football_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    networks:
+      - football_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    env_file:
+      - monitoring/grafana.env
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - football_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - football_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/promtail.yml:/etc/promtail/config.yml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - football_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+networks:
+  football_network:
+    driver: bridge
+    name: football_network
+
 volumes:
   postgres_data:
   redis_data:
+  mongo_data:
+  kafka_data:
+  prometheus_data:
+  grafana_data:

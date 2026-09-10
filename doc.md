@@ -356,6 +356,9 @@ pip install pytest requests pytest-html pytest-xdist jsonschema locust
 npm install -D @playwright/test
 npx playwright install chromium firefox webkit
 
+# Нагрузочное
+k6 run --out json=results.json load-test.js
+
 # 3. Добавить venv в .gitignore
 echo "venv/" >> .gitignore
 

@@ -30,6 +30,7 @@ src/lib/prisma/migrations/
 __pycache__/
 *.pyc
 *.pyo
+/.pytest_cache
 
 # Загрузки
 public/uploads/avatars/

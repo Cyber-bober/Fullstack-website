@@ -8614,3 +8614,78 @@ body[data-theme="light"] .mobile-add-match-btn {
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
 }
+
+.chat-layout,
+.support-main,
+.chat-left,
+.support-left,
+.chat-right,
+.support-right,
+body[data-theme="dark"] .chat-layout,
+body[data-theme="dark"] .support-main,
+body[data-theme="dark"] .chat-left,
+body[data-theme="dark"] .support-left,
+body[data-theme="dark"] .chat-right,
+body[data-theme="dark"] .support-right,
+body[data-theme="light"] .chat-layout,
+body[data-theme="light"] .support-main,
+body[data-theme="light"] .chat-left,
+body[data-theme="light"] .support-left,
+body[data-theme="light"] .chat-right,
+body[data-theme="light"] .support-right {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.chat-search,
+.chat-list-wrapper,
+.chat-header,
+.chat-messages,
+.chat-input-form,
+.support-left-header,
+.support-ticket-list,
+.support-chat-header,
+.support-chat-main,
+.support-right form {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.chat-search,
+.chat-list-wrapper,
+.chat-header,
+.chat-messages,
+.support-left-header,
+.support-ticket-list,
+.support-chat-header,
+.support-chat-main {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.chat-page .glass-effect:hover,
+.container.support .glass-effect:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+footer.glass-effect,
+.footer.glass-effect {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.footer {
+  margin-bottom: 0 !important;
+}
+
+body {
+  outline: 8px solid red !important;
+}

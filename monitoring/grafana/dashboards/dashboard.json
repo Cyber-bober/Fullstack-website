@@ -1,0 +1,32 @@
+{
+  "title": "API Load Test Results",
+  "panels": [
+    {
+      "title": "Requests Per Second (RPS)",
+      "targets": [
+        {
+          "expr": "rate(http_reqs_total[$__rate_interval])",
+          "legendFormat": "RPS"
+        }
+      ]
+    },
+    {
+      "title": "P95 Latency (ms)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_req_duration_bucket[$__rate_interval]))",
+          "legendFormat": "P95"
+        }
+      ]
+    },
+    {
+      "title": "Error Rate",
+      "targets": [
+        {
+          "expr": "sum(rate(http_req_failed_total[$__rate_interval]))",
+          "legendFormat": "Errors"
+        }
+      ]
+    }
+  ]
+}
