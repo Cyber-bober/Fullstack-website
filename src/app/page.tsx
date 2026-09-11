@@ -248,8 +248,9 @@ function HomePageContent() {
       return;
     }
 
-    const now = new Date();
-    if (localDate < now) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (localDate < today) {
       setToast({
         msg: "Нельзя создать матч в прошлом. Выберите дату и время позже текущего момента.",
         type: "error"

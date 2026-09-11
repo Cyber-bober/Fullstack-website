@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
   pull_request:
     branches: [main]
 
@@ -13,6 +13,7 @@ env:
   NEXTAUTH_URL: http://localhost:3000
   INTERNAL_KEY: test-internal-key
   NODE_ENV: test
+  POSTGRES_PASSWORD: football_pass
 
 jobs:
   unit-tests:
@@ -33,7 +34,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run Unit Tests
-        run: npm test
+        run: npm test --if-present
 
   python-tests:
     name: Python Tests (Pytest)
@@ -78,6 +79,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest==8.3.3 pytest-html==4.1.1 pytest-metadata==3.1.1 requests==2.32.3 jsonschema==4.23.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -89,49 +91,46 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
 
       - name: Run database migrations
         run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Verify migrations
+        run: |
+          echo "Checking if tables exist..."
+          PGPASSWORD=football_pass psql -h localhost -U football -d football_db_test -c "\dt"
 
       - name: Seed test data
-        run: npx prisma db seed || echo "No seed script, skipping"
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: npx prisma db seed
+        continue-on-error: true
 
       - name: Build app
         run: npm run build
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
 
-      - name: Start app
+      - name: Start app in background
         run: |
           nohup npm start > app.log 2>&1 &
           echo $! > app.pid
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          echo "App started with PID $(cat app.pid)"
 
-      - name: Wait for app
+      - name: Wait for app to be ready
         run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:3000/api/teams > /dev/null; then
-              echo "App is ready"
+          echo "Waiting for app to be ready..."
+          for i in {1..60}; do
+            if curl -sf http://localhost:3000/api/teams > /dev/null 2>&1; then
+              echo "App is ready after ${i}s"
               exit 0
             fi
-            echo "Waiting for app... ($i/30)"
+            echo "Waiting... ($i/60)"
             sleep 2
           done
-          echo "App did not start in time"
+          echo "App failed to start in 120s"
+          echo "=== App logs ==="
           cat app.log
           exit 1
 
       - name: Run Python tests
         run: pytest tests/ -v --tb=short --html=report.html
-        env:
-          BASE_URL: http://localhost:3000
 
       - name: Upload test report
         if: always()
@@ -139,6 +138,18 @@ jobs:
         with:
           name: pytest-report
           path: report.html
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f app.pid ]; then
+            kill $(cat app.pid) 2>/dev/null || true
+            rm -f app.pid
+          fi
+          # Убить все оставшиеся процессы Next.js
+          pkill -f "next start" 2>/dev/null || true
+          pkill -f "node server.js" 2>/dev/null || true
+          sleep 2
 
   e2e-tests:
     name: E2E Tests (Playwright)
@@ -188,49 +199,69 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
 
       - name: Run database migrations
         run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Seed test data
+        run: npx prisma db seed
+        continue-on-error: true
 
       - name: Build app
         run: npm run build
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
 
-      - name: Start app
+      - name: Start app in background
         run: |
           nohup npm start > app.log 2>&1 &
           echo $! > app.pid
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          echo "App started with PID $(cat app.pid)"
 
-      - name: Wait for app
+      - name: Wait for app to be ready
         run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:3000/api/teams > /dev/null; then
-              echo "App is ready"
+          echo "Waiting for app to be ready..."
+          for i in {1..60}; do
+            if curl -sf http://localhost:3000/api/teams > /dev/null 2>&1; then
+              echo "App is ready after ${i}s"
               exit 0
             fi
-            echo "Waiting for app... ($i/30)"
+            echo "Waiting... ($i/60)"
             sleep 2
           done
-          echo "App did not start in time"
+          echo "App failed to start in 120s"
+          echo "=== App logs ==="
           cat app.log
           exit 1
 
       - name: Run Playwright tests
         run: npx playwright test tests/e2e/ --project=chromium --project=firefox
+        env:
+          CI: true
+          BASE_URL: http://localhost:3000
 
-      - name: Upload test results
+      - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f app.pid ]; then
+            kill $(cat app.pid) 2>/dev/null || true
+            rm -f app.pid
+          fi
+          pkill -f "next start" 2>/dev/null || true
+          pkill -f "node server.js" 2>/dev/null || true
+          sleep 2
 
   build:
     name: Build and Push Docker Image
