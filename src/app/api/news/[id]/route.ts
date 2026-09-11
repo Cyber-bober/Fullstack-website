@@ -111,7 +111,7 @@ export async function PATCH(
         const buffer = Buffer.from(bytes);
         await writeFile(filePath, buffer);
         
-        imageUrl = `/uploads/news/${fileName}`;
+        imageUrl = `/api/uploads/news/${fileName}`;
 
         if (existingPost.imageUrl) {
           try {

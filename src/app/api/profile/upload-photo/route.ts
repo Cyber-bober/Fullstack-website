@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const fileName = `profile-${session.user.id}-${Date.now()}.jpg`;
     await writeFile(path.join(uploadDir, fileName), buffer);
     
-    const photoUrl = `/uploads/profiles/${fileName}`;
+    const photoUrl = `/api/uploads/profiles/${fileName}`;
 
     await prisma.user.update({
       where: { id: session.user.id },

@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     await writeFile(path.join(uploadDir, jpegFileName), jpegBuffer);
     await writeFile(path.join(uploadDir, webpFileName), webpBuffer);
 
-    const fileUrl = `/uploads/teams/${jpegFileName}`;
+    const fileUrl = `/api/uploads/teams/${jpegFileName}`;
 
     const type = formData.get("type") as string;
     if (type === "logo") {
