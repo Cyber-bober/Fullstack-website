@@ -34,6 +34,8 @@ __pycache__/
 
 # Загрузки
 public/uploads/avatars/
+public/uploads/profiles/
+public/uploads/teams/
 public/uploads/news/
 public/uploads/team-*
 

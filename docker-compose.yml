@@ -7,6 +7,8 @@ services:
       POSTGRES_USER: football
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-football_pass}
       POSTGRES_DB: football_db
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -172,6 +174,9 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-Y9D8Rw+pOe8aaGyYi97xlYN43FXN/BcwSHVFUjLD1Pk=}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NODE_ENV: "production"
+    command: >
+      sh -c "npx prisma@5.22.0 migrate deploy --schema=./src/lib/schema.prisma &&
+             node server.js"
     depends_on:
       postgres:
         condition: service_healthy
@@ -183,6 +188,7 @@ services:
         condition: service_started
     volumes:
       - ./public/uploads:/app/public/uploads
+      - ./src/lib/migrations:/app/src/lib/migrations:ro
     networks:
       - football_network
     deploy:
