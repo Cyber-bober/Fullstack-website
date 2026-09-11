@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validatePayloadSize } from "@/lib/validate";
-import { invalidateCache } from "@/lib/redis";
 
 const matchInclude = {
   homeTeam: { select: { id: true, name: true, logoUrl: true } },
@@ -56,7 +55,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("Matches load error:", error);
-    return NextResponse.json({ error: "Ошибка сервера при загрузке матчей" }, { status: 500 });
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -91,12 +90,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Неверный формат даты" }, { status: 400 });
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    if (parsedDate < startOfToday) {
-      return NextResponse.json({ error: "Дата не может быть в прошлом" }, { status: 400 });
-    }
-
     const match = await prisma.match.create({
       data: {
         homeTeamId,
@@ -108,15 +101,13 @@ export async function POST(req: NextRequest) {
       include: matchInclude,
     });
 
-    await invalidateCache("matches");
-
     return NextResponse.json(match, { status: 201 });
   } catch (error: any) {
     console.error("Match create error:", error);
     if (error.code === "P2003" || error.code === "P2025") {
       return NextResponse.json({ error: "Неверные данные: команда не найдена" }, { status: 400 });
     }
-    return NextResponse.json({ error: "Ошибка сервера при создании матча" }, { status: 500 });
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -131,14 +122,12 @@ export async function DELETE(req: NextRequest) {
 
   try {
     await prisma.match.delete({ where: { id } });
-    await invalidateCache("matches");
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Match delete error:", error);
     if (error.code === "P2025") {
       return NextResponse.json({ error: "Матч не найден" }, { status: 404 });
     }
-    return NextResponse.json({ error: "Ошибка сервера при удалении матча" }, { status: 500 });
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -164,11 +153,6 @@ export async function PATCH(req: NextRequest) {
       if (isNaN(parsedDate.getTime())) {
         return NextResponse.json({ error: "Неверный формат даты" }, { status: 400 });
       }
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
-      if (parsedDate < startOfToday) {
-        return NextResponse.json({ error: "Дата не может быть в прошлом" }, { status: 400 });
-      }
       updateData.date = parsedDate;
     }
     if (venue !== undefined) updateData.venue = venue || null;
@@ -182,13 +166,11 @@ export async function PATCH(req: NextRequest) {
       include: matchInclude,
     });
 
-    await invalidateCache("matches");
     return NextResponse.json(match);
   } catch (error: any) {
-    console.error("Match update error:", error);
     if (error.code === "P2025") {
       return NextResponse.json({ error: "Матч не найден" }, { status: 404 });
     }
-    return NextResponse.json({ error: "Ошибка сервера при обновлении матча" }, { status: 500 });
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

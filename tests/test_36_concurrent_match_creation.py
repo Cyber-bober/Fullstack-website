@@ -19,7 +19,6 @@ def login(u, p):
 
 
 def get_teams(session):
-    """Получить список команд из API"""
     teams_response = session.get(f"{BASE}/api/teams").json()
     if isinstance(teams_response, dict) and "data" in teams_response:
         return teams_response["data"]
@@ -27,23 +26,19 @@ def get_teams(session):
 
 
 def get_matches(session):
-    """Получить список матчей из API"""
-    r = session.get(f"{BASE}/api/matches").json()
+    r = session.get(f"{BASE}/api/matches?limit=1000").json()
     if isinstance(r, dict) and "data" in r:
         return r["data"]
     return r if isinstance(r, list) else []
 
 
 def future_date(days_offset: int, hour: int = 14) -> str:
-    """Вернуть ISO-дату в будущем (завтра, послезавтра и т.д.)"""
     dt = datetime.now(timezone.utc) + timedelta(days=days_offset)
     return dt.replace(hour=hour, minute=0, second=0, microsecond=0).isoformat()
 
 
 class TestConcurrentMatchCreation:
     def test_two_admins_create_match_simultaneously(self, admin_session):
-        """Тест: 2 админа одновременно создают матч"""
-
         teams = get_teams(admin_session)
         if len(teams) < 4:
             pytest.skip("Need at least 4 teams")
@@ -76,7 +71,7 @@ class TestConcurrentMatchCreation:
             status2, result2 = future2.result()
 
         assert status1 == 201, f"Admin 1 failed: {status1}"
-        assert status2 == 201, f"Admin 1 failed: {status2}"
+        assert status2 == 201, f"Admin 2 failed: {status2}"
         assert result1 is not None, "Admin 1 result is None"
         assert result2 is not None, "Admin 2 result is None"
 
@@ -89,8 +84,6 @@ class TestConcurrentMatchCreation:
         admin_session.delete(f"{BASE}/api/matches?id={result2['id']}")
 
     def test_multiple_admins_create_matches_simultaneously(self, admin_session):
-        """Тест: несколько админов одновременно создают матчи (стресс-тест)"""
-
         teams = get_teams(admin_session)
         max_matches = min(len(teams) // 2, 10)
         if max_matches < 2:
@@ -134,15 +127,11 @@ class TestConcurrentMatchCreation:
         assert success_count == max_matches, f"Only {success_count}/{max_matches} matches created"
         assert duration < 5.0, f"Too slow: {duration:.2f}s"
 
-        print(f"{max_matches} matches created in {duration:.2f}s")
-
         for status, result in results:
             if status == 201 and result and "id" in result:
                 admin_session.delete(f"{BASE}/api/matches?id={result['id']}")
 
     def test_concurrent_read_write_no_race_condition(self, admin_session):
-        """Тест: конкурентное чтение и запись без race condition"""
-
         teams = get_teams(admin_session)
         if len(teams) < 2:
             pytest.skip("Need at least 2 teams")
@@ -159,7 +148,7 @@ class TestConcurrentMatchCreation:
 
         def read_matches():
             try:
-                return admin_session.get(f"{BASE}/api/matches").status_code
+                return admin_session.get(f"{BASE}/api/matches?limit=1000").status_code
             except Exception:
                 return 500
 
@@ -184,8 +173,6 @@ class TestConcurrentMatchCreation:
         assert match_id not in match_ids, "Match should be deleted"
 
     def test_concurrent_news_creation(self, admin_session):
-        """Тест: конкурентное создание новостей"""
-
         admin1 = login("admin_vlad", "admin123")
         admin2 = login("admin_sergey", "admin123")
 
@@ -221,8 +208,6 @@ class TestConcurrentMatchCreation:
             admin_session.delete(f"{BASE}/api/news?id={result2['id']}")
 
     def test_concurrent_team_creation(self, admin_session):
-        """Тест: конкурентное создание команд"""
-
         admin1 = login("admin_vlad", "admin123")
         admin2 = login("admin_sergey", "admin123")
 

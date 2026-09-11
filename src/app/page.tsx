@@ -11,6 +11,24 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import DatePicker from "@/components/ui/DatePicker";
 import { NewsPost, Match } from "@/types/page";
 
+function getLocalDateString(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getDefaultMatchDateTime() {
+  const d = new Date(Date.now() + 60 * 60 * 1000);
+  d.setMinutes(d.getMinutes() < 30 ? 30 : 0);
+  if (d.getMinutes() === 0) d.setHours(d.getHours() + 1);
+  return {
+    date: getLocalDateString(d),
+    hours: d.getHours().toString().padStart(2, '0'),
+    minutes: d.getMinutes().toString().padStart(2, '0'),
+  };
+}
+
 function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
@@ -30,14 +48,13 @@ function HomePageContent() {
   const [teams, setTeams] = useState<any[]>([]);
   
   const [matchForm, setMatchForm] = useState(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
+    const def = getDefaultMatchDateTime();
     return {
       homeTeamId: "",
       awayTeamId: "",
-      date: `${year}-${month}-${day}T18:00`,
+      date: def.date,
+      hours: def.hours,
+      minutes: def.minutes,
       venue: ""
     };
   });
@@ -46,53 +63,74 @@ function HomePageContent() {
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
   const [confirmDeleteMatchId, setConfirmDeleteMatchId] = useState<string | null>(null);
 
+  const loadMatches = useCallback(async () => {
+    try {
+      const mRes = await fetch("/api/matches", { 
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (mRes.ok) {
+        const d = await mRes.json();
+        setMatches(d.data || []);
+      }
+    } catch (err) {
+      console.error("Ошибка загрузки матчей:", err);
+    }
+  }, []);
+
+  const loadTeams = useCallback(async () => {
+    try {
+      const tRes = await fetch("/api/teams?limit=100", { cache: 'no-store' });
+      if (tRes.ok) {
+        const t = await tRes.json();
+        setTeams(t.data || []);
+      }
+    } catch (err) {
+      console.error("Ошибка загрузки команд:", err);
+    }
+  }, []);
+
+  const loadSession = useCallback(async () => {
+    try {
+      const sessionRes = await fetch("/api/auth/session");
+      if (sessionRes.ok) {
+        const s = await sessionRes.json();
+        setUserRole(s?.user?.role || null);
+        setCurrentUserId(s?.user?.id || null);
+      }
+    } catch (err) {
+      console.error("Ошибка загрузки сессии:", err);
+    }
+  }, []);
+
   useEffect(() => {
     const loadData = async () => {
-      try {
-        const [sessionRes, matchesRes, teamsRes] = await Promise.all([
-          fetch("/api/auth/session"),
-          fetch("/api/matches", { cache: 'no-store' }),
-          fetch("/api/teams?limit=100", { cache: 'no-store' })
-        ]);
-        if (sessionRes.ok) { 
-          const s = await sessionRes.json(); 
-          setUserRole(s?.user?.role || null); 
-          setCurrentUserId(s?.user?.id || null); 
-        }
-        if (matchesRes.ok) { 
-          const d = await matchesRes.json(); 
-          setMatches(d.data || []); 
-        }
-        if (teamsRes.ok) { 
-          const t = await teamsRes.json(); 
-          setTeams(t.data || []); 
-        }
-      } catch (err) { 
-        console.error("Ошибка загрузки:", err); 
-      }
+      await Promise.all([loadSession(), loadMatches(), loadTeams()]);
     };
     loadData();
+  }, [loadSession, loadMatches, loadTeams]);
+
+  const openMatchModal = useCallback(() => {
+    const def = getDefaultMatchDateTime();
+    setMatchForm({
+      homeTeamId: "",
+      awayTeamId: "",
+      date: def.date,
+      hours: def.hours,
+      minutes: def.minutes,
+      venue: ""
+    });
+    setShowMatchModal(true);
   }, []);
 
   useEffect(() => {
-    const handleOpenMatchModal = () => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = (now.getMonth() + 1).toString().padStart(2, '0');
-      const day = now.getDate().toString().padStart(2, '0');
-      
-      setMatchForm({
-        homeTeamId: "",
-        awayTeamId: "",
-        date: `${year}-${month}-${day}T18:00`,
-        venue: ""
-      });
-      setShowMatchModal(true);
-    };
-
+    const handleOpenMatchModal = () => openMatchModal();
     window.addEventListener('openMatchModal', handleOpenMatchModal);
     return () => window.removeEventListener('openMatchModal', handleOpenMatchModal);
-  }, []);
+  }, [openMatchModal]);
 
   useEffect(() => {
     if (activeTab !== "news") return;
@@ -122,15 +160,15 @@ function HomePageContent() {
     setNewsData(prev => prev ? { ...prev, data: newPosts } : null);
   }, []);
 
-  const handleAddNews = () => {
+  const handleAddNews = useCallback(() => {
     setEditingNews(null);
     setShowNewsForm(true);
-  };
+  }, []);
 
-  const handleEditNews = (post: NewsPost) => {
+  const handleEditNews = useCallback((post: NewsPost) => {
     setEditingNews(post);
     setShowNewsForm(true);
-  };
+  }, []);
 
   const handleSaveNews = async (formData: FormData) => {
     const isEditing = editingNews !== null;
@@ -159,126 +197,110 @@ function HomePageContent() {
     }
   };
 
-  const handleDeleteMatch = (id: string) => {
+  const handleDeleteMatch = useCallback((id: string) => {
     setConfirmDeleteMatchId(id);
-  };
+  }, []);
 
   const confirmDeleteMatch = async () => {
     if (!confirmDeleteMatchId) return;
     setDeletingMatchId(confirmDeleteMatchId);
     try {
-      const res = await fetch(`/api/matches?id=${confirmDeleteMatchId}`, { 
+      const res = await fetch(`/api/matches?id=${confirmDeleteMatchId}`, {
         method: "DELETE",
         cache: 'no-store'
       });
       if (res.ok) {
         setToast({ msg: "Матч успешно удален!", type: "success" });
-        const mRes = await fetch("/api/matches", { cache: 'no-store' });
-        if (mRes.ok) {
-          const d = await mRes.json();
-          setMatches(d.data || []);
-        }
+        await loadMatches();
       } else {
         const err = await res.json();
         setToast({ msg: err.error || "Ошибка удаления", type: "error" });
       }
-    } catch { 
-      setToast({ msg: "Ошибка сети", type: "error" }); 
-    } finally { 
-      setDeletingMatchId(null); 
+    } catch {
+      setToast({ msg: "Ошибка сети", type: "error" });
+    } finally {
+      setDeletingMatchId(null);
       setConfirmDeleteMatchId(null);
     }
   };
 
-  const openMatchModal = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    
-    setMatchForm({
-      homeTeamId: "",
-      awayTeamId: "",
-      date: `${year}-${month}-${day}T18:00`,
-      venue: ""
-    });
-    setShowMatchModal(true);
-  };
-
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (matchForm.homeTeamId === matchForm.awayTeamId) { 
-      setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" }); 
-      return; 
+
+    if (matchForm.homeTeamId === matchForm.awayTeamId) {
+      setToast({ msg: "Хозяева и гости не могут быть одной командой!", type: "error" });
+      return;
     }
-    
+
     if (!matchForm.date) {
       setToast({ msg: "Дата матча не указана", type: "error" });
       return;
     }
-    
+
+    const [year, month, day] = matchForm.date.split('-').map(Number);
+    const hours = parseInt(matchForm.hours) || 18;
+    const minutes = parseInt(matchForm.minutes) || 0;
+
+    const localDate = new Date(year, month - 1, day, hours, minutes, 0);
+
+    if (isNaN(localDate.getTime())) {
+      setToast({ msg: "Некорректная дата", type: "error" });
+      return;
+    }
+
+    const now = new Date();
+    if (localDate < now) {
+      setToast({
+        msg: "Нельзя создать матч в прошлом. Выберите дату и время позже текущего момента.",
+        type: "error"
+      });
+      return;
+    }
+
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 5);
+    if (localDate > maxDate) {
+      setToast({ msg: "Дата слишком далекая (максимум 5 лет вперёд)", type: "error" });
+      return;
+    }
+
     setCreatingMatch(true);
     try {
-      const dateStr = matchForm.date;
-      let localDate: Date;
-      
-      if (dateStr.includes('T')) {
-        const [datePart, timePart] = dateStr.split('T');
-        const [year, month, day] = datePart.split('-').map(Number);
-        const [hours, minutes] = (timePart || '18:00').split(':').map(Number);
-        localDate = new Date(year, month - 1, day, hours || 18, minutes || 0);
-      } else {
-        const [year, month, day] = dateStr.split('-').map(Number);
-        localDate = new Date(year, month - 1, day, 18, 0);
-      }
-      
-      if (isNaN(localDate.getTime())) {
-        setToast({ msg: "Некорректная дата", type: "error" });
-        setCreatingMatch(false);
-        return;
-      }
-      
-      const res = await fetch("/api/matches", { 
-        method: "POST", 
+      const res = await fetch("/api/matches", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: 'no-store',
         body: JSON.stringify({
           homeTeamId: matchForm.homeTeamId,
           awayTeamId: matchForm.awayTeamId,
           date: localDate.toISOString(),
-          venue: matchForm.venue,
+          venue: matchForm.venue || undefined,
         })
       });
-      
+
       if (res.ok) {
         setToast({ msg: "Матч успешно создан!", type: "success" });
         setShowMatchModal(false);
-        const mRes = await fetch("/api/matches", { cache: 'no-store' });
-        if (mRes.ok) {
-          const d = await mRes.json();
-          setMatches(d.data || []);
-        }
-        
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const day = now.getDate().toString().padStart(2, '0');
-        setMatchForm({ 
-          homeTeamId: "", 
-          awayTeamId: "", 
-          date: `${year}-${month}-${day}T18:00`,
-          venue: "" 
+        await loadMatches();
+
+        const def = getDefaultMatchDateTime();
+        setMatchForm({
+          homeTeamId: "",
+          awayTeamId: "",
+          date: def.date,
+          hours: def.hours,
+          minutes: def.minutes,
+          venue: ""
         });
-      } else { 
-        const err = await res.json(); 
-        setToast({ msg: err.error || "Ошибка создания", type: "error" }); 
+      } else {
+        const err = await res.json();
+        setToast({ msg: err.error || "Ошибка создания", type: "error" });
       }
     } catch (err) {
       console.error("Ошибка создания матча:", err);
-      setToast({ msg: "Ошибка сети", type: "error" }); 
-    } finally { 
-      setCreatingMatch(false); 
+      setToast({ msg: "Ошибка сети", type: "error" });
+    } finally {
+      setCreatingMatch(false);
     }
   };
 
@@ -313,30 +335,10 @@ function HomePageContent() {
     );
   };
 
-  const getHours = () => {
-    if (!matchForm.date) return '18';
-    const timePart = matchForm.date.split('T')[1];
-    return timePart ? timePart.split(':')[0] || '18' : '18';
-  };
-
-  const getMinutes = () => {
-    if (!matchForm.date) return '00';
-    const timePart = matchForm.date.split('T')[1];
-    return timePart ? timePart.split(':')[1] || '00' : '00';
-  };
-
-  const getDatePart = () => {
-    if (!matchForm.date) {
-      const now = new Date();
-      return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-    }
-    return matchForm.date.split('T')[0];
-  };
-
   return (
     <div className="container">
       {toast && <div className="toast-container"><Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} /></div>}
-      
+
       <div className="after-header">
         <h1 className="home-title" style={{ margin: 0 }}>RTLive</h1>
         {canManageMatches && (
@@ -356,10 +358,10 @@ function HomePageContent() {
           <div className="search-bar glass-effect">
             <input type="text" className="search-input" placeholder="Поиск новостей..." value={liveNewsQuery} onChange={e => setLiveNewsQuery(e.target.value)} />
           </div>
-          <NewsSection 
-            news={newsData?.data || []} 
-            setNews={handleUpdateNews} 
-            userRole={userRole} 
+          <NewsSection
+            news={newsData?.data || []}
+            setNews={handleUpdateNews}
+            userRole={userRole}
             currentUserId={currentUserId ?? undefined}
             onAdd={handleAddNews}
             onEdit={handleEditNews}
@@ -367,23 +369,23 @@ function HomePageContent() {
           {renderPagination()}
         </>
       )}
-      
+
       {activeTab === "live" && (
-        <LiveSection 
-          matches={matches} 
-          userRole={userRole} 
-          onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} 
-          deletingId={deletingMatchId} 
+        <LiveSection
+          matches={matches}
+          userRole={userRole}
+          onDeleteMatch={isAdmin ? handleDeleteMatch : undefined}
+          deletingId={deletingMatchId}
         />
       )}
-      
+
       {activeTab === "stream" && <LiveStreamSection userRole={userRole} />}
-      
+
       {activeTab === "calendar" && (
-        <CalendarSection 
-          matches={matches} 
-          onDeleteMatch={isAdmin ? handleDeleteMatch : undefined} 
-          deletingId={deletingMatchId} 
+        <CalendarSection
+          matches={matches}
+          onDeleteMatch={isAdmin ? handleDeleteMatch : undefined}
+          deletingId={deletingMatchId}
         />
       )}
 
@@ -408,43 +410,75 @@ function HomePageContent() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <DatePicker
                     label="Дата матча"
-                    value={getDatePart()}
-                    onChange={(date) => {
-                      const hours = getHours();
-                      const minutes = getMinutes();
-                      setMatchForm({...matchForm, date: `${date}T${hours}:${minutes}`});
-                    }}
+                    value={matchForm.date}
+                    onChange={(date) => setMatchForm({...matchForm, date})}
                     placeholder="Выберите дату"
-                    minDate={new Date().toISOString().split('T')[0]}
+                    minDate={getLocalDateString()}
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Время (24ч)</label>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <select className="glass-effect" value={getHours()} onChange={e => setMatchForm({...matchForm, date: `${getDatePart()}T${e.target.value}:${getMinutes()}`})} style={{ flex: 1, padding: '12px 8px' }}>
-                      {Array.from({length: 24}, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                    <select
+                      className="glass-effect"
+                      value={matchForm.hours}
+                      onChange={e => setMatchForm({...matchForm, hours: e.target.value})}
+                      style={{ flex: 1, padding: '12px 8px' }}
+                    >
+                      {Array.from({length: 24}, (_, i) => (
+                        <option key={i} value={i.toString().padStart(2, '0')}>
+                          {i.toString().padStart(2, '0')}
+                        </option>
+                      ))}
                     </select>
                     <span style={{ color: 'white', fontWeight: 'bold' }}>:</span>
-                    <select className="glass-effect" value={getMinutes()} onChange={e => setMatchForm({...matchForm, date: `${getDatePart()}T${getHours()}:${e.target.value}`})} style={{ flex: 1, padding: '12px 8px' }}>
-                      {Array.from({length: 60}, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                    <select
+                      className="glass-effect"
+                      value={matchForm.minutes}
+                      onChange={e => setMatchForm({...matchForm, minutes: e.target.value})}
+                      style={{ flex: 1, padding: '12px 8px' }}
+                    >
+                      {[0, 15, 30, 45].map(m => (
+                        <option key={m} value={m.toString().padStart(2, '0')}>
+                          {m.toString().padStart(2, '0')}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
               </div>
-              
+
               <div className="form-group mb-4">
                 <label>Стадион</label>
-                <input className="glass-effect" type="text" value={matchForm.venue} onChange={e => setMatchForm({...matchForm, venue: e.target.value})} placeholder="Название стадиона" />
+                <input
+                  className="glass-effect"
+                  type="text"
+                  value={matchForm.venue}
+                  onChange={e => setMatchForm({...matchForm, venue: e.target.value})}
+                  placeholder="Название стадиона"
+                />
               </div>
               <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                <button type="submit" className="btn btn-primary glass-effect" disabled={creatingMatch}>{creatingMatch ? "Создание..." : "Создать матч"}</button>
-                <button type="button" className="btn btn-secondary glass-effect" onClick={() => setShowMatchModal(false)}>Отмена</button>
+                <button
+                  type="submit"
+                  className="btn btn-primary glass-effect"
+                  disabled={creatingMatch}
+                >
+                  {creatingMatch ? "Создание..." : "Создать матч"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary glass-effect"
+                  onClick={() => setShowMatchModal(false)}
+                >
+                  Отмена
+                </button>
               </div>
             </form>
           </div>

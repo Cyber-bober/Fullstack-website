@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Match } from "@/types/page";
 
 interface Props {
@@ -19,51 +19,6 @@ const formatDateTime = (dateString: string) => {
   return new Date(dateString).toLocaleString('ru-RU', { 
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
   });
-};
-
-const CustomSelect = ({ 
-  value, onChange, options, width 
-}: { 
-  value: number | string; 
-  onChange: (val: any) => void; 
-  options: { value: any; label: string }[];
-  width?: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const selectedOption = options.find(opt => opt.value === value);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="custom-select" ref={containerRef} style={{ width: width || '140px' }}>
-      <div className="custom-select-trigger glass-effect" onClick={() => setIsOpen(!isOpen)}>
-        <span>{selectedOption?.label}</span>
-        <span className={`arrow ${isOpen ? 'open' : ''}`}>▼</span>
-      </div>
-      {isOpen && (
-        <div className="custom-select-dropdown glass-effect">
-          {options.map((option) => (
-            <div
-              key={option.value}
-              className={`custom-select-option ${option.value === value ? 'selected' : ''}`}
-              onClick={() => { onChange(option.value); setIsOpen(false); }}
-            >
-              {option.label}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 };
 
 export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
@@ -91,12 +46,17 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   const matchesInMonth = useMemo(() => {
     return matches.filter((m) => {
       const d = new Date(m.date);
-      return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth;
+      const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+      return localDate.getFullYear() === selectedYear && localDate.getMonth() === selectedMonth;
     });
   }, [matches, selectedYear, selectedMonth]);
 
   const getMatchesForDay = (day: number) => {
-    return matchesInMonth.filter((m) => new Date(m.date).getDate() === day);
+    return matchesInMonth.filter((m) => {
+      const d = new Date(m.date);
+      const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+      return localDate.getDate() === day;
+    });
   };
 
   const days = [];
@@ -157,8 +117,26 @@ export function CalendarSection({ matches, onDeleteMatch, deletingId }: Props) {
   return (
     <div>
       <div className="calendar-header">
-        <CustomSelect value={selectedMonth} onChange={setSelectedMonth} options={monthNames.map((m, i) => ({ value: i, label: m }))} width="140px" />
-        <CustomSelect value={selectedYear} onChange={setSelectedYear} options={years.map(y => ({ value: y, label: String(y) }))} width="100px" />
+        <select 
+          value={selectedMonth} 
+          onChange={(e) => setSelectedMonth(Number(e.target.value))}
+          className="glass-effect"
+          style={{ padding: "12px", fontSize: "16px" }}
+        >
+          {monthNames.map((m, i) => (
+            <option key={i} value={i}>{m}</option>
+          ))}
+        </select>
+        <select 
+          value={selectedYear} 
+          onChange={(e) => setSelectedYear(Number(e.target.value))}
+          className="glass-effect"
+          style={{ padding: "12px", fontSize: "16px" }}
+        >
+          {years.map(y => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
       </div>
 
       <div className="calendar-grid glass-effect">
